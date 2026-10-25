@@ -51,6 +51,7 @@ namespace LiuBeiRPG.World
         public string Name;
         public string Glyph;
         public string Sprite;     // 有贴图就画贴图，否则画字块
+        public string Weapon;     // 骨骼角色右手拿的武器（qiang / dao / jian），null = 空手
         public string Color = "#ffffff";
         public int X, Y;
         public Func<bool> Visible = () => true;

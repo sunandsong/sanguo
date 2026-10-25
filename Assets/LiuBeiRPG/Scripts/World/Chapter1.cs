@@ -215,7 +215,7 @@ namespace LiuBeiRPG.World
 
             m.Npcs.Add(new Npc
             {
-                Id = "shouwei", Name = "守卫", Glyph = "卫", Color = "#c0c0c0", X = 8, Y = 13,
+                Id = "shouwei", Name = "守卫", Glyph = "卫", Color = "#c0c0c0", X = 8, Y = 13, Weapon = "qiang",
                 Visible = () => !flags.Has(F_Oath),
                 Talk = () => Say(L("守卫", "城外黄巾贼出没，你一个人出去就是送死。"),
                                  L("守卫", "要出城，先招些人马再说吧。"))

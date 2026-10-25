@@ -37,6 +37,12 @@ namespace LiuBeiRPG.Game
             return puppets[id] = a;
         }
 
+        // 张世平赠铁打造的兵器：刘备双股剑、关羽青龙偃月刀、张飞丈八蛇矛
+        static readonly Dictionary<string, string> Weapons = new Dictionary<string, string>
+        {
+            { "liubei", "jian" }, { "guanyu", "dao" }, { "zhangfei", "qiang" },
+        };
+
         static string FacingOf(int dx, int dy) { return dx > 0 ? "side" : dx < 0 ? "left" : dy < 0 ? "back" : "front"; }
 
         public void Warp(MapData target, int x, int y)
@@ -207,7 +213,7 @@ namespace LiuBeiRPG.Game
                     continue;
                 }
                 var np = n.Id == null ? null : Puppet(n.Id);
-                if (np != null) { DrawPuppet(np, new Vector2(n.X, n.Y)); continue; }
+                if (np != null) { np.Equip(n.Weapon); DrawPuppet(np, new Vector2(n.X, n.Y)); continue; }
                 Gfx.Token(Inset(TileRect(n.X, n.Y), 3), n.Glyph, Gfx.Hex(n.Color));
             }
 
@@ -318,7 +324,10 @@ namespace LiuBeiRPG.Game
                 // 队伍不满时跟随者原地不动（trail 还没轮到他）就待机
                 bool moving = walking && (i == 0 ? new Vector2Int(prevX, prevY) != new Vector2Int(px, py)
                                                  : i - 1 < trail.Count && prevTrail[i - 1] != trail[i - 1]);
-                if (a != null) a.Play(moving ? "walk" : "idle");
+                if (a == null) continue;
+                a.Play(moving ? "walk" : "idle");
+                string w;
+                a.Equip(party.Members[i].WeaponBonus > 0 && Weapons.TryGetValue(party.Members[i].Def.Id, out w) ? w : null);   // 受赠之前空手
             }
             foreach (var a in puppets.Values) if (a != null) a.Tick(Time.deltaTime);   // 菜单、对话时也照样 Tick，待机呼吸不停
         }
