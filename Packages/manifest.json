@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.sunandsong.puppet": "file:/Users/songzhang/Desktop/sanguoguge/Packages/com.sunandsong.puppet",
     "com.unity.multiplayer.center": "1.0.1",
     "com.unity.modules.accessibility": "1.0.0",
     "com.unity.modules.adaptiveperformance": "1.0.0",

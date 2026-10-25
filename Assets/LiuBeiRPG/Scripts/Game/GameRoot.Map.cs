@@ -2,13 +2,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using LiuBeiRPG.Core;
 using LiuBeiRPG.World;
+using Puppet;
 
 namespace LiuBeiRPG.Game
 {
     /// <summary>大地图：移动、跟随队列、调查、随机遇敌、绘制。</summary>
     public partial class GameRoot
     {
-        const float MoveInterval = 0.14f;
+        const float MoveInterval = 0.44f;
 
         MapData map;
         int px, py;
@@ -16,11 +17,28 @@ namespace LiuBeiRPG.Game
         readonly List<Vector2Int> trail = new List<Vector2Int>();   // 跟随武将的位置（吞食天地式一字长蛇）
         int stepsSinceBattle;
         float nextMoveTime;
+        int prevX, prevY;              // 上一格，画的时候从这里滑到 px/py
+        float lastStepTime = -10f;
+        PuppetActor liubei;
+
+        PuppetActor Liubei
+        {
+            get
+            {
+                if (liubei == null)
+                {
+                    liubei = PuppetActor.Load("liubei");
+                    liubei.Speed = 0.8f;   // walk 一循环两步 0.7 秒，一步 0.35 秒 ÷ 每格 0.44 秒
+                }
+                return liubei;
+            }
+        }
 
         public void Warp(MapData target, int x, int y)
         {
             map = target;
             px = x; py = y;
+            prevX = x; prevY = y;
             trail.Clear();
             stepsSinceBattle = 0;
             mode = Mode.Map;
@@ -34,7 +52,7 @@ namespace LiuBeiRPG.Game
             if (DirOf(key, out dx, out dy))
             {
                 TryMove(dx, dy);
-                nextMoveTime = Time.time + MoveInterval * 1.8f;   // 第一次按下后稍停顿再连续移动
+                nextMoveTime = Time.time + MoveInterval;   // 平滑移动：滑完这一格紧接着走下一格，不再停顿
                 return;
             }
             if (key == InputKey.Confirm) Investigate();
@@ -72,6 +90,7 @@ namespace LiuBeiRPG.Game
         {
             if (mode != Mode.Map || UiBusy) return;
             faceX = dx; faceY = dy;
+            Liubei.Facing = dx > 0 ? "side" : dx < 0 ? "left" : dy < 0 ? "back" : "front";
             int nx = px + dx, ny = py + dy;
 
             if (!map.IsWalkable(nx, ny))
@@ -83,7 +102,9 @@ namespace LiuBeiRPG.Game
 
             trail.Insert(0, new Vector2Int(px, py));
             while (trail.Count > Mathf.Max(0, party.Members.Count - 1)) trail.RemoveAt(trail.Count - 1);
+            prevX = px; prevY = py;
             px = nx; py = ny;
+            lastStepTime = Time.time;
             stepsSinceBattle++;
 
             var currentMap = map;
@@ -174,13 +195,20 @@ namespace LiuBeiRPG.Game
                 var m = party.Members[memberIndex];
                 Gfx.Token(Inset(TileRect(trail[i].x, trail[i].y), 5), m.Def.Glyph, Gfx.Hex(m.Def.Color), !m.Alive);
             }
-            var leader = party.Members[0];
-            var lr = Inset(TileRect(px, py), 2);
-            Gfx.Token(lr, leader.Def.Glyph, Gfx.Hex(leader.Def.Color));
-            // 朝向标记
-            var cx = lr.center.x + faceX * (lr.width * 0.5f - 3);
-            var cy = lr.center.y + faceY * (lr.height * 0.5f - 3);
-            Gfx.Rect(new Rect(cx - 3, cy - 3, 6, 6), Color.white);
+            // 主角：骨骼动画，脚底踩在格子底边（原图角色高约 950 像素，画出来约 1.1 格高）
+            var lp = LeaderPos();
+            var foot = origin + new Vector2((lp.x + 0.5f) * tile, (lp.y + 1f - 0.08f) * tile);
+            float scale = tile * 1.1f / 950f;
+            Gfx.Image(new Rect(foot.x - tile * 0.28f, foot.y - tile * 0.07f, tile * 0.56f, tile * 0.14f), ShadowTex());
+            // 深色描边：剪影朝 8 个方向各偏一点先画，贴近地图像素画的粗描边
+            Liubei.Tint = new Color(0.14f, 0.09f, 0.06f);
+            for (int i = 0; i < 8; i++)
+            {
+                float a = i * Mathf.PI / 4f;
+                Liubei.DrawGUI(foot + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * 1.2f, scale);
+            }
+            Liubei.Tint = new Color(1f, 0.95f, 0.87f);   // 略压暖，贴近地图的光照
+            Liubei.DrawGUI(foot, scale);
 
             // 前景遮挡层（树冠、屋檐）盖在人物上面
             var fg = art == null ? null : Gfx.Tex("Art/" + map.Art + "_fg");
@@ -212,11 +240,44 @@ namespace LiuBeiRPG.Game
         {
             float artW = map.Width + 1, artH = map.Height;
             tile = Mathf.Max(Gfx.VW / artW, Gfx.VH / artH);
-            float ox = Gfx.VW * 0.5f - (px + 0.5f) * tile;
-            float oy = Gfx.VH * 0.5f - (py + 0.5f) * tile;
+            var lp = LeaderPos();
+            float ox = Gfx.VW * 0.5f - (lp.x + 0.5f) * tile;
+            float oy = Gfx.VH * 0.5f - (lp.y + 0.5f) * tile;
             origin = new Vector2(
                 Mathf.Clamp(ox, Gfx.VW - (map.Width + 0.5f) * tile, tile * 0.5f),
                 Mathf.Clamp(oy, Gfx.VH - map.Height * tile, 0f));
+        }
+
+        /// <summary>主角画在哪（格子坐标，小数）：走一格的 MoveInterval 内从上一格滑过来。</summary>
+        Vector2 LeaderPos()
+        {
+            float t = Mathf.Clamp01((Time.time - lastStepTime) / MoveInterval);
+            return Vector2.Lerp(new Vector2(prevX, prevY), new Vector2(px, py), t);
+        }
+
+        static Texture2D shadowTex;
+
+        /// <summary>脚下的软阴影：中间深、边缘渐隐的椭圆（画的时候压扁）。</summary>
+        static Texture2D ShadowTex()
+        {
+            if (shadowTex != null) return shadowTex;
+            const int n = 32;
+            shadowTex = new Texture2D(n, n) { hideFlags = HideFlags.HideAndDontSave };
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                {
+                    float d = new Vector2(x - n / 2f + 0.5f, y - n / 2f + 0.5f).magnitude / (n / 2f);
+                    shadowTex.SetPixel(x, y, new Color(0, 0, 0, 0.4f * Mathf.Clamp01(1 - d * d)));
+                }
+            shadowTex.Apply();
+            return shadowTex;
+        }
+
+        void TickLeader()
+        {
+            if (map == null) return;
+            Liubei.Play(Time.time - lastStepTime < MoveInterval * 1.5f ? "walk" : "idle");
+            Liubei.Tick(Time.deltaTime);   // 菜单、对话时也照样 Tick，待机呼吸不停
         }
 
         Rect TileRect(int x, int y) { return new Rect(origin.x + x * tile, origin.y + y * tile, tile, tile); }

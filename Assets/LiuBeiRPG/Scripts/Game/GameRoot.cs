@@ -72,6 +72,7 @@ namespace LiuBeiRPG.Game
         void Update()
         {
             if (mode == Mode.Map) UpdateMap();
+            TickLeader();
             if (mode == Mode.Battle) UpdateBattle();
         }
 

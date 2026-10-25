@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.sunandsong.puppet": {
+      "version": "file:/Users/songzhang/Desktop/sanguoguge/Packages/com.sunandsong.puppet",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
     "com.unity.multiplayer.center": {
       "version": "1.0.1",
       "depth": 0,
