@@ -105,6 +105,7 @@ namespace LiuBeiRPG.Game
         void ProcessInputEvent(Event e)
         {
             InputKey key;
+            if (e.type == EventType.KeyDown && e.keyCode == KeyCode.G) { showGrid = !showGrid; e.Use(); return; }
             if (e.type == EventType.KeyDown && e.keyCode != KeyCode.None && MapKey(e.keyCode, out key))
             {
                 bool repeat = held.Contains(key);

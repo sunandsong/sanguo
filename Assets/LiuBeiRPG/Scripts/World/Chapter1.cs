@@ -102,7 +102,7 @@ namespace LiuBeiRPG.World
 
             m.Npcs.Add(new Npc
             {
-                Id = "mother", Name = "母亲", Glyph = "母", Color = "#f2c6a0", X = 4, Y = 4,
+                Id = "muqin", Name = "母亲", Glyph = "母", Color = "#f2c6a0", X = 4, Y = 4,
                 Talk = () =>
                 {
                     if (!flags.Has(F_Oath))
@@ -116,7 +116,7 @@ namespace LiuBeiRPG.World
 
             m.Npcs.Add(new Npc
             {
-                Id = "notice", Name = "榜文", Glyph = "榜", Sprite = "notice_board", Color = "#f5e6b0", X = 9, Y = 11,
+                Id = "notice", Name = "榜文", Glyph = "榜", Sprite = "Art/notice_board", Color = "#f5e6b0", X = 10, Y = 10,
                 Talk = () =>
                 {
                     Say(L(null, "榜文：黄巾作乱，侵掠州郡。幽州太守刘焉招募义兵，共讨贼寇。"));
@@ -133,7 +133,7 @@ namespace LiuBeiRPG.World
 
             m.Npcs.Add(new Npc
             {
-                Id = "zhangfei", Name = "张飞", Glyph = "张", Color = GameDatabase.ZhangFei.Color, X = 3, Y = 10,
+                Id = "zhangfei", Name = "张飞", Glyph = "张", Color = GameDatabase.ZhangFei.Color, X = 3, Y = 9,
                 Visible = () => !flags.Has(F_Oath),
                 Talk = () =>
                 {
@@ -178,7 +178,7 @@ namespace LiuBeiRPG.World
 
             m.Npcs.Add(new Npc
             {
-                Id = "merchant", Name = "张世平", Glyph = "商", Color = "#e0e0e0", X = 11, Y = 5,
+                Id = "shangren", Name = "张世平", Glyph = "商", Color = "#e0e0e0", X = 11, Y = 5,
                 Visible = () => flags.Has(F_Oath),
                 Talk = () =>
                 {
@@ -199,7 +199,7 @@ namespace LiuBeiRPG.World
 
             m.Npcs.Add(new Npc
             {
-                Id = "innkeeper", Name = "店小二", Glyph = "店", Color = "#e0e0e0", X = 15, Y = 10,
+                Id = "xiaoer", Name = "店小二", Glyph = "店", Color = "#e0e0e0", X = 15, Y = 10,
                 Talk = () =>
                 {
                     host.Choose("客官，住店一晚 " + InnCost + " 金，兵马都能休整好。住吗？", new[] { "住店", "不了" }, i =>
@@ -215,7 +215,7 @@ namespace LiuBeiRPG.World
 
             m.Npcs.Add(new Npc
             {
-                Id = "guard", Name = "守卫", Glyph = "卫", Color = "#c0c0c0", X = 8, Y = 13,
+                Id = "shouwei", Name = "守卫", Glyph = "卫", Color = "#c0c0c0", X = 8, Y = 13,
                 Visible = () => !flags.Has(F_Oath),
                 Talk = () => Say(L("守卫", "城外黄巾贼出没，你一个人出去就是送死。"),
                                  L("守卫", "要出城，先招些人马再说吧。"))
@@ -300,7 +300,7 @@ namespace LiuBeiRPG.World
 
             m.Npcs.Add(new Npc
             {
-                Id = "villager", Name = "逃难村民", Glyph = "民", Color = "#e0e0e0", X = 5, Y = 1,
+                Id = "nanmin", Name = "逃难村民", Glyph = "民", Color = "#e0e0e0", X = 5, Y = 1,
                 Talk = () =>
                 {
                     if (flags.Has(F_Boss)) Say(L("逃难村民", "多谢三位将军，我们终于可以回家了！"));
