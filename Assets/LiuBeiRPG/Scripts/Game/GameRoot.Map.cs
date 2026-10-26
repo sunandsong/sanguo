@@ -148,6 +148,8 @@ namespace LiuBeiRPG.Game
             var npc = map.NpcAt(tx, ty);
             if (npc != null)
             {
+                var np = npc.Id == null ? null : Puppet(npc.Id);
+                if (np != null) np.Facing = FacingOf(-faceX, -faceY);   // 转过来面朝刘备
                 if (npc.Talk != null) npc.Talk();
                 return;
             }
@@ -163,7 +165,7 @@ namespace LiuBeiRPG.Game
 
             // 整张原画：宽 = 格子宽 + 1 格（布局图左右各留半格边）
             var art = Gfx.Tex(map.Art == null ? null : "Art/" + map.Art);
-            var artRect = new Rect(origin.x - tile * 0.5f, origin.y, (map.Width + 1) * tile, map.Height * tile);
+            var artRect = new Rect(origin.x - tile * map.ArtMargin, origin.y, (map.Width + map.ArtMargin * 2) * tile, map.Height * tile);
             if (art != null) Gfx.Image(artRect, art);
 
             // 地块：有贴图画贴图（透明的先垫地面），没有贴图退回色块
@@ -213,7 +215,13 @@ namespace LiuBeiRPG.Game
                     continue;
                 }
                 var np = n.Id == null ? null : Puppet(n.Id);
-                if (np != null) { np.Equip(n.Weapon); DrawPuppet(np, new Vector2(n.X, n.Y)); continue; }
+                if (np != null)
+                {
+                    if (!UiBusy) np.Facing = "front";   // 对话时转向刘备，聊完转回正面
+                    np.Equip(n.Weapon);
+                    DrawPuppet(np, new Vector2(n.X, n.Y));
+                    continue;
+                }
                 Gfx.Token(Inset(TileRect(n.X, n.Y), 3), n.Glyph, Gfx.Hex(n.Color));
             }
 
@@ -244,13 +252,6 @@ namespace LiuBeiRPG.Game
                 for (int y = 0; y <= map.Height; y++) Gfx.Rect(new Rect(origin.x, origin.y + y * tile, map.Width * tile, 1), line);
             }
 
-            // 地名标签
-            foreach (var lb in map.Labels)
-            {
-                var r = new Rect(origin.x + lb.X * tile - 60, origin.y + lb.Y * tile - 12, 120, 24);
-                Gfx.Text(r, lb.Text, 16, Color.white, TextAnchor.MiddleCenter);
-            }
-
             DrawHud();
         }
 
@@ -260,14 +261,17 @@ namespace LiuBeiRPG.Game
         /// <summary>地图铺满屏幕（竖屏格子更大），镜头跟着主角，到地图边缘停住。</summary>
         void LayoutMap()
         {
-            float artW = map.Width + 1, artH = map.Height;
-            tile = Mathf.Max(Gfx.VW / artW, Gfx.VH / artH);
+            // 格子大小统一按 20×14 的大地图铺满屏幕算，室内等小地图人物不会跟着放大
+            // ponytail: 写死 21×14，以后有更大的地图也照样是这个格子大小
+            tile = Mathf.Max(Gfx.VW / 21f, Gfx.VH / 14f);
             var lp = LeaderPos();
-            float ox = Gfx.VW * 0.5f - (lp.x + 0.5f) * tile;
-            float oy = Gfx.VH * 0.5f - (lp.y + 0.5f) * tile;
-            origin = new Vector2(
-                Mathf.Clamp(ox, Gfx.VW - (map.Width + 0.5f) * tile, tile * 0.5f),
-                Mathf.Clamp(oy, Gfx.VH - map.Height * tile, 0f));
+            float mg = map.ArtMargin, artW = (map.Width + mg * 2) * tile, artH = map.Height * tile;
+            // 比屏幕大就跟着主角滚动（夹在边上），比屏幕小就居中，四周留黑
+            float ox = artW <= Gfx.VW ? (Gfx.VW - artW) * 0.5f + tile * mg
+                : Mathf.Clamp(Gfx.VW * 0.5f - (lp.x + 0.5f) * tile, Gfx.VW - (map.Width + mg) * tile, tile * mg);
+            float oy = artH <= Gfx.VH ? (Gfx.VH - artH) * 0.5f
+                : Mathf.Clamp(Gfx.VH * 0.5f - (lp.y + 0.5f) * tile, Gfx.VH - artH, 0f);
+            origin = new Vector2(ox, oy);
         }
 
         /// <summary>主角画在哪（格子坐标，小数）：走一格的 MoveInterval 内从上一格滑过来。</summary>

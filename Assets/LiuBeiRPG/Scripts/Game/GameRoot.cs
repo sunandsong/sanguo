@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using LiuBeiRPG.Core;
 using LiuBeiRPG.World;
+using Puppet;
 
 namespace LiuBeiRPG.Game
 {
@@ -73,6 +74,7 @@ namespace LiuBeiRPG.Game
         {
             if (mode == Mode.Map) UpdateMap();
             TickLeader();
+            foreach (var p in portraits.Values) p.Tick(Time.deltaTime);
             if (mode == Mode.Battle) UpdateBattle();
         }
 
@@ -173,6 +175,8 @@ namespace LiuBeiRPG.Game
         void AdvanceDialogue()
         {
             var b = currentDialogue;
+            // 还在打字：先把这句一次显示完
+            if (shownLine == b.Lines[b.Index] && Revealed(shownLine) < shownLine.Text.Length) { lineStart = -1000f; return; }
             b.Index++;
             if (b.Index < b.Lines.Count) return;
             currentDialogue = dialogueQueue.Count > 0 ? dialogueQueue.Dequeue() : null;
@@ -181,24 +185,76 @@ namespace LiuBeiRPG.Game
 
         bool UiBusy { get { return currentDialogue != null || choice != null; } }
 
-        /// <summary>对话框贴屏幕底部，横竖屏通用。</summary>
-        static Rect DialogRect { get { return new Rect(12, Gfx.VH - 148, Gfx.VW - 24, 136); } }
+        /// <summary>对话框贴在安全区域底部居中（最宽 900），横竖屏使用不同高度。</summary>
+        static Rect DialogRect
+        {
+            get
+            {
+                Rect safe = Gfx.SafeArea;
+                bool portrait = Gfx.Portrait;
+                float margin = portrait ? 14f : 16f;
+                float height = portrait ? 228f : 132f;
+                float width = Mathf.Min(safe.width - margin * 2f, 900f);
+                return new Rect(safe.x + (safe.width - width) * 0.5f, safe.yMax - height - margin, width, height);
+            }
+        }
+
+        static readonly Color Accent = new Color(0.96f, 0.76f, 0.32f);   // 名字牌、选中项的强调色
+        const float CharsPerSecond = 45f;                                 // 打字机速度
+
+        // 说话人 → 骨骼角色（半身像）。没列的（旁白、？？？、大汉、黄巾将领）不显示头像
+        static readonly Dictionary<string, string> PortraitIds = new Dictionary<string, string>
+        {
+            { "刘备", "liubei" }, { "关羽", "guanyu" }, { "张飞", "zhangfei" }, { "母亲", "muqin" },
+            { "守卫", "shouwei" }, { "张世平", "shangren" }, { "店小二", "xiaoer" }, { "逃难村民", "nanmin" },
+        };
+        readonly Dictionary<string, PuppetActor> portraits = new Dictionary<string, PuppetActor>();
+        DialogueLine shownLine;   // 正在打字的那句
+        float lineStart;
+
+        PuppetActor Portrait(string speaker)
+        {
+            string id;
+            if (speaker == null || !PortraitIds.TryGetValue(speaker, out id)) return null;
+            PuppetActor a;
+            if (!portraits.TryGetValue(id, out a)) portraits[id] = a = PuppetActor.Load(id);   // 单独一份，不和地图上的朝向互相影响
+            // 武器跟地图上的同一个人一致（守卫拿枪、三兄弟受赠后拿兵器）
+            PuppetActor onMap;
+            if (puppets.TryGetValue(id, out onMap) && onMap != null) a.Equip(onMap.Weapon == null ? null : onMap.Weapon.name);
+            return a;
+        }
+
+        int Revealed(DialogueLine line)
+        {
+            return Mathf.Min(line.Text.Length, (int)((Time.time - lineStart) * CharsPerSecond));
+        }
 
         void DrawDialogue()
         {
             if (currentDialogue == null) return;
             var line = currentDialogue.Lines[currentDialogue.Index];
+            if (line != shownLine) { shownLine = line; lineStart = Time.time; }
+            int shown = Revealed(line);
             var r = DialogRect;
-            Gfx.Window(r);
-            float y = r.y + 14;
+            bool portrait = Gfx.Portrait;
+            int size = portrait ? 22 : 20;
+
+            Gfx.Window(r, 0.94f);
+            // 半身像：画在框前面，人站在框左边，头肩探出框上沿
+            var bust = Portrait(line.Speaker);
+            if (bust != null) bust.DrawGUI(new Vector2(r.x + 96, r.yMax + 20), 0.28f);
+            float tx = r.x + (bust != null ? 196 : 32);
             if (!string.IsNullOrEmpty(line.Speaker))
             {
-                Gfx.Text(new Rect(r.x + 20, y, 300, 26), line.Speaker, 20, new Color(1f, 0.85f, 0.35f));
-                y += 30;
+                // 名字牌压在框的上边
+                var tag = new Rect(tx - 12, r.y - 16, 28 + line.Speaker.Length * 19, 32);
+                Gfx.RoundRect(tag, Accent);
+                Gfx.Text(tag, line.Speaker, 18, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
             }
-            Gfx.Text(new Rect(r.x + 20, y, r.width - 40, r.yMax - y - 10), line.Text, 20, Color.white, TextAnchor.UpperLeft, true);
-            if (Mathf.Repeat(Time.time, 0.8f) < 0.5f)
-                Gfx.Text(new Rect(r.xMax - 34, r.yMax - 30, 20, 20), "▼", 16, Color.white);
+            Gfx.Text(new Rect(tx, r.y + 30, r.xMax - tx - 48, r.height - 40), line.Text.Substring(0, shown), size,
+                new Color(0.95f, 0.95f, 0.95f), TextAnchor.UpperLeft, true);
+            if (shown >= line.Text.Length)   // 打完了才出继续箭头，上下轻轻跳
+                Gfx.Text(new Rect(r.xMax - 40, r.yMax - 34 + Mathf.Sin(Time.time * 6f) * 3f, 20, 20), "▼", 14, Accent);
 
             if (Gfx.Clicked(r)) AdvanceDialogue();
         }
@@ -247,8 +303,8 @@ namespace LiuBeiRPG.Game
             {
                 var ir = new Rect(box.x + 12, box.y + 10 + i * 34, box.width - 24, 32);
                 bool sel = i == choice.Selected;
-                if (sel) Gfx.Rect(ir, new Color(1, 1, 1, 0.12f));
-                Gfx.Text(new Rect(ir.x + 6, ir.y + 4, ir.width, ir.height), (sel ? "▶ " : "　 ") + choice.Options[i], 20, sel ? Color.yellow : Color.white);
+                if (sel) Gfx.RoundRect(ir, new Color(1, 1, 1, 0.1f));
+                Gfx.Text(new Rect(ir.x + 6, ir.y + 4, ir.width, ir.height), (sel ? "▶ " : "　 ") + choice.Options[i], 20, sel ? Accent : Color.white);
                 if (Gfx.Clicked(ir)) { PickChoice(i); return; }
             }
         }

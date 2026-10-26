@@ -58,13 +58,6 @@ namespace LiuBeiRPG.World
         public Action Talk;
     }
 
-    public class MapLabel
-    {
-        public string Text;
-        public float X, Y;   // 以格子为单位
-        public MapLabel(string text, float x, float y) { Text = text; X = x; Y = y; }
-    }
-
     /// <summary>占多格的整张贴图（房屋、营寨），画在地块之上。</summary>
     public class MapProp
     {
@@ -81,8 +74,9 @@ namespace LiuBeiRPG.World
 
         /// <summary>整张地图原画 Resources/Map/Art/{Art}(.png / _fg.png)；为空时按地块逐格画。</summary>
         public string Art;
+        /// <summary>原画左右各比格子多出多少格：大地图是半格（边上是树），室内原画和格子正好对齐为 0。</summary>
+        public float ArtMargin = 0.5f;
         public readonly List<Npc> Npcs = new List<Npc>();
-        public readonly List<MapLabel> Labels = new List<MapLabel>();
         public readonly List<MapProp> Props = new List<MapProp>();
 
         /// <summary>垫在透明贴图（树、山、房屋）下面的地面。</summary>

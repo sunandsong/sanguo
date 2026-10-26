@@ -9,8 +9,8 @@ namespace LiuBeiRPG.Game
     /// </summary>
     public static class Gfx
     {
-        // 虚拟分辨率：横屏至少 960×540，竖屏至少 540×960，多出来的一边随屏幕比例伸长（不留黑边）。
-        // 横竖屏只看窗口形状；上线时横屏、竖屏各打一个包。
+        // 虚拟分辨率：横屏 960×540，竖屏 540×960，多出来的一边随屏幕比例伸长。
+        // 手机端允许系统自动旋转，所有 UI 坐标都基于当前方向重新计算。
         public static bool Portrait { get { return Screen.height > Screen.width; } }
         static float Scale
         {
@@ -22,6 +22,16 @@ namespace LiuBeiRPG.Game
         }
         public static float VW { get { return Screen.width / Scale; } }
         public static float VH { get { return Screen.height / Scale; } }
+
+        public static Rect SafeArea
+        {
+            get
+            {
+                Rect s = Screen.safeArea;
+                return new Rect(s.x / Scale, (Screen.height - s.yMax) / Scale,
+                    s.width / Scale, s.height / Scale);
+            }
+        }
 
         static readonly Dictionary<string, Color> colorCache = new Dictionary<string, Color>();
         static readonly Dictionary<int, GUIStyle> styleCache = new Dictionary<int, GUIStyle>();
@@ -78,12 +88,39 @@ namespace LiuBeiRPG.Game
             Rect(new Rect(r.xMax - t, r.y, t, r.height), c);
         }
 
-        /// <summary>复古风格对话框：深色底 + 双线白框。</summary>
+        /// <summary>现代风格面板：半透明深色圆角底 + 极淡的亮边。</summary>
         public static void Window(Rect r, float alpha = 0.92f)
         {
-            Rect(r, new Color(0.05f, 0.06f, 0.12f, alpha));
-            Frame(r, new Color(1, 1, 1, 0.9f), 2);
-            Frame(new Rect(r.x + 4, r.y + 4, r.width - 8, r.height - 8), new Color(1, 1, 1, 0.35f), 1);
+            RoundRect(new Rect(r.x - 1, r.y - 1, r.width + 2, r.height + 2), new Color(1, 1, 1, 0.12f));
+            RoundRect(r, new Color(0.07f, 0.08f, 0.1f, alpha));
+        }
+
+        static GUIStyle roundStyle;
+
+        /// <summary>圆角矩形（半径 12），九宫格拉伸，任意大小都不变形。</summary>
+        public static void RoundRect(Rect r, Color c)
+        {
+            if (Event.current.type != EventType.Repaint) return;
+            if (roundStyle == null)
+            {
+                const int n = 48, rad = 12;
+                var tex = new Texture2D(n, n) { hideFlags = HideFlags.HideAndDontSave, wrapMode = TextureWrapMode.Clamp };
+                for (int y = 0; y < n; y++)
+                    for (int x = 0; x < n; x++)
+                    {
+                        // 到最近圆角圆心的距离，边缘 1 像素做抗锯齿
+                        float dx = Mathf.Max(0, Mathf.Max(rad - x - 0.5f, x + 0.5f - (n - rad)));
+                        float dy = Mathf.Max(0, Mathf.Max(rad - y - 0.5f, y + 0.5f - (n - rad)));
+                        tex.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01(rad - Mathf.Sqrt(dx * dx + dy * dy) + 0.5f)));
+                    }
+                tex.Apply();
+                roundStyle = new GUIStyle { border = new RectOffset(rad, rad, rad, rad) };
+                roundStyle.normal.background = tex;
+            }
+            var old = GUI.color;
+            GUI.color = c;
+            roundStyle.Draw(r, false, false, false, false);
+            GUI.color = old;
         }
 
         public static GUIStyle Style(int size, TextAnchor anchor = TextAnchor.UpperLeft, bool wrap = false)
@@ -142,6 +179,11 @@ namespace LiuBeiRPG.Game
         {
             var e = Event.current;
             if (e.type == EventType.MouseDown && e.button == 0 && r.Contains(e.mousePosition))
+            {
+                e.Use();
+                return true;
+            }
+            if (e.type == EventType.TouchDown && r.Contains(e.mousePosition))
             {
                 e.Use();
                 return true;

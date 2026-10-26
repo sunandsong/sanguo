@@ -14,6 +14,10 @@ namespace LiuBeiRPG.World
         readonly IGameHost host;
         public readonly MapData Town;
         public readonly MapData Field;
+        public readonly MapData Home;
+        public readonly MapData Tavern;
+        public readonly MapData Inn;
+        public readonly MapData Inn2F;
 
         // 剧情标记
         const string F_Notice = "c1_notice";
@@ -28,6 +32,10 @@ namespace LiuBeiRPG.World
             this.host = host;
             Town = BuildTown();
             Field = BuildField();
+            Home = BuildHome();
+            Tavern = BuildTavern();
+            Inn = BuildInn();
+            Inn2F = BuildInn2F();
         }
 
         public int StartX { get { return 5; } }
@@ -93,26 +101,8 @@ namespace LiuBeiRPG.World
             m.Props.Add(new MapProp("house_liubei", 3, 1, 4, 3));
             m.Props.Add(new MapProp("tavern", 2, 7, 3, 3));
             m.Props.Add(new MapProp("inn", 14, 7, 3, 3));
-            m.Labels.Add(new MapLabel("刘备家", 5f, 2.5f));
-            m.Labels.Add(new MapLabel("酒馆", 3.5f, 8.5f));
-            m.Labels.Add(new MapLabel("客栈", 15.5f, 8.5f));
-            m.Labels.Add(new MapLabel("桃园", 15.5f, 0.5f));
 
             var flags = host.Flags;
-
-            m.Npcs.Add(new Npc
-            {
-                Id = "muqin", Name = "母亲", Glyph = "母", Color = "#f2c6a0", X = 4, Y = 4,
-                Talk = () =>
-                {
-                    if (!flags.Has(F_Oath))
-                        Say(L("母亲", "玄德，你常说要匡扶汉室。如今天下大乱，正是男儿立身之时。"),
-                            L("母亲", "城门口贴了榜文，去看看吧。"));
-                    else
-                        Say(L("母亲", "有云长、翼德两位兄弟相助，为娘就放心了。"),
-                            L("母亲", "出城后若是兵马疲惫，记得回客栈歇息。"));
-                }
-            });
 
             m.Npcs.Add(new Npc
             {
@@ -128,31 +118,6 @@ namespace LiuBeiRPG.World
                             L("？？？", "大丈夫不与国家出力，在这里叹什么气！"),
                             L(null, "回头一看，那人已经大步走向了酒馆。"));
                     }
-                }
-            });
-
-            m.Npcs.Add(new Npc
-            {
-                Id = "zhangfei", Name = "张飞", Glyph = "张", Color = GameDatabase.ZhangFei.Color, X = 3, Y = 9,
-                Visible = () => !flags.Has(F_Oath),
-                Talk = () =>
-                {
-                    if (!flags.Has(F_Notice))
-                    {
-                        Say(L("大汉", "看什么看？俺在等酒！"));
-                        return;
-                    }
-                    if (!flags.Has(F_MetZhangFei))
-                    {
-                        flags.Set(F_MetZhangFei);
-                        Say(L("张飞", "俺姓张名飞，字翼德，世居涿郡，卖酒屠猪，专好结交天下豪杰。"),
-                            L("刘备", "在下刘备，乃汉室宗亲。欲破贼安民，只恨力不能及。"),
-                            L("张飞", "俺颇有些家资，正好招募乡勇，与你同举大事，如何？"),
-                            L("刘备", "如此甚好！"),
-                            L("张飞", "走，先进酒馆喝一杯！……咦，那边推车进来的大汉，好生威风。"));
-                        return;
-                    }
-                    Say(L("张飞", "那红脸的汉子看着不凡，哥哥快去跟他说说话！"));
                 }
             });
 
@@ -199,22 +164,6 @@ namespace LiuBeiRPG.World
 
             m.Npcs.Add(new Npc
             {
-                Id = "xiaoer", Name = "店小二", Glyph = "店", Color = "#e0e0e0", X = 15, Y = 10,
-                Talk = () =>
-                {
-                    host.Choose("客官，住店一晚 " + InnCost + " 金，兵马都能休整好。住吗？", new[] { "住店", "不了" }, i =>
-                    {
-                        if (i != 0) { Say(L("店小二", "客官慢走！")); return; }
-                        if (host.Party.Gold < InnCost) { Say(L("店小二", "客官，您这钱……不太够啊。")); return; }
-                        host.Party.Gold -= InnCost;
-                        host.Party.FullRestore();
-                        Say(L(null, "一夜休整。全军兵力、策略点已恢复！"));
-                    });
-                }
-            });
-
-            m.Npcs.Add(new Npc
-            {
                 Id = "shouwei", Name = "守卫", Glyph = "卫", Color = "#c0c0c0", X = 8, Y = 13, Weapon = "qiang",
                 Visible = () => !flags.Has(F_Oath),
                 Talk = () => Say(L("守卫", "城外黄巾贼出没，你一个人出去就是送死。"),
@@ -235,6 +184,201 @@ namespace LiuBeiRPG.World
                     host.Warp(Field, 8, 1);
                     return true;
                 }
+                return false;
+            };
+            m.OnTouch = (x, y) =>
+            {
+                // 刘备家门（门口 (5,3) 往上撞）
+                if (x == 5 && y == 2) { host.Warp(Home, 6, 7); return true; }
+                // 酒馆门（门口 (3,9) 往上撞）
+                if (x == 3 && y == 8) { host.Warp(Tavern, 6, 7); return true; }
+                // 客栈门（门口 (15,10)/(16,10) 往上撞）
+                if ((x == 15 || x == 16) && y == 9) { host.Warp(Inn, 4, 5); return true; }
+                return false;
+            };
+
+            return m;
+        }
+
+        // =====================================================================
+        // 刘备家（室内，下边敞口，往下走出画面就出门）
+        // =====================================================================
+        MapData BuildHome()
+        {
+            var m = new MapData
+            {
+                Id = "liubei_home",
+                Name = "刘备家",
+                Art = "liubei_home",
+                ArtMargin = 0,
+                Rows = new[]
+                {
+                    "HHHHHHHHHHHHH",
+                    "HHHHHHHHHHHHH",
+                    "HHH.HHHHH.HHH",
+                    "HHH........HH",
+                    "HHH........HH",
+                    "HH.........HH",
+                    "H...........H",
+                    ".............",
+                }
+            };
+            var flags = host.Flags;
+
+            m.Npcs.Add(new Npc
+            {
+                Id = "muqin", Name = "母亲", Glyph = "母", Color = "#f2c6a0", X = 5, Y = 3,
+                Talk = () =>
+                {
+                    if (!flags.Has(F_Oath))
+                        Say(L("母亲", "玄德，你常说要匡扶汉室。如今天下大乱，正是男儿立身之时。"),
+                            L("母亲", "城门口贴了榜文，去看看吧。"));
+                    else
+                        Say(L("母亲", "有云长、翼德两位兄弟相助，为娘就放心了。"),
+                            L("母亲", "出城后若是兵马疲惫，记得回客栈歇息。"));
+                }
+            });
+
+            m.OnTouch = (x, y) =>
+            {
+                if (y >= m.Height) { host.Warp(Town, 5, 3); return true; }
+                return false;
+            };
+
+            return m;
+        }
+
+        // =====================================================================
+        // 酒馆（室内，下边敞口；前景层是下边那几根柱子）
+        // =====================================================================
+        MapData BuildTavern()
+        {
+            var m = new MapData
+            {
+                Id = "tavern",
+                Name = "酒馆",
+                Art = "tavern",
+                ArtMargin = 0,
+                Rows = new[]
+                {
+                    "HHHHHHHHHHHHH",
+                    "HHHHHHHHHHHHH",
+                    "HHHHHHHHHHHHH",
+                    "HHH.......HHH",
+                    "HHH.......HHH",
+                    "HHH........HH",
+                    "HHH..........",
+                    "HHHH.....H...",
+                }
+            };
+            var flags = host.Flags;
+
+            m.Npcs.Add(new Npc
+            {
+                Id = "zhangfei", Name = "张飞", Glyph = "张", Color = GameDatabase.ZhangFei.Color, X = 3, Y = 4,
+                Visible = () => !flags.Has(F_Oath),
+                Talk = () =>
+                {
+                    if (!flags.Has(F_Notice))
+                    {
+                        Say(L("大汉", "看什么看？俺在等酒！"));
+                        return;
+                    }
+                    if (!flags.Has(F_MetZhangFei))
+                    {
+                        flags.Set(F_MetZhangFei);
+                        Say(L("张飞", "俺姓张名飞，字翼德，世居涿郡，卖酒屠猪，专好结交天下豪杰。"),
+                            L("刘备", "在下刘备，乃汉室宗亲。欲破贼安民，只恨力不能及。"),
+                            L("张飞", "俺颇有些家资，正好招募乡勇，与你同举大事，如何？"),
+                            L("刘备", "如此甚好！"),
+                            L("张飞", "走，先进酒馆喝一杯！……咦，那边推车进来的大汉，好生威风。"));
+                        return;
+                    }
+                    Say(L("张飞", "那红脸的汉子看着不凡，哥哥快去跟他说说话！"));
+                }
+            });
+
+            m.OnTouch = (x, y) =>
+            {
+                if (y >= m.Height) { host.Warp(Town, 3, 9); return true; }
+                return false;
+            };
+
+            return m;
+        }
+
+        // =====================================================================
+        // 客栈一楼门厅（下边敞口；东北角楼梯上二楼）
+        // =====================================================================
+        MapData BuildInn()
+        {
+            var m = new MapData
+            {
+                Id = "inn",
+                Name = "客栈",
+                Art = "inn",
+                ArtMargin = 0,
+                Rows = new[]
+                {
+                    "HHHHHHHHH",
+                    "HHHHHHHHH",
+                    "HHHH..HHH",
+                    "........H",
+                    ".........",
+                    ".........",
+                }
+            };
+
+            m.Npcs.Add(new Npc
+            {
+                Id = "xiaoer", Name = "店小二", Glyph = "店", Color = "#e0e0e0", X = 4, Y = 2,
+                Talk = () =>
+                {
+                    host.Choose("客官，住店一晚 " + InnCost + " 金，兵马都能休整好。住吗？", new[] { "住店", "不了" }, i =>
+                    {
+                        if (i != 0) { Say(L("店小二", "客官慢走！")); return; }
+                        if (host.Party.Gold < InnCost) { Say(L("店小二", "客官，您这钱……不太够啊。")); return; }
+                        host.Party.Gold -= InnCost;
+                        host.Party.FullRestore();
+                        Say(L(null, "一夜休整。全军兵力、策略点已恢复！"));
+                    });
+                }
+            });
+
+            m.OnTouch = (x, y) =>
+            {
+                if (y >= m.Height) { host.Warp(Town, 16, 10); return true; }
+                if (x == 8 && y == 3) { host.Warp(Inn2F, 7, 3); return true; }   // 楼梯口 (8,4) 往上走
+                return false;
+            };
+
+            return m;
+        }
+
+        // =====================================================================
+        // 客栈二楼客房（东北角楼梯下楼；前景层是下边的栏杆）
+        // =====================================================================
+        MapData BuildInn2F()
+        {
+            var m = new MapData
+            {
+                Id = "inn_2f",
+                Name = "客栈二楼",
+                Art = "inn_2f",
+                ArtMargin = 0,
+                Rows = new[]
+                {
+                    "HHHHHHHHH",
+                    "HHHHHHHHH",
+                    "HH.H.HHHH",
+                    "H........",
+                    ".H......H",
+                    "HHHHHHHHH",
+                }
+            };
+            m.OnTouch = (x, y) =>
+            {
+                if (x == 7 && y == 2) { host.Warp(Inn, 8, 4); return true; }   // 楼梯口 (7,3) 往上撞就下楼
                 return false;
             };
 
@@ -294,7 +438,6 @@ namespace LiuBeiRPG.World
                 }
             };
             m.Props.Add(new MapProp("yellow_turban_camp", 17, 11, 2, 2));
-            m.Labels.Add(new MapLabel("黄巾营寨", 18f, 10.5f));
 
             var flags = host.Flags;
 
