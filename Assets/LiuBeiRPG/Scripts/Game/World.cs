@@ -20,10 +20,12 @@ namespace LiuBeiRPG.Game
 
         public static void Begin() { z = 50f; }
 
-        /// <summary>按格子坐标（y 向下，和 Rect 一样）贴一张图。</summary>
-        public static void Quad(Texture tex, Rect r, Color c)
+        /// <summary>按格子坐标（y 向下，和 Rect 一样）贴一张图。uv 只取贴图的一部分（0..1，y 向上），默认整张。</summary>
+        public static void Quad(Texture tex, Rect r, Color c, Rect? uv = null)
         {
-            Draw(tex, Matrix4x4.TRS(new Vector3(r.x, -r.yMax, 0), Quaternion.identity, new Vector3(r.width, r.height, 1)), c, 0);
+            var u = uv ?? new Rect(0, 0, 1, 1);
+            Draw(tex, Matrix4x4.TRS(new Vector3(r.x, -r.yMax, 0), Quaternion.identity, new Vector3(r.width, r.height, 1)), c, 0,
+                new Vector4(u.width, u.height, u.x, u.y));
         }
 
         /// <summary>以中心点（世界坐标）贴一张旋转的小图：花瓣、落叶。</summary>
@@ -31,7 +33,7 @@ namespace LiuBeiRPG.Game
         {
             var m = Matrix4x4.TRS(center, Quaternion.Euler(0, 0, angle), new Vector3(size.x, size.y, 1))
                     * Matrix4x4.Translate(new Vector3(-0.5f, -0.5f, 0));
-            Draw(tex, m, c, 0);
+            Draw(tex, m, c, 0, new Vector4(1, 1, 0, 0));
         }
 
         /// <summary>骨骼角色：foot = 脚底中点（世界坐标），s = 原图 1 像素多少格。</summary>
@@ -47,11 +49,11 @@ namespace LiuBeiRPG.Game
                 m.m00 = s * d.a * w; m.m01 = -s * d.c * h; m.m03 = foot.x + s * (d.c * h + d.tx);
                 m.m10 = s * d.b * w; m.m11 = -s * d.d * h; m.m13 = foot.y + s * (d.d * h + d.ty);
                 // ponytail: 压暗直接乘在 Gamma 空间，和 PuppetActor.DrawGUI 一致；改 Linear 色彩空间时要换成 k^2.2
-                Draw(tex, m, new Color(tint.r * d.k, tint.g * d.k, tint.b * d.k, tint.a), a.Flash);
+                Draw(tex, m, new Color(tint.r * d.k, tint.g * d.k, tint.b * d.k, tint.a), a.Flash, new Vector4(1, 1, 0, 0));
             }
         }
 
-        static void Draw(Texture tex, Matrix4x4 m, Color c, float flash)
+        static void Draw(Texture tex, Matrix4x4 m, Color c, float flash, Vector4 uvST)
         {
             if (quad == null) Init();
             m.m23 = z;
@@ -59,6 +61,7 @@ namespace LiuBeiRPG.Game
             mpb.SetTexture("_MainTex", tex);
             mpb.SetColor("_Color", c);
             mpb.SetFloat("_Flash", flash);
+            mpb.SetVector("_MainTex_ST", uvST);
             Graphics.DrawMesh(quad, m, mat, 0, null, 0, mpb);   // 属性块在调用时就拷贝了，可以复用
         }
 

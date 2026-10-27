@@ -93,6 +93,12 @@ namespace LiuBeiRPG.Game
         public static void Window(Rect r, float alpha = 0.92f)
         {
             if (NineSlice(r, ref panelStyle, "Art/ui_panel", 20)) { Paper = true; return; }
+            Modern(r, alpha);
+        }
+
+        /// <summary>现代风格面板：半透明深色圆角底 + 极淡的亮边（对话框、选项框用）。</summary>
+        public static void Modern(Rect r, float alpha = 0.92f)
+        {
             RoundRect(new Rect(r.x - 1, r.y - 1, r.width + 2, r.height + 2), new Color(1, 1, 1, 0.12f));
             RoundRect(r, new Color(0.07f, 0.08f, 0.1f, alpha));
         }

@@ -20,6 +20,9 @@ namespace LiuBeiRPG.Core
     {
         public string Text;
         public General Target;          // 受影响的武将（可空）
+        public General Actor;           // 出手的人（只有普通攻击带，画面上要冲过去砍）
+        public bool IsCrit;             // 会心一击
+        public string Fx;               // 策略特效：策略 Id（huoji / luoshi / yaoshu / liaobing / guwu）
         public int SoldiersAfter = -1;  // 播放到这条时该武将应显示的兵力
         public bool IsDamage;
         public bool IsHeal;
@@ -162,7 +165,7 @@ namespace LiuBeiRPG.Core
             int dealt = target.TakeDamage(dmg);
             string text = cmd.Actor.Name + " 攻击 " + target.Name + (crit ? "，会心一击！" : "，") + "敌兵减少 " + dealt;
             if (IsPlayer(target)) text = cmd.Actor.Name + " 攻击 " + target.Name + (crit ? "，会心一击！" : "，") + "我军损失 " + dealt;
-            events.Add(new BattleEvent(text) { Target = target, SoldiersAfter = target.Soldiers, IsDamage = true });
+            events.Add(new BattleEvent(text) { Target = target, Actor = cmd.Actor, SoldiersAfter = target.Soldiers, IsDamage = true, IsCrit = crit });
             if (!target.Alive) events.Add(new BattleEvent(target.Name + " 败走了！") { Target = target, SoldiersAfter = 0, IsDefeat = true });
         }
 
@@ -209,7 +212,7 @@ namespace LiuBeiRPG.Core
                 if (t.Kind == TacticKind.Heal)
                 {
                     int healed = target.Heal(Formula.TacticHeal(cmd.Actor, t, rng));
-                    events.Add(new BattleEvent(target.Name + " 兵力恢复 " + healed) { Target = target, SoldiersAfter = target.Soldiers, IsHeal = true });
+                    events.Add(new BattleEvent(target.Name + " 兵力恢复 " + healed) { Target = target, SoldiersAfter = target.Soldiers, IsHeal = true, Fx = t.Id });
                 }
                 else
                 {
@@ -219,7 +222,7 @@ namespace LiuBeiRPG.Core
                         continue;
                     }
                     int dealt = target.TakeDamage(Formula.TacticDamage(cmd.Actor, target, t, rng));
-                    events.Add(new BattleEvent(target.Name + " 损失兵力 " + dealt) { Target = target, SoldiersAfter = target.Soldiers, IsDamage = true });
+                    events.Add(new BattleEvent(target.Name + " 损失兵力 " + dealt) { Target = target, SoldiersAfter = target.Soldiers, IsDamage = true, Fx = t.Id });
                     if (!target.Alive) events.Add(new BattleEvent(target.Name + " 败走了！") { Target = target, SoldiersAfter = 0, IsDefeat = true });
                 }
             }

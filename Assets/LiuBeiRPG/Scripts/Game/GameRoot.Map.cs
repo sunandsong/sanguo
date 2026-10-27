@@ -184,7 +184,7 @@ namespace LiuBeiRPG.Game
 
         void LateUpdate()
         {
-            bool onMap = mode == Mode.Map && map != null;
+            bool onMap = (mode == Mode.Map || mode == Mode.Battle) && map != null;   // 战斗时地图照画，当战场背景
             postFx.enabled = onMap;
             if (onMap) DrawWorld();
         }
@@ -235,6 +235,11 @@ namespace LiuBeiRPG.Game
                 if (tex != null) World.Quad(tex, new Rect(p.X, p.Y, p.W, p.H), Color.white);
             }
 
+            // 人物先收集起来，按脚下所在行从上往下画，和前景遮挡层交错（见下）
+            var actors = new List<KeyValuePair<int, System.Action>>();
+            System.Action<Vector2, System.Action> add = (cell, draw) =>
+                actors.Add(new KeyValuePair<int, System.Action>(Mathf.RoundToInt(cell.y) * 1000 + actors.Count, draw));
+
             // NPC（没有骨骼角色的退回字块，在 OnGUI 里画）
             foreach (var n in map.Npcs)
             {
@@ -244,14 +249,16 @@ namespace LiuBeiRPG.Game
                 {
                     // 手绘物件（告示牌）画 1.3 格大，底边踩在格子底边
                     const float s = 1.3f;
-                    World.Quad(tex, new Rect(n.X + 0.5f - s / 2, n.Y + 0.95f - s, s, s), Color.white);
+                    var npc = n;
+                    add(new Vector2(n.X, n.Y), () => World.Quad(tex, new Rect(npc.X + 0.5f - s / 2, npc.Y + 0.95f - s, s, s), Color.white));
                     continue;
                 }
                 var np = n.Id == null ? null : Puppet(n.Id);
                 if (np == null) continue;
-                if (!UiBusy) np.Facing = IdleGlance(n.Id);   // 对话时转向刘备，聊完接着四下张望
+                if (!UiBusy) np.Facing = "front";   // 对话时转向刘备，聊完转回正面
                 np.Equip(n.Weapon);
-                DrawPuppet(np, new Vector2(n.X, n.Y));
+                var cell = new Vector2(n.X, n.Y);
+                add(cell, () => DrawPuppet(np, cell));
             }
 
             // 队伍：后面的武将先画
@@ -261,24 +268,30 @@ namespace LiuBeiRPG.Game
                 if (memberIndex >= party.Members.Count) continue;
                 var m = party.Members[memberIndex];
                 var mp = Puppet(m.Def.Id);
-                if (mp != null) DrawPuppet(mp, Slide(prevTrail[i], trail[i]), !m.Alive);
+                var cell = Slide(prevTrail[i], trail[i]);
+                if (mp != null) add(cell, () => DrawPuppet(mp, cell, !m.Alive));
             }
             var lPuppet = Puppet(party.Members[0].Def.Id);
-            if (lPuppet != null) DrawPuppet(lPuppet, LeaderPos());
+            var lp = LeaderPos();
+            if (lPuppet != null) add(lp, () => DrawPuppet(lPuppet, lp));
+            actors.Sort((a, b) => a.Key.CompareTo(b.Key));
+            if (mode == Mode.Battle) actors.Clear();   // 战斗时地图上的人不画，战场上另有站位
 
-            // 前景遮挡层（树冠、屋檐）盖在人物上面
+            // 前景遮挡层（树冠、屋檐）按格子行切成横条：第 y 行的人画在第 y 行横条之上、y+1 行之下。
+            // 站在树前面不被挡，走到树后面（树在下一行）才被挡。
+            // ponytail: 按整行判断，树冠伸进人所在那一行时人会压在树冠上；要更准得给前景图标每棵树的根部所在行
             var fg = art == null ? null : Gfx.Tex("Art/" + map.Art + "_fg");
-            if (fg != null) World.Quad(fg, artRect, Color.white);
+            int next = 0;
+            for (int y = 0; y < map.Height; y++)
+            {
+                if (fg != null)
+                    World.Quad(fg, new Rect(artRect.x, y, artRect.width, 1), Color.white,
+                        new Rect(0, 1f - (y + 1f) / map.Height, 1, 1f / map.Height));
+                for (; next < actors.Count && actors[next].Key < (y + 1) * 1000; next++) actors[next].Value();
+            }
+            for (; next < actors.Count; next++) actors[next].Value();
 
             DrawWeather();
-        }
-
-        /// <summary>NPC 平时大多面朝前，隔一阵往左右看一眼；每人错开节奏。</summary>
-        static string IdleGlance(string id)
-        {
-            string[] looks = { "front", "front", "front", "side", "front", "front", "left" };
-            int k = (int)(Time.time / 2.2f) + (id.GetHashCode() & 0xff);
-            return looks[k % looks.Length];
         }
 
         /// <summary>户外：飘落的花瓣 / 落叶，加几团慢慢飘过的云影。粒子按地图铺，跟着地面走，不跟镜头。</summary>

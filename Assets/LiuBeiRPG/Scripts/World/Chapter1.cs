@@ -386,6 +386,30 @@ namespace LiuBeiRPG.World
             return m;
         }
 
+        /// <summary>调试用：跳过城内剧情（结义、受赠都算完成），直接站到城外。</summary>
+        public void SkipToField()
+        {
+            var flags = host.Flags;
+            if (!flags.Has(F_Oath))
+            {
+                flags.Set(F_Oath);
+                host.Party.Add(new General(GameDatabase.GuanYu));
+                host.Party.Add(new General(GameDatabase.ZhangFei));
+                host.Party.Gold += 100;
+            }
+            if (!flags.Has(F_Gift))
+            {
+                flags.Set(F_Gift);
+                host.Party.Gold += 300;
+                foreach (var g in host.Party.Members) g.WeaponBonus += 5;
+            }
+            flags.Set(F_Notice);
+            flags.Set(F_MetZhangFei);
+            flags.Set(F_MetGuanYu);
+            host.Party.FullRestore();
+            host.Warp(Field, 8, 1);
+        }
+
         void Oath()
         {
             var flags = host.Flags;
