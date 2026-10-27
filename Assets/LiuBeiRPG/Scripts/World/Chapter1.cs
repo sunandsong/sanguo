@@ -79,12 +79,13 @@ namespace LiuBeiRPG.World
                 Id = "zhuoxian",
                 Name = "涿县",
                 Art = "zhuoxian",
+                Grade = "#fff6ec", Weather = "petal",
                 EncounterRate = 0,
                 Rows = new[]
                 {
                     "TTTTTTTTTTTTTTTTTTTT",
                     "TTTHHHH.....PPPPPPPT",
-                    "T.HHHHHH....PPfffPPT",
+                    "T.HHHHHH....PPfSfPPT",
                     "T.HHH=HH.....PfffPPT",
                     "T....=.......PPfPPPT",
                     "T....=.........=...T",
@@ -172,12 +173,6 @@ namespace LiuBeiRPG.World
 
             m.OnStep = (x, y) =>
             {
-                // 桃园中央：三结义
-                if (x == 15 && y == 2 && flags.Has(F_MetGuanYu) && !flags.Has(F_Oath))
-                {
-                    Oath();
-                    return true;
-                }
                 // 城门：出城
                 if (m.At(x, y) == 'g')
                 {
@@ -188,6 +183,8 @@ namespace LiuBeiRPG.World
             };
             m.OnTouch = (x, y) =>
             {
+                // 桃园石桌：走到桌前往上撞，三结义
+                if (x == 15 && y == 2 && flags.Has(F_MetGuanYu) && !flags.Has(F_Oath)) { Oath(); return true; }
                 // 刘备家门（门口 (5,3) 往上撞）
                 if (x == 5 && y == 2) { host.Warp(Home, 6, 7); return true; }
                 // 酒馆门（门口 (3,9) 往上撞）
@@ -210,6 +207,7 @@ namespace LiuBeiRPG.World
                 Id = "liubei_home",
                 Name = "刘备家",
                 Art = "liubei_home",
+                Grade = "#fff0dc", Light = "#e8d6c0",
                 ArtMargin = 0,
                 Rows = new[]
                 {
@@ -258,6 +256,7 @@ namespace LiuBeiRPG.World
                 Id = "tavern",
                 Name = "酒馆",
                 Art = "tavern",
+                Grade = "#ffe8c8", Light = "#e6cfae",
                 ArtMargin = 0,
                 Rows = new[]
                 {
@@ -317,6 +316,7 @@ namespace LiuBeiRPG.World
                 Id = "inn",
                 Name = "客栈",
                 Art = "inn",
+                Grade = "#fff0dc", Light = "#e8d6c0",
                 ArtMargin = 0,
                 Rows = new[]
                 {
@@ -365,6 +365,7 @@ namespace LiuBeiRPG.World
                 Id = "inn_2f",
                 Name = "客栈二楼",
                 Art = "inn_2f",
+                Grade = "#fff0dc", Light = "#e8d6c0",
                 ArtMargin = 0,
                 Rows = new[]
                 {
@@ -417,6 +418,7 @@ namespace LiuBeiRPG.World
                 Id = "zhuojun_field",
                 Name = "涿郡郊外",
                 Art = "field",
+                Grade = "#f0f5ff", Light = "#f4f0ea", Weather = "leaf",
                 EncounterRate = 0.09,
                 Ground = ',',
                 Rows = new[]

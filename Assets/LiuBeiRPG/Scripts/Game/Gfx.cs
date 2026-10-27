@@ -4,8 +4,8 @@ using UnityEngine;
 namespace LiuBeiRPG.Game
 {
     /// <summary>
-    /// 绘图小工具：Demo 用 IMGUI 画贴图、色块和文字。
-    /// 以后换成 Tilemap + Sprite 时，只需要替换 Game 目录下的表现层。
+    /// 绘图小工具：界面（对话、菜单、战斗面板）用 IMGUI 画贴图、色块和文字。
+    /// 大地图本身由相机画（见 World），这里只管叠在上面的界面。
     /// </summary>
     public static class Gfx
     {
@@ -88,11 +88,62 @@ namespace LiuBeiRPG.Game
             Rect(new Rect(r.xMax - t, r.y, t, r.height), c);
         }
 
-        /// <summary>现代风格面板：半透明深色圆角底 + 极淡的亮边。</summary>
+        /// <summary>面板：木框羊皮纸（Art/ui_panel 九宫格）。之后画的字自动换墨色，画完记得 Paper = false。
+        /// 贴图缺失时退回半透明深色圆角底。</summary>
         public static void Window(Rect r, float alpha = 0.92f)
         {
+            if (NineSlice(r, ref panelStyle, "Art/ui_panel", 20)) { Paper = true; return; }
             RoundRect(new Rect(r.x - 1, r.y - 1, r.width + 2, r.height + 2), new Color(1, 1, 1, 0.12f));
             RoundRect(r, new Color(0.07f, 0.08f, 0.1f, alpha));
+        }
+
+        /// <summary>方形卡片（战斗里的敌将）：Art/ui_card 九宫格，同样换墨色字。</summary>
+        public static void Card(Rect r)
+        {
+            if (NineSlice(r, ref cardStyle, "Art/ui_card", 26)) Paper = true;
+            else Rect(r, new Color(0, 0, 0, 0.45f));
+        }
+
+        static GUIStyle panelStyle, cardStyle;
+
+        static bool NineSlice(Rect r, ref GUIStyle style, string tex, int border)
+        {
+            if (style == null)
+            {
+                var t = Tex(tex);
+                if (t == null) return false;
+                style = new GUIStyle { border = new RectOffset(border, border, border, border) };
+                style.normal.background = t;
+            }
+            if (Event.current.type == EventType.Repaint) style.Draw(r, false, false, false, false);
+            return true;
+        }
+
+        /// <summary>正在羊皮纸上写字：浅色字换成墨色，金/黄换朱红，其他颜色压深；不画投影。</summary>
+        public static bool Paper;
+
+        static Color Ink(Color c)
+        {
+            float h, s, v;
+            Color.RGBToHSV(c, out h, out s, out v);
+            Color o;
+            if (s < 0.3f) { o = new Color(0.24f, 0.15f, 0.09f); if (v < 0.7f) c.a *= 0.45f; }   // 白/灰 → 墨（灰的淡一些）
+            else if (h > 0.07f && h < 0.2f) o = new Color(0.66f, 0.18f, 0.1f);                // 金/黄 → 朱红
+            else o = Color.HSVToRGB(h, Mathf.Max(s, 0.6f), 0.5f);
+            o.a = c.a;
+            return o;
+        }
+
+        /// <summary>菜单的一行：选中时底色呼吸、左边一道朱红竖条、字往右让一点。</summary>
+        public static void MenuRow(Rect r, string text, int size, bool sel, Color c)
+        {
+            if (sel)
+            {
+                float pulse = 0.12f + 0.06f * Mathf.Sin(Time.time * 5f);
+                Rect(r, Paper ? new Color(0.6f, 0.3f, 0.1f, pulse) : new Color(1, 1, 1, pulse));
+                Rect(new Rect(r.x, r.y + 3, 3, r.height - 6), Paper ? new Color(0.66f, 0.18f, 0.1f) : new Color(0.96f, 0.76f, 0.32f));
+            }
+            Text(new Rect(r.x + (sel ? 14 : 8), r.y + 4, r.width - 14, r.height), text, size, c);
         }
 
         static GUIStyle roundStyle;
@@ -148,6 +199,7 @@ namespace LiuBeiRPG.Game
         public static void Text(Rect r, string text, int size, Color c, TextAnchor anchor = TextAnchor.UpperLeft, bool wrap = false, bool shadow = true)
         {
             var st = Style(size, anchor, wrap);
+            if (Paper) { c = Ink(c); shadow = false; }
             if (shadow)
             {
                 st.normal.textColor = new Color(0, 0, 0, 0.8f * c.a);
@@ -169,9 +221,12 @@ namespace LiuBeiRPG.Game
         /// <summary>画一个“人物格子”：底色 + 边框 + 单字。</summary>
         public static void Token(Rect r, string glyph, Color c, bool dim = false)
         {
+            bool paper = Paper;
+            Paper = false;   // 字块自带深色底，字保持原色
             Rect(r, dim ? new Color(0.15f, 0.15f, 0.15f, 0.9f) : new Color(0.08f, 0.08f, 0.1f, 0.95f));
             Frame(r, dim ? Color.gray : c, 2);
             Text(r, glyph, Mathf.RoundToInt(r.height * 0.62f), dim ? Color.gray : c, TextAnchor.MiddleCenter);
+            Paper = paper;
         }
 
         /// <summary>检测在某个区域内的鼠标点击（已考虑缩放矩阵）。</summary>

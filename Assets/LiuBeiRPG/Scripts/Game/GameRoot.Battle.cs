@@ -42,6 +42,7 @@ namespace LiuBeiRPG.Game
             battle = new BattleSystem(party, enemies, isBoss, rng);
             onBattleVictory = onVictory;
             mode = Mode.Battle;
+            FadeIn();
             log.Clear();
             shownSoldiers.Clear();
             flashUntil.Clear();
@@ -128,6 +129,7 @@ namespace LiuBeiRPG.Game
             onBattleVictory = null;
             foreach (var m in party.Members) m.Defending = false;
             mode = Mode.Map;
+            FadeIn();
             stepsSinceBattle = 0;
             if (victory && cb != null) cb();
         }
@@ -312,22 +314,24 @@ namespace LiuBeiRPG.Game
                 var r = new Rect(x0 + i * (w + gap), by + 36, w, h);
                 var c = Gfx.Hex(e.Def.Color);
 
-                Gfx.Rect(r, new Color(0, 0, 0, dead ? 0.2f : 0.45f));
+                if (!dead) Gfx.Card(r);
+                else Gfx.Rect(r, new Color(0, 0, 0, 0.2f));
                 if (!dead)
                 {
                     float fl;
                     bool flashing = flashUntil.TryGetValue(e, out fl) && Time.time < fl;
-                    var tr = new Rect(r.x + (w - 70) / 2, r.y + 8, 70, 70);
+                    var tr = new Rect(r.x + (w - 56) / 2, r.y + 18, 56, 56);
                     if (flashing) tr.x += Mathf.Sin(Time.time * 80f) * 4f;
                     Gfx.Token(tr, e.Def.Glyph, flashing ? Color.red : c);
-                    Gfx.Text(new Rect(r.x, r.y + 84, w, 22), e.Name + (e.Def.IsBoss ? " ★" : ""), 17, Color.white, TextAnchor.MiddleCenter);
-                    Gfx.Bar(new Rect(r.x + 14, r.y + 110, w - 28, 10), (float)shown / e.MaxSoldiers, c);
-                    Gfx.Text(new Rect(r.x, r.y + 122, w, 20), "兵力 " + shown, 14, new Color(1, 1, 1, 0.85f), TextAnchor.MiddleCenter);
+                    Gfx.Text(new Rect(r.x, r.y + 78, w, 22), e.Name + (e.Def.IsBoss ? " ★" : ""), 17, Color.white, TextAnchor.MiddleCenter);
+                    Gfx.Bar(new Rect(r.x + 20, r.y + 102, w - 40, 10), (float)shown / e.MaxSoldiers, c);
+                    Gfx.Text(new Rect(r.x, r.y + 113, w, 20), "兵力 " + shown, 14, new Color(1, 1, 1, 0.85f), TextAnchor.MiddleCenter);
                 }
                 else
                 {
                     Gfx.Text(new Rect(r.x, r.y + 50, w, 30), e.Name + "　败走", 16, new Color(1, 1, 1, 0.3f), TextAnchor.MiddleCenter);
                 }
+                Gfx.Paper = false;
 
                 if (e == targeted)
                 {
@@ -351,9 +355,10 @@ namespace LiuBeiRPG.Game
             for (int i = start; i < log.Count; i++)
             {
                 bool latest = i == log.Count - 1;
-                Gfx.Text(new Rect(r.x + 18, r.y + 10 + (i - start) * 25, r.width - 36, 24), log[i], 18,
+                Gfx.Text(new Rect(r.x + 24, r.y + 13 + (i - start) * 22, r.width - 48, 22), log[i], 17,
                     latest ? Color.white : new Color(1, 1, 1, 0.55f));
             }
+            Gfx.Paper = false;
             if (bstate == BState.Playing && Gfx.Clicked(r)) StepPlayback();
         }
 
@@ -361,6 +366,7 @@ namespace LiuBeiRPG.Game
         {
             var r = new Rect(bx + 20, by + 304, Gfx.Portrait ? bw - 40 : 560, 222);
             Gfx.Window(r);
+            r = new Rect(r.x + 6, r.y + 6, r.width - 12, r.height - 12);   // 让开木框
             var cur = (bstate == BState.GeneralMenu || bstate == BState.TacticMenu || bstate == BState.TargetEnemy || bstate == BState.TargetAlly) ? CurrentCommander : null;
             var aliveP = battle.AlivePlayers;
             General allyTarget = bstate == BState.TargetAlly && menuIndex < aliveP.Count ? aliveP[menuIndex] : null;
@@ -370,7 +376,7 @@ namespace LiuBeiRPG.Game
                 var m = party.Members[i];
                 int shown = shownSoldiers.ContainsKey(m) ? shownSoldiers[m] : m.Soldiers;
                 var row = new Rect(r.x + 12, r.y + 12 + i * 40, r.width - 24, 36);
-                if (m == cur) Gfx.Rect(row, new Color(1, 0.85f, 0.3f, 0.15f));
+                if (m == cur) Gfx.Rect(row, new Color(0.6f, 0.3f, 0.1f, 0.12f + 0.06f * Mathf.Sin(Time.time * 5f)));
                 if (m == allyTarget) Gfx.Frame(row, Color.yellow, 2);
 
                 var c = Gfx.Hex(m.Def.Color);
@@ -396,6 +402,7 @@ namespace LiuBeiRPG.Game
 
             Gfx.Text(new Rect(r.x + 16, r.yMax - 30, 300, 22),
                 "策略点 " + (party.TP - reservedTP) + " / " + party.MaxTP + "　　等级 " + party.Level, 15, new Color(1, 1, 1, 0.7f));
+            Gfx.Paper = false;
         }
 
         static string DescribeCommand(BattleCommand c)
@@ -412,7 +419,7 @@ namespace LiuBeiRPG.Game
         {
             var r = Gfx.Portrait ? new Rect(bx + 20, by + 534, bw - 40, 222) : new Rect(bx + 594, by + 304, 346, 222);
             Gfx.Window(r);
-            float x = r.x + 18, y = r.y + 14;
+            float x = r.x + 22, y = r.y + 18;
 
             string header;
             List<string> items = new List<string>();
@@ -462,15 +469,15 @@ namespace LiuBeiRPG.Game
             {
                 bool sel = i == menuIndex;
                 bool en = i >= enabled.Count || enabled[i];
-                var ir = new Rect(x - 6, y + i * lineH, r.width - 24, lineH - 2);
-                if (sel) Gfx.Rect(ir, new Color(1, 1, 1, 0.1f));
+                var ir = new Rect(x - 6, y + i * lineH, r.width - 40, lineH - 2);
                 var col = !en ? new Color(1, 1, 1, 0.35f) : sel ? Color.yellow : Color.white;
-                Gfx.Text(new Rect(ir.x + 6, ir.y + 4, ir.width - 6, ir.height), (sel ? "▶ " : "　 ") + items[i], fontSize, col);
-                if (Gfx.Clicked(ir)) { menuIndex = i; MenuConfirm(i); return; }
+                Gfx.MenuRow(ir, items[i], fontSize, sel, col);
+                if (Gfx.Clicked(ir)) { menuIndex = i; MenuConfirm(i); Gfx.Paper = false; return; }
             }
 
             if (footer != null)
-                Gfx.Text(new Rect(x, r.yMax - 30, r.width - 36, 22), footer, 14, new Color(1, 1, 1, 0.5f));
+                Gfx.Text(new Rect(x, r.yMax - 34, r.width - 40, 22), footer, 14, new Color(1, 1, 1, 0.5f));
+            Gfx.Paper = false;
         }
     }
 }

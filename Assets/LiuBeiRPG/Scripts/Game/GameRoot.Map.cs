@@ -54,6 +54,7 @@ namespace LiuBeiRPG.Game
             prevTrail.Clear();
             stepsSinceBattle = 0;
             mode = Mode.Map;
+            FadeIn();
         }
 
         // ---------------- 输入 ----------------
@@ -158,15 +159,50 @@ namespace LiuBeiRPG.Game
 
         // ---------------- 绘制 ----------------
 
-        void DrawMap()
+        Camera cam;
+        PostFx postFx;
+
+        /// <summary>主相机改成正交、按距离从后往前排透明物，挂上后处理。场景里没有相机就建一个。</summary>
+        void SetupCamera()
         {
-            if (map == null) return;
+            cam = Camera.main;
+            if (cam == null)
+            {
+                var go = new GameObject("Main Camera") { tag = "MainCamera" };
+                cam = go.AddComponent<Camera>();
+                DontDestroyOnLoad(go);
+            }
+            cam.orthographic = true;
+            cam.transparencySortMode = TransparencySortMode.Orthographic;
+            cam.nearClipPlane = 0.1f;
+            cam.farClipPlane = 500f;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = Color.black;
+            postFx = cam.GetComponent<PostFx>();
+            if (postFx == null) postFx = cam.gameObject.AddComponent<PostFx>();
+        }
+
+        void LateUpdate()
+        {
+            bool onMap = mode == Mode.Map && map != null;
+            postFx.enabled = onMap;
+            if (onMap) DrawWorld();
+        }
+
+        /// <summary>地图、人物、前景、飘落物：交给相机画（才吃得到后处理）。</summary>
+        void DrawWorld()
+        {
             LayoutMap();
+            // 相机对准 LayoutMap 算出来的画面：屏幕高 VH 虚拟像素 = VH / tile 格
+            cam.orthographicSize = Gfx.VH / tile * 0.5f;
+            cam.transform.position = new Vector3((Gfx.VW * 0.5f - origin.x) / tile, -(Gfx.VH * 0.5f - origin.y) / tile, -100f);
+            postFx.Grade = Gfx.Hex(map.Grade);
+            World.Begin();
 
             // 整张原画：宽 = 格子宽 + 1 格（布局图左右各留半格边）
             var art = Gfx.Tex(map.Art == null ? null : "Art/" + map.Art);
-            var artRect = new Rect(origin.x - tile * map.ArtMargin, origin.y, (map.Width + map.ArtMargin * 2) * tile, map.Height * tile);
-            if (art != null) Gfx.Image(artRect, art);
+            var artRect = new Rect(-map.ArtMargin, 0, map.Width + map.ArtMargin * 2, map.Height);
+            if (art != null) World.Quad(art, artRect, Color.white);
 
             // 地块：有贴图画贴图（透明的先垫地面），没有贴图退回色块
             var groundTex = Gfx.Tex(Tiles.Get(map.Ground).Sprite);
@@ -176,22 +212,19 @@ namespace LiuBeiRPG.Game
                 for (int x = 0; x < map.Width; x++)
                 {
                     var info = Tiles.Get(map.At(x, y));
-                    var r = TileRect(x, y);
+                    var r = new Rect(x, y, 1, 1);
                     if (groundTex != null)
                     {
-                        Gfx.Image(r, groundTex);
+                        World.Quad(groundTex, r, Color.white);
                         var tex = Gfx.Tex(info.Frames > 1 ? info.Sprite + "_" + (frame % info.Frames) : info.Sprite);
-                        if (tex != null) Gfx.Image(r, tex);
+                        if (tex != null) World.Quad(tex, r, Color.white);
                         continue;
                     }
                     var c = Gfx.Hex(info.Color);
                     if (((x + y) & 1) == 1) c *= 0.95f;
+                    if (!info.Walkable) c *= 0.88f;
                     c.a = 1f;
-                    Gfx.Rect(r, c);
-                    if (!info.Walkable)
-                        Gfx.Rect(new Rect(r.x + 3, r.y + 3, r.width - 6, r.height - 6), c * 0.88f + new Color(0, 0, 0, 1));
-                    if (!string.IsNullOrEmpty(info.Glyph))
-                        Gfx.Text(r, info.Glyph, 16, new Color(1, 1, 1, info.Walkable ? 0.75f : 0.35f), TextAnchor.MiddleCenter, false, false);
+                    World.Quad(Texture2D.whiteTexture, r, c);
                 }
             }
 
@@ -199,10 +232,10 @@ namespace LiuBeiRPG.Game
             foreach (var p in map.Props)
             {
                 var tex = art == null ? Gfx.Tex(p.Sprite) : null;
-                if (tex != null) Gfx.Image(new Rect(origin.x + p.X * tile, origin.y + p.Y * tile, p.W * tile, p.H * tile), tex);
+                if (tex != null) World.Quad(tex, new Rect(p.X, p.Y, p.W, p.H), Color.white);
             }
 
-            // NPC
+            // NPC（没有骨骼角色的退回字块，在 OnGUI 里画）
             foreach (var n in map.Npcs)
             {
                 if (!n.Visible()) continue;
@@ -211,18 +244,14 @@ namespace LiuBeiRPG.Game
                 {
                     // 手绘物件（告示牌）画 1.3 格大，底边踩在格子底边
                     const float s = 1.3f;
-                    Gfx.Image(new Rect(origin.x + (n.X + 0.5f - s / 2) * tile, origin.y + (n.Y + 0.95f - s) * tile, s * tile, s * tile), tex);
+                    World.Quad(tex, new Rect(n.X + 0.5f - s / 2, n.Y + 0.95f - s, s, s), Color.white);
                     continue;
                 }
                 var np = n.Id == null ? null : Puppet(n.Id);
-                if (np != null)
-                {
-                    if (!UiBusy) np.Facing = "front";   // 对话时转向刘备，聊完转回正面
-                    np.Equip(n.Weapon);
-                    DrawPuppet(np, new Vector2(n.X, n.Y));
-                    continue;
-                }
-                Gfx.Token(Inset(TileRect(n.X, n.Y), 3), n.Glyph, Gfx.Hex(n.Color));
+                if (np == null) continue;
+                if (!UiBusy) np.Facing = IdleGlance(n.Id);   // 对话时转向刘备，聊完接着四下张望
+                np.Equip(n.Weapon);
+                DrawPuppet(np, new Vector2(n.X, n.Y));
             }
 
             // 队伍：后面的武将先画
@@ -232,17 +261,91 @@ namespace LiuBeiRPG.Game
                 if (memberIndex >= party.Members.Count) continue;
                 var m = party.Members[memberIndex];
                 var mp = Puppet(m.Def.Id);
-                if (mp != null) { DrawPuppet(mp, Slide(prevTrail[i], trail[i]), !m.Alive); continue; }
-                Gfx.Token(Inset(TileRect(trail[i].x, trail[i].y), 5), m.Def.Glyph, Gfx.Hex(m.Def.Color), !m.Alive);
+                if (mp != null) DrawPuppet(mp, Slide(prevTrail[i], trail[i]), !m.Alive);
             }
-            var leader = party.Members[0];
-            var lPuppet = Puppet(leader.Def.Id);
+            var lPuppet = Puppet(party.Members[0].Def.Id);
             if (lPuppet != null) DrawPuppet(lPuppet, LeaderPos());
-            else Gfx.Token(Inset(TileRect(px, py), 2), leader.Def.Glyph, Gfx.Hex(leader.Def.Color));
 
             // 前景遮挡层（树冠、屋檐）盖在人物上面
             var fg = art == null ? null : Gfx.Tex("Art/" + map.Art + "_fg");
-            if (fg != null) Gfx.Image(artRect, fg);
+            if (fg != null) World.Quad(fg, artRect, Color.white);
+
+            DrawWeather();
+        }
+
+        /// <summary>NPC 平时大多面朝前，隔一阵往左右看一眼；每人错开节奏。</summary>
+        static string IdleGlance(string id)
+        {
+            string[] looks = { "front", "front", "front", "side", "front", "front", "left" };
+            int k = (int)(Time.time / 2.2f) + (id.GetHashCode() & 0xff);
+            return looks[k % looks.Length];
+        }
+
+        /// <summary>户外：飘落的花瓣 / 落叶，加几团慢慢飘过的云影。粒子按地图铺，跟着地面走，不跟镜头。</summary>
+        void DrawWeather()
+        {
+            if (map.Weather == null) return;
+            bool petal = map.Weather == "petal";
+            var tex = PetalTex();
+            float t = Time.time, w = map.Width, h = map.Height;
+            int count = petal ? 70 : 40;
+            var prng = new System.Random(11);
+            for (int i = 0; i < count; i++)
+            {
+                float bx = (float)prng.NextDouble() * w, phase = (float)prng.NextDouble();
+                float speed = 0.35f + (float)prng.NextDouble() * 0.35f;   // 格/秒
+                float sway = 0.3f + (float)prng.NextDouble() * 0.5f, freq = 0.8f + (float)prng.NextDouble();
+                float y = Mathf.Repeat(phase * (h + 2) + t * speed, h + 2) - 1;        // 从上往下，落出底边绕回顶上
+                float x = Mathf.Repeat(bx + Mathf.Sin(t * freq + phase * 6.28f) * sway + t * 0.15f, w);   // 左右摆，带一点风
+                var c = petal ? new Color(1f, 0.72f, 0.82f, 0.85f)
+                              : (i % 3 == 0 ? new Color(0.85f, 0.7f, 0.3f, 0.8f) : new Color(0.55f, 0.72f, 0.3f, 0.8f));
+                var size = petal ? new Vector2(0.24f, 0.16f) : new Vector2(0.26f, 0.15f);
+                World.Sprite(tex, new Vector2(x, -y), size, (t * (60 + i % 5 * 25) + i * 47) % 360f, c);
+            }
+            // 云影：大团的软阴影从左往右飘
+            for (int i = 0; i < 3; i++)
+            {
+                float x = Mathf.Repeat(t * 0.25f + i * (w + 12) / 3f, w + 12) - 6;
+                float y = h * (0.2f + 0.3f * i);
+                World.Quad(ShadowTex(), new Rect(x - 4.5f, y - 3f, 9, 6), new Color(1, 1, 1, 0.35f));
+            }
+        }
+
+        static Texture2D petalTex;
+
+        /// <summary>花瓣 / 落叶共用：白色软边椭圆，画的时候染色。</summary>
+        static Texture2D PetalTex()
+        {
+            if (petalTex != null) return petalTex;
+            const int n = 16;
+            petalTex = new Texture2D(n, n) { hideFlags = HideFlags.HideAndDontSave, wrapMode = TextureWrapMode.Clamp };
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                {
+                    float d = new Vector2(x - n / 2f + 0.5f, y - n / 2f + 0.5f).magnitude / (n / 2f);
+                    petalTex.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01((1 - d) * 3f)));
+                }
+            petalTex.Apply();
+            return petalTex;
+        }
+
+        /// <summary>OnGUI 部分：没有骨骼角色的字块、格子线、地名牌。地图本身在 DrawWorld。</summary>
+        void DrawMap()
+        {
+            if (map == null) return;
+            foreach (var n in map.Npcs)
+            {
+                if (!n.Visible() || Gfx.Tex(n.Sprite) != null || (n.Id != null && Puppet(n.Id) != null)) continue;
+                Gfx.Token(Inset(TileRect(n.X, n.Y), 3), n.Glyph, Gfx.Hex(n.Color));
+            }
+            for (int i = trail.Count - 1; i >= 0; i--)
+            {
+                if (i + 1 >= party.Members.Count) continue;
+                var m = party.Members[i + 1];
+                if (Puppet(m.Def.Id) == null) Gfx.Token(Inset(TileRect(trail[i].x, trail[i].y), 5), m.Def.Glyph, Gfx.Hex(m.Def.Color), !m.Alive);
+            }
+            var leader = party.Members[0];
+            if (Puppet(leader.Def.Id) == null) Gfx.Token(Inset(TileRect(px, py), 2), leader.Def.Glyph, Gfx.Hex(leader.Def.Color));
 
             // 格子线（G 键开关）：极淡的纯黑，只把底下压暗一点，草地上偏深绿、土路上偏深黄，自动随背景
             if (showGrid)
@@ -254,7 +357,6 @@ namespace LiuBeiRPG.Game
 
             DrawHud();
         }
-
         float tile;       // 每格多大（虚拟像素）
         Vector2 origin;   // 格子 (0,0) 的左上角在屏幕上的位置
 
@@ -286,20 +388,20 @@ namespace LiuBeiRPG.Game
         /// <summary>骨骼动画角色，脚底踩在格子底边（原图角色高约 950 像素，画出来约 1.1 格高）。</summary>
         void DrawPuppet(PuppetActor a, Vector2 cell, bool dead = false)
         {
-            var foot = origin + new Vector2((cell.x + 0.5f) * tile, (cell.y + 1f - 0.08f) * tile);
-            float scale = tile * 1.1f / 950f;
-            Gfx.Image(new Rect(foot.x - tile * 0.28f, foot.y - tile * 0.07f, tile * 0.56f, tile * 0.14f), ShadowTex());
-            // 深色描边：剪影朝 8 个方向各偏一点先画，贴近地图像素画的粗描边
-            a.Tint = new Color(0.14f, 0.09f, 0.06f);
+            var foot = new Vector2(cell.x + 0.5f, -(cell.y + 1f - 0.08f));
+            float scale = 1.1f / 950f;
+            World.Quad(ShadowTex(), new Rect(foot.x - 0.28f, -foot.y - 0.07f, 0.56f, 0.14f), Color.white);
+            // 深色描边：剪影朝 8 个方向各偏一点先画，贴近地图像素画的粗描边（偏 1.2 虚拟像素）
+            var outline = new Color(0.14f, 0.09f, 0.06f);
+            float o = 1.2f / tile;
             for (int i = 0; i < 8; i++)
             {
                 float ang = i * Mathf.PI / 4f;
-                a.DrawGUI(foot + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * 1.2f, scale);
+                World.Puppet(a, foot + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * o, scale, outline);
             }
-            a.Tint = dead ? new Color(0.5f, 0.5f, 0.5f) : new Color(1f, 0.95f, 0.87f);   // 略压暖，贴近地图的光照；阵亡压灰
-            a.DrawGUI(foot, scale);
+            // 身上乘这张地图的环境光，室内压暗、户外略暖；阵亡压灰
+            World.Puppet(a, foot, scale, dead ? new Color(0.5f, 0.5f, 0.5f) : Gfx.Hex(map.Light));
         }
-
         static Texture2D shadowTex;
 
         /// <summary>脚下的软阴影：中间深、边缘渐隐的椭圆（画的时候压扁）。</summary>
@@ -339,12 +441,27 @@ namespace LiuBeiRPG.Game
         Rect TileRect(int x, int y) { return new Rect(origin.x + x * tile, origin.y + y * tile, tile, tile); }
         static Rect Inset(Rect r, float d) { return new Rect(r.x + d, r.y + d, r.width - d * 2, r.height - d * 2); }
 
-        /// <summary>左上角只显示地名。</summary>
+        /// <summary>左上角地名牌：有 Resources/Map/Art/place_name_plate 就垫底图，金字加深褐描边。</summary>
         void DrawHud()
         {
-            var r = new Rect(8, 8, 120, 40);
-            Gfx.Window(r, 0.8f);
-            Gfx.Text(Inset(r, 8), map.Name, 18, new Color(1f, 0.85f, 0.35f), TextAnchor.MiddleCenter);
+            var r = new Rect(8, 8, 180, 60);
+            var plate = Gfx.Tex("Art/place_name_plate");
+            if (plate != null) Gfx.Image(r, plate);
+            else
+            {
+                // 没底图时两侧画细金线代替
+                var line = new Color(1f, 0.85f, 0.35f, 0.7f);
+                Gfx.Rect(new Rect(r.x + 10, r.center.y, 22, 1.5f), line);
+                Gfx.Rect(new Rect(r.xMax - 32, r.center.y, 22, 1.5f), line);
+            }
+            var outline = new Color(0.22f, 0.12f, 0.05f);
+            for (int i = 0; i < 8; i++)
+            {
+                float ang = i * Mathf.PI / 4f;
+                var o = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * 2f;
+                Gfx.Text(new Rect(r.x + o.x, r.y + o.y, r.width, r.height), map.Name, 24, outline, TextAnchor.MiddleCenter, false, false);
+            }
+            Gfx.Text(r, map.Name, 24, new Color(1f, 0.85f, 0.35f), TextAnchor.MiddleCenter);
         }
     }
 }

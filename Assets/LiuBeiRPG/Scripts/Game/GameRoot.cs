@@ -50,12 +50,7 @@ namespace LiuBeiRPG.Game
             Application.targetFrameRate = 60;
             // 中文显示成方块时：把任意中文 TTF/OTF 字体命名为 ChineseFont 放进 Assets/LiuBeiRPG/Resources/
             if (chineseFont == null) chineseFont = Resources.Load<Font>("ChineseFont");
-            var cam = Camera.main;
-            if (cam != null)
-            {
-                cam.clearFlags = CameraClearFlags.SolidColor;
-                cam.backgroundColor = Color.black;
-            }
+            SetupCamera();
         }
 
         void NewGame()
@@ -229,32 +224,45 @@ namespace LiuBeiRPG.Game
             return Mathf.Min(line.Text.Length, (int)((Time.time - lineStart) * CharsPerSecond));
         }
 
+        float dialogueOpenTime, speakerTime;   // 对话框弹出、换人说话的时刻（做入场动画）
+        bool dialogueWasOpen;
+        string lastSpeaker;
+
+        static float EaseOut(float since, float dur) { float t = 1f - Mathf.Clamp01((Time.time - since) / dur); return 1f - t * t; }
+
         void DrawDialogue()
         {
-            if (currentDialogue == null) return;
+            if (currentDialogue == null) { dialogueWasOpen = false; return; }
+            if (!dialogueWasOpen) { dialogueWasOpen = true; dialogueOpenTime = Time.time; lastSpeaker = null; }
             var line = currentDialogue.Lines[currentDialogue.Index];
             if (line != shownLine) { shownLine = line; lineStart = Time.time; }
+            if (line.Speaker != lastSpeaker) { lastSpeaker = line.Speaker; speakerTime = Time.time; }
             int shown = Revealed(line);
             var r = DialogRect;
+            r.y += (1f - EaseOut(dialogueOpenTime, 0.22f)) * 40f;   // 弹出时从下面升上来
+            float slide = (1f - EaseOut(speakerTime, 0.25f)) * -36f;  // 换人说话：头像和名字牌从左边滑进来
             bool portrait = Gfx.Portrait;
             int size = portrait ? 22 : 20;
 
             Gfx.Window(r, 0.94f);
+            Gfx.Paper = false;
             // 半身像：画在框前面，人站在框左边，头肩探出框上沿
             var bust = Portrait(line.Speaker);
-            if (bust != null) bust.DrawGUI(new Vector2(r.x + 96, r.yMax + 20), 0.28f);
-            float tx = r.x + (bust != null ? 196 : 32);
+            if (bust != null) bust.DrawGUI(new Vector2(r.x + 96 + slide, r.yMax + 20), 0.28f);
+            float tx = r.x + (bust != null ? 196 : 36);
             if (!string.IsNullOrEmpty(line.Speaker))
             {
                 // 名字牌压在框的上边
-                var tag = new Rect(tx - 12, r.y - 16, 28 + line.Speaker.Length * 19, 32);
+                var tag = new Rect(tx - 12 + slide, r.y - 16, 28 + line.Speaker.Length * 19, 32);
                 Gfx.RoundRect(tag, Accent);
                 Gfx.Text(tag, line.Speaker, 18, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
             }
+            Gfx.Paper = true;
             Gfx.Text(new Rect(tx, r.y + 30, r.xMax - tx - 48, r.height - 40), line.Text.Substring(0, shown), size,
                 new Color(0.95f, 0.95f, 0.95f), TextAnchor.UpperLeft, true);
             if (shown >= line.Text.Length)   // 打完了才出继续箭头，上下轻轻跳
-                Gfx.Text(new Rect(r.xMax - 40, r.yMax - 34 + Mathf.Sin(Time.time * 6f) * 3f, 20, 20), "▼", 14, Accent);
+                Gfx.Text(new Rect(r.xMax - 44, r.yMax - 38 + Mathf.Sin(Time.time * 6f) * 3f, 20, 20), "▼", 14, Accent);
+            Gfx.Paper = false;
 
             if (Gfx.Clicked(r)) AdvanceDialogue();
         }
@@ -295,18 +303,18 @@ namespace LiuBeiRPG.Game
             if (choice == null) return;
             var r = DialogRect;
             Gfx.Window(r);
-            Gfx.Text(new Rect(r.x + 20, r.y + 16, r.width - 40, 60), choice.Question, 20, Color.white, TextAnchor.UpperLeft, true);
+            Gfx.Text(new Rect(r.x + 28, r.y + 24, r.width - 56, 60), choice.Question, 20, Color.white, TextAnchor.UpperLeft, true);
 
-            var box = new Rect(r.xMax - 200, r.y - 30 - choice.Options.Length * 34, 200, 20 + choice.Options.Length * 34);
+            var box = new Rect(r.xMax - 200, r.y - 36 - choice.Options.Length * 34, 200, 32 + choice.Options.Length * 34);
             Gfx.Window(box);
             for (int i = 0; i < choice.Options.Length; i++)
             {
-                var ir = new Rect(box.x + 12, box.y + 10 + i * 34, box.width - 24, 32);
+                var ir = new Rect(box.x + 16, box.y + 16 + i * 34, box.width - 32, 32);
                 bool sel = i == choice.Selected;
-                if (sel) Gfx.RoundRect(ir, new Color(1, 1, 1, 0.1f));
-                Gfx.Text(new Rect(ir.x + 6, ir.y + 4, ir.width, ir.height), (sel ? "▶ " : "　 ") + choice.Options[i], 20, sel ? Accent : Color.white);
-                if (Gfx.Clicked(ir)) { PickChoice(i); return; }
+                Gfx.MenuRow(ir, choice.Options[i], 20, sel, sel ? Accent : Color.white);
+                if (Gfx.Clicked(ir)) { PickChoice(i); break; }
             }
+            Gfx.Paper = false;
         }
 
         // ---------------- IGameHost 其他实现 ----------------
@@ -333,7 +341,8 @@ namespace LiuBeiRPG.Game
             ProcessInputEvent(Event.current);
 
             GUI.matrix = Matrix4x4.identity;
-            Gfx.Rect(new Rect(0, 0, Screen.width, Screen.height), Color.black);
+            Gfx.Paper = false;
+            if (mode != Mode.Map) Gfx.Rect(new Rect(0, 0, Screen.width, Screen.height), Color.black);   // 大地图由相机画在底下
             Gfx.BeginScaled();
 
             switch (mode)
@@ -347,7 +356,16 @@ namespace LiuBeiRPG.Game
 
             if (choice != null) DrawChoice();
             else DrawDialogue();
+
+            // 转场：切地图、进出战斗时从黑场淡入
+            float fade = 1f - (Time.time - fadeStart) / FadeTime;
+            if (fade > 0f) Gfx.Rect(new Rect(0, 0, Gfx.VW, Gfx.VH), new Color(0, 0, 0, fade * fade));
         }
+
+        const float FadeTime = 0.45f;
+        float fadeStart = -10f;
+
+        void FadeIn() { fadeStart = Time.time; }
 
         void DrawTitle()
         {

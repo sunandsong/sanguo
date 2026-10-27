@@ -30,6 +30,7 @@ namespace LiuBeiRPG.World
             { 'f', new TileInfo(true,  "#d99bb0") { Sprite = "ground_peach_garden" } },  // 桃园地面
             { 'T', new TileInfo(false, "#2f5a2a", "木") { Sprite = "tree" } },  // 树
             { 'P', new TileInfo(false, "#e07a9a", "桃") { Sprite = "peach_tree" } },  // 桃树
+            { 'S', new TileInfo(false, "#9a9a8a", "桌") },               // 桃园石桌
             { 'H', new TileInfo(false, "#8a5a3c") },                    // 房屋（整栋贴图见 MapData.Props）
             { 'M', new TileInfo(false, "#6e5a44", "山") { Sprite = "mountain" } },  // 山
             { '~', new TileInfo(false, "#3a6fb0") { Sprite = "water", Frames = 3 } },  // 水
@@ -78,6 +79,13 @@ namespace LiuBeiRPG.World
         public float ArtMargin = 0.5f;
         public readonly List<Npc> Npcs = new List<Npc>();
         public readonly List<MapProp> Props = new List<MapProp>();
+
+        /// <summary>整个画面乘的色调（后处理）：城里偏暖、野外偏冷、室内昏黄。</summary>
+        public string Grade = "#ffffff";
+        /// <summary>人物身上额外乘的环境光，让人物融进背景：室内压暗一点。</summary>
+        public string Light = "#fff2de";
+        /// <summary>飘落物：petal（桃花瓣）/ leaf（落叶）/ null（室内，没有云影）。</summary>
+        public string Weather;
 
         /// <summary>垫在透明贴图（树、山、房屋）下面的地面。</summary>
         public char Ground = '.';
