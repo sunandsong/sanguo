@@ -41,11 +41,15 @@ namespace LiuBeiRPG.Game
         // 战场上的骨骼角色：敌我每人一份（不和地图上的共用，朝向、受击互不影响）。包里没有的（程远志等）照旧画字块
         readonly Dictionary<General, PuppetActor> battlePuppets = new Dictionary<General, PuppetActor>();
 
-        // 敌人手里的兵器（引擎里现有的三种：qiang 枪 / dao 刀 / jian 剑）。拿枪的攻击自动变刺击
+        // 敌人的专属兵器，一人一把不重样（引擎 weapons/ 下的名字）。刺还是砍由 weapon.json 的 attack 决定
         static readonly Dictionary<string, string> EnemyWeapons = new Dictionary<string, string>
         {
-            { "hjb", "qiang" }, { "hjls", "dao" }, { "hjss", "jian" }, { "hjtm", "dao" },
-            { "chengyuanzhi", "dao" }, { "dengmao", "qiang" },
+            { "hjb", "cha" },             // 黄巾兵：叉（农具）
+            { "hjls", "dafu" },           // 黄巾力士：大斧
+            { "hjss", "fuchen" },         // 黄巾术士：拂尘
+            { "hjtm", "podao" },          // 黄巾头目：朴刀
+            { "chengyuanzhi", "zhanchui" },   // 程远志：战锤
+            { "dengmao", "huaji" },       // 邓茂：画戟
         };
 
         PuppetActor BattlePuppet(General g, bool enemy)
