@@ -76,6 +76,7 @@ namespace LiuBeiRPG.Game
 
         void Update()
         {
+            UpdateTouch();
             if (mode == Mode.Map) UpdateMap();
             TickLeader();
             foreach (var p in portraits.Values) p.Tick(Time.deltaTime);
@@ -270,7 +271,8 @@ namespace LiuBeiRPG.Game
             if (shown >= line.Text.Length)   // 打完了才出继续箭头，上下轻轻跳
                 Gfx.Text(new Rect(r.xMax - 40, r.yMax - 34 + Mathf.Sin(Time.time * 6f) * 3f, 20, 20), "▼", 14, Accent);
 
-            if (Gfx.Clicked(r)) AdvanceDialogue();
+            // 刚弹出的一瞬不吃点击：手机上按“确认”键调查时，同一下触摸会再被当成点了对话框
+            if (Gfx.Clicked(r) && Time.time - dialogueOpenTime > 0.1f) AdvanceDialogue();
         }
 
         // ---------------- 选项框 ----------------
@@ -359,6 +361,7 @@ namespace LiuBeiRPG.Game
                 case Mode.ChapterClear: DrawChapterClear(); break;
             }
 
+            DrawTouchUi();
             if (choice != null) DrawChoice();
             else DrawDialogue();
 
