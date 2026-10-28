@@ -26,6 +26,7 @@ namespace LiuBeiRPG.World
         const string F_Oath = "c1_oath";
         const string F_Gift = "c1_gift";
         const string F_Boss = "c1_boss";
+        const string F_Liutao = "c1_liutao";   // 母亲给了《六韬》
 
         public Chapter1(IGameHost host)
         {
@@ -156,10 +157,13 @@ namespace LiuBeiRPG.World
                     flags.Set(F_Gift);
                     host.Party.Gold += 300;
                     foreach (var g in host.Party.Members) g.WeaponBonus += 5;
+                    host.Party.Items.Add("wuzi");
                     Say(L("张世平", "在下中山商人张世平。听说三位要讨贼保民，这点心意请务必收下。"),
                         L(null, "获得金钱 300！"),
                         L(null, "以赠送的镔铁打造兵器：刘备「双股剑」、关羽「青龙偃月刀」、张飞「丈八蛇矛」。"),
-                        L(null, "全员武力 +5！"));
+                        L(null, "全员武力 +5！"),
+                        L("张世平", "另有兵书一卷，行军打仗或许用得上。"),
+                        L(null, "获得兵书《吴子》！（菜单 → 物品 里研读）"));
                 }
             });
 
@@ -231,6 +235,14 @@ namespace LiuBeiRPG.World
                     if (!flags.Has(F_Oath))
                         Say(L("母亲", "玄德，你常说要匡扶汉室。如今天下大乱，正是男儿立身之时。"),
                             L("母亲", "城门口贴了榜文，去看看吧。"));
+                    else if (!flags.Has(F_Liutao))
+                    {
+                        flags.Set(F_Liutao);
+                        host.Party.Items.Add("liutao");
+                        Say(L("母亲", "有云长、翼德两位兄弟相助，为娘就放心了。"),
+                            L("母亲", "这卷《六韬》是你祖上中山靖王传下来的，带在身边吧。"),
+                            L(null, "获得兵书《六韬》！（菜单 → 物品 里研读）"));
+                    }
                     else
                         Say(L("母亲", "有云长、翼德两位兄弟相助，为娘就放心了。"),
                             L("母亲", "出城后若是兵马疲惫，记得回客栈歇息。"));
@@ -402,6 +414,7 @@ namespace LiuBeiRPG.World
                 flags.Set(F_Gift);
                 host.Party.Gold += 300;
                 foreach (var g in host.Party.Members) g.WeaponBonus += 5;
+                host.Party.Items.Add("wuzi");
             }
             flags.Set(F_Notice);
             flags.Set(F_MetZhangFei);

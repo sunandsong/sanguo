@@ -16,6 +16,8 @@ namespace LiuBeiRPG.Core
         public int Gold;
         public int TP;       // 策略点
         public int MaxTP;
+        public readonly List<string> Items = new List<string>();        // 物品 Id，一格一个
+        public readonly HashSet<string> Learned = new HashSet<string>(); // 读兵书学会的策略 Id
 
         public Party()
         {
@@ -74,7 +76,7 @@ namespace LiuBeiRPG.Core
                     msgs.Add(m.Name + " 兵力上限 +" + m.Def.SoldiersPerLevel);
                 }
                 foreach (var t in TacticDb.All)
-                    if (t.PlayerUsable && t.MinLevel == Level)
+                    if (t.PlayerUsable && !t.Book && t.MinLevel == Level)
                         msgs.Add("习得策略「" + t.Name + "」！");
             }
             return msgs;
@@ -84,8 +86,20 @@ namespace LiuBeiRPG.Core
         {
             var list = new List<TacticDef>();
             foreach (var t in TacticDb.All)
-                if (t.PlayerUsable && t.MinLevel <= Level) list.Add(t);
+                if (t.PlayerUsable && t.MinLevel <= Level && (!t.Book || Learned.Contains(t.Id))) list.Add(t);
             return list;
+        }
+
+        /// <summary>用掉第 index 格的物品，返回提示文字。</summary>
+        public string UseItem(int index)
+        {
+            var item = ItemDb.Get(Items[index]);
+            var t = item.Teaches == null ? null : TacticDb.Get(item.Teaches);
+            if (t == null) return "现在用不了。";
+            if (Learned.Contains(t.Id)) return "已经学会「" + t.Name + "」了。";
+            Learned.Add(t.Id);
+            Items.RemoveAt(index);
+            return "研读《" + item.Name + "》，全军习得策略「" + t.Name + "」！";
         }
     }
 }

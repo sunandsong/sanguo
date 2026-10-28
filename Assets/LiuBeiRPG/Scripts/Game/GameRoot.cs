@@ -136,6 +136,7 @@ namespace LiuBeiRPG.Game
                 if (key == InputKey.Confirm || key == InputKey.Cancel) AdvanceDialogue();
                 return;
             }
+            if (menuPage != 0) { MenuPageKey(key); return; }
 
             switch (mode)
             {
@@ -188,7 +189,7 @@ namespace LiuBeiRPG.Game
             if (b.OnDone != null) b.OnDone();
         }
 
-        bool UiBusy { get { return currentDialogue != null || choice != null; } }
+        bool UiBusy { get { return currentDialogue != null || choice != null || menuPage != 0; } }
 
         /// <summary>对话框贴在安全区域底部居中（最宽 900），横竖屏使用不同高度。</summary>
         static Rect DialogRect
@@ -362,6 +363,7 @@ namespace LiuBeiRPG.Game
             }
 
             DrawTouchUi();
+            DrawMenuPage();
             if (choice != null) DrawChoice();
             else DrawDialogue();
 

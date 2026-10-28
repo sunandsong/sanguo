@@ -69,6 +69,7 @@ namespace LiuBeiRPG.Game
                 return;
             }
             if (key == InputKey.Confirm) Investigate();
+            else if (key == InputKey.Cancel && !UiBusy) OpenMenu();
         }
 
         void UpdateMap()

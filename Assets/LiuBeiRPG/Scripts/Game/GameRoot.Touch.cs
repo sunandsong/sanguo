@@ -3,7 +3,7 @@ using UnityEngine;
 namespace LiuBeiRPG.Game
 {
     /// <summary>
-    /// 手机虚拟按键（只在大地图上、没有对话框时出现）：左下摇杆走路，右下 确认 / 取消。
+    /// 手机虚拟按键（只在大地图上、没有对话框时出现）：左下摇杆走路，右下 对话 / 菜单。
     /// 用 Input.touches 读多指（IMGUI 只认第一根手指，按着摇杆再点按钮会丢），结果塞进 held / OnKey，跟键盘走同一条路。
     /// 对话、选项、战斗本来就能直接点，不用这套。
     /// </summary>
@@ -86,8 +86,8 @@ namespace LiuBeiRPG.Game
             Disc(c, JoyR, new Color(0, 0, 0, 0.28f));
             Ring(c, JoyR, new Color(1, 1, 1, on ? 0.5f : 0.3f));
             Disc(on ? joyKnob : c, KnobR, new Color(1, 1, 1, on ? 0.7f : 0.45f));
-            TouchButton(BtnAPos, BtnA, "确认", pressA);
-            TouchButton(BtnBPos, BtnB, "取消", pressB);
+            TouchButton(BtnAPos, BtnA, "对话", pressA);
+            TouchButton(BtnBPos, BtnB, "菜单", pressB);
         }
 
         void TouchButton(Vector2 c, float r, string label, float pressed)
