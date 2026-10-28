@@ -15,7 +15,7 @@ namespace LiuBeiRPG.Core
 
         public int Wu;    // 武力：普通攻击伤害
         public int Zhi;   // 智力：策略伤害/命中/回复
-        public int Tong;  // 统率：减少受到的伤害
+        public int Tong;  // 防御力：减少受到的伤害
         public int Su;    // 速度：行动顺序
 
         public int BaseSoldiers;        // 1 级兵力（吞食天地式：兵力 = 血量）
@@ -33,14 +33,19 @@ namespace LiuBeiRPG.Core
         public readonly GeneralDef Def;
         public int MaxSoldiers;
         public int Soldiers;
-        public int WeaponBonus;   // 武器加成（武力）
+        public const int GearSlots = 6;
+        public string[] Gear = new string[GearSlots];   // 装备的物品 Id，按 ItemDef.Slot 放，null = 空着
         public bool Defending;
 
         public string Name { get { return Def.Name; } }
-        public int Wu { get { return Def.Wu + WeaponBonus; } }
-        public int Zhi { get { return Def.Zhi; } }
-        public int Tong { get { return Def.Tong; } }
-        public int Su { get { return Def.Su; } }
+        public int Wu { get { return Def.Wu + Bonus(ItemKind.Weapon); } }
+        public int Zhi { get { return Def.Zhi + Bonus(ItemKind.Trinket); } }
+        public int Tong { get { return Def.Tong + Bonus(ItemKind.Helmet) + Bonus(ItemKind.Armor); } }
+        public int Su { get { return Def.Su + Bonus(ItemKind.Boots) + Bonus(ItemKind.Horse); } }
+        public string Weapon { get { return Gear[0]; } set { Gear[0] = value; } }
+        public string WeaponSprite { get { var w = ItemDb.Get(Weapon); return w == null ? null : w.Sprite; } }
+
+        int Bonus(ItemKind k) { var i = ItemDb.Get(Gear[k - ItemKind.Weapon]); return i == null ? 0 : i.Power; }
         public bool Alive { get { return Soldiers > 0; } }
 
         public General(GeneralDef def, int level = 1)

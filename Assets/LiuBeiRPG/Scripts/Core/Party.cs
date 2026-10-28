@@ -115,16 +115,87 @@ namespace LiuBeiRPG.Core
             return list;
         }
 
-        /// <summary>用掉第 index 格的物品，返回提示文字。</summary>
-        public string UseItem(int index)
+        // ---------------- 物品：Items 里一件一条，同种叠在一格显示 ----------------
+
+        public const int BagSlots = 24, StackMax = 99;
+
+        /// <summary>行囊格子：每种一格，按拿到的先后排。</summary>
+        public List<string> Slots()
         {
-            var item = ItemDb.Get(Items[index]);
-            var t = item.Teaches == null ? null : TacticDb.Get(item.Teaches);
-            if (t == null) return "现在用不了。";
-            if (Learned.Contains(t.Id)) return "已经学会「" + t.Name + "」了。";
-            Learned.Add(t.Id);
-            Items.RemoveAt(index);
-            return "研读《" + item.Name + "》，全军习得法术「" + t.Name + "」！";
+            var list = new List<string>();
+            foreach (var id in Items) if (!list.Contains(id)) list.Add(id);
+            return list;
+        }
+
+        public int Count(string id)
+        {
+            int n = 0;
+            foreach (var i in Items) if (i == id) n++;
+            return n;
+        }
+
+        /// <summary>对 who 用一件 id（兵书全军学，药给 who，装备给 who 换上），返回提示文字；换装备成功返回 null。</summary>
+        public string UseItem(string id, General who)
+        {
+            var item = ItemDb.Get(id);
+            switch (item.Kind)
+            {
+                case ItemKind.Book:
+                    var t = TacticDb.Get(item.Teaches);
+                    if (Learned.Contains(t.Id)) return "已经学会「" + t.Name + "」了。";
+                    Learned.Add(t.Id);
+                    Items.Remove(id);
+                    return "研读《" + item.Name + "》，全军习得法术「" + t.Name + "」！";
+                case ItemKind.Heal:
+                    if (!who.Alive) return who.Name + "已经败走，药救不回来。";
+                    if (who.Soldiers >= who.MaxSoldiers) return who.Name + "兵力是满的。";
+                    Items.Remove(id);
+                    return who.Name + "用了" + item.Name + "，兵力恢复 " + who.Heal(item.Power) + "。";
+                case ItemKind.Wine:
+                    if (TP >= MaxTP) return "法力是满的。";
+                    int before = TP;
+                    TP = Math.Min(MaxTP, TP + item.Power);
+                    Items.Remove(id);
+                    return "喝了" + item.Name + "，法力恢复 " + (TP - before) + "。";
+                default:
+                    if (item.Owner != null && item.Owner != who.Def.Id) return item.Name + "是专属兵器，" + who.Name + "用不了。";
+                    Items.Remove(id);
+                    if (who.Gear[item.Slot] != null) Items.Add(who.Gear[item.Slot]);
+                    who.Gear[item.Slot] = id;
+                    return null;   // 换上了格子里就看得到，不用提示
+            }
+        }
+
+        /// <summary>把 who 身上第 slot 格卸回行囊。</summary>
+        public void Unequip(General who, int slot)
+        {
+            string id = who.Gear[slot];
+            if (id == null || !CanHold(id)) return;
+            Items.Add(id);
+            who.Gear[slot] = null;
+        }
+
+        public bool CanHold(string id) { return Items.Contains(id) ? Count(id) < StackMax : Slots().Count < BagSlots; }
+
+        public string Buy(string id)
+        {
+            var item = ItemDb.Get(id);
+            if (Gold < item.Price) return "金钱不够。";
+            if (!CanHold(id)) return "行囊满了。";
+            Gold -= item.Price;
+            Items.Add(id);
+            return "买下" + item.Name + "，花了 " + item.Price + " 金。";
+        }
+
+        public int SellPrice(string id) { return ItemDb.Get(id).Price / 2; }
+
+        public string Sell(string id)
+        {
+            var item = ItemDb.Get(id);
+            if (item.Price <= 0) return item.Name + "不能卖。";
+            Items.Remove(id);
+            Gold += SellPrice(id);
+            return "卖掉" + item.Name + "，得 " + SellPrice(id) + " 金。";
         }
     }
 }

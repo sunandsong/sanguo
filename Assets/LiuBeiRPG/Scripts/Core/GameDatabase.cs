@@ -27,7 +27,7 @@ namespace LiuBeiRPG.Core
         };
 
         // ---------- 黄巾军 ----------
-        // 弱点靠统率 / 智力拉开：力士甲厚脑笨（砍不动，怕策略），术士身弱智高（策略打不动，怕砍），兵和头目两样都行
+        // 弱点靠防御力 / 智力拉开：力士甲厚脑笨（砍不动，怕策略），术士身弱智高（策略打不动，怕砍），兵和头目两样都行
         public static readonly GeneralDef HuangJinBing = new GeneralDef
         {
             Id = "hjb", Name = "黄巾兵", Glyph = "兵", Color = "#e8c547",

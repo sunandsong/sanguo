@@ -34,5 +34,6 @@ namespace LiuBeiRPG.World
         void StartBattle(List<General> enemies, bool isBoss, Action onVictory = null);
         void Warp(MapData map, int x, int y);
         void ChapterClear(string title, string nextHint);
+        void OpenShop(string[] goods);   // 商店：goods 是卖的物品 Id
     }
 }

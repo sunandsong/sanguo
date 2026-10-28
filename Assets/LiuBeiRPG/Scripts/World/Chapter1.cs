@@ -28,6 +28,9 @@ namespace LiuBeiRPG.World
         const string F_Boss = "c1_boss";
         const string F_Liutao = "c1_liutao";   // 母亲给了《六韬》
 
+        // 涿县商店（设计文档 8.3）。ponytail: 狼烟要等战斗里能用物品再上架
+        static readonly string[] ShopGoods = { "caoyao", "zhuojiu", "qimeigun", "tiejian", "huanshoudao", "changqiang", "shoufu", "pikui", "pijia", "buxue", "numa", "yupei" };
+
         public Chapter1(IGameHost host)
         {
             this.host = host;
@@ -151,19 +154,20 @@ namespace LiuBeiRPG.World
                 {
                     if (flags.Has(F_Gift))
                     {
-                        Say(L("张世平", "祝诸位旗开得胜！"));
+                        host.Say(new List<DialogueLine> { L("张世平", "小号也备了些刀枪药酒，诸位尽管挑。") }, () => host.OpenShop(ShopGoods));
                         return;
                     }
                     flags.Set(F_Gift);
                     host.Party.Gold += 300;
-                    foreach (var g in host.Party.Members) g.WeaponBonus += 5;
+                    foreach (var g in host.Party.Members) { var w = ItemDb.Signature(g.Def.Id); if (w != null) g.Weapon = w.Id; }
                     host.Party.Items.Add("wuzi");
                     Say(L("张世平", "在下中山商人张世平。听说三位要讨贼保民，这点心意请务必收下。"),
                         L(null, "获得金钱 300！"),
                         L(null, "以赠送的镔铁打造兵器：刘备「双股剑」、关羽「青龙偃月刀」、张飞「丈八蛇矛」。"),
                         L(null, "全员武力 +5！"),
                         L("张世平", "另有兵书一卷，行军打仗或许用得上。"),
-                        L(null, "获得兵书《吴子》！（菜单 → 物品 里研读）"));
+                        L(null, "获得兵书《吴子》！（菜单 → 物品 里研读）"),
+                        L("张世平", "小号随车带了些刀枪药酒，诸位缺什么，再来找我便是。"));
                 }
             });
 
@@ -413,7 +417,7 @@ namespace LiuBeiRPG.World
             {
                 flags.Set(F_Gift);
                 host.Party.Gold += 300;
-                foreach (var g in host.Party.Members) g.WeaponBonus += 5;
+                foreach (var g in host.Party.Members) { var w = ItemDb.Signature(g.Def.Id); if (w != null) g.Weapon = w.Id; }
                 host.Party.Items.Add("wuzi");
             }
             flags.Set(F_Notice);

@@ -61,7 +61,7 @@ namespace LiuBeiRPG.Game
                 a = PuppetActor.Load(g.Def.Id == "hjb" ? "huangjin" : g.Def.Id);   // 黄巾兵的骨骼角色叫 huangjin
                 a.Facing = enemy ? "side" : "left";
                 string w;
-                if (!enemy && g.WeaponBonus > 0 && Weapons.TryGetValue(g.Def.Id, out w)) a.Equip(w);   // 和地图上一样，受赠之后才拿兵器
+                if (!enemy) a.Equip(g.WeaponSprite);   // 和地图上一样
                 if (enemy && EnemyWeapons.TryGetValue(g.Def.Id, out w)) a.Equip(w);
                 if (!g.Alive) { a.Play("down"); a.Time = 10; }   // 上一仗败走的一开场就躺着
             }

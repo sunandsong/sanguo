@@ -11,19 +11,13 @@ namespace LiuBeiRPG.Game
     /// </summary>
     public partial class GameRoot
     {
-        int menuPage;      // 0 = 没开，PageMain = 菜单首页，PagePeople = 人物（装备 + 物品）
+        int menuPage;      // 0 = 没开，PageMain = 菜单首页，PagePeople = 人物（装备 + 物品），PageShop = 商店
         int pageMember;    // 人物页正在看第几个人
         int mainSel;       // 首页选中的按钮
-        const int PagePeople = 1, PageMain = 3;
-        const int ItemSlots = 24;
+        const int PagePeople = 1, PageMain = 3, PageShop = 4;
+        const int ItemSlots = Party.BagSlots;
 
         static readonly string[] MenuItems = { "人物 · 物品 · 法术", "存档", "读档" };
-
-        // 兵器的中文名（Weapons 表里的引擎名 → 显示名）
-        static readonly Dictionary<string, string> WeaponNames = new Dictionary<string, string>
-        {
-            { "jian", "双股剑" }, { "dao", "青龙偃月刀" }, { "qiang", "丈八蛇矛" },
-        };
 
         void OpenMenu() { menuPage = PageMain; }
 
@@ -40,6 +34,7 @@ namespace LiuBeiRPG.Game
 
         void MenuPageKey(InputKey key)
         {
+            if (menuPage == PageShop) { ShopKey(key); return; }
             if (menuPage == PageMain)
             {
                 if (key == InputKey.Up) mainSel = (mainSel + MenuItems.Length - 1) % MenuItems.Length;
@@ -54,19 +49,20 @@ namespace LiuBeiRPG.Game
             else if (key == InputKey.Right) pageMember = (pageMember + 1) % n;
             else if (d != 0 && bagTab == 0) itemSel = Mathf.Clamp(itemSel + d, 0, ItemSlots - 1);
             else if (d != 0) tacticSel = Mathf.Clamp(tacticSel + d, 0, Mathf.Max(0, party.AvailableTactics().Count - 1));
-            else if (key == InputKey.Confirm && bagTab == 0 && itemSel < party.Items.Count) UseItem();
+            else if (key == InputKey.Confirm && bagTab == 0 && itemSel < party.Slots().Count) UseItem();
             else if (key == InputKey.Confirm && bagTab == 1 && tacticSel < party.AvailableTactics().Count) UseTactic(party.AvailableTactics()[tacticSel]);
             else if (key == InputKey.Cancel) CloseMenuPage();
         }
 
-        /// <summary>子页返回首页，首页返回地图。</summary>
-        void CloseMenuPage() { menuPage = menuPage == PageMain ? 0 : PageMain; }
+        /// <summary>人物页返回首页，首页、商店返回地图。</summary>
+        void CloseMenuPage() { menuPage = menuPage == PagePeople ? PageMain : 0; }
 
         void DrawMenuPage()
         {
             if (menuPage == 0) return;
             Gfx.Rect(new Rect(0, 0, Gfx.VW, Gfx.VH), new Color(0, 0, 0, 0.45f));
             if (menuPage == PageMain) DrawMainPage();
+            else if (menuPage == PageShop) DrawShop();
             else DrawPeoplePage();
         }
 
@@ -150,7 +146,7 @@ namespace LiuBeiRPG.Game
 
             float top = r.y + 68;
             Rect who, bag;
-            if (portrait) { who = new Rect(r.x, top, w, 330); bag = new Rect(r.x, top + 340, w, r.yMax - top - 340); }
+            if (portrait) { who = new Rect(r.x, top, w, 420); bag = new Rect(r.x, top + 430, w, r.yMax - top - 430); }   // 装备两排六格，人物这块要 420 高
             else { who = new Rect(r.x, top, 540, r.yMax - top); bag = new Rect(r.x + 550, top, w - 550, r.yMax - top); }
             Gfx.Rect(portrait ? new Rect(r.x + 20, bag.y - 6, w - 40, 1) : new Rect(bag.x - 4, top, 1, bag.height - 16), new Color(1, 1, 1, 0.1f));
             DrawCharacter(party.Members[pageMember], who);
@@ -191,7 +187,7 @@ namespace LiuBeiRPG.Game
             Gfx.Bar(new Rect(x, y + 28, rw, 14), m.MaxSoldiers > 0 ? (float)m.Soldiers / m.MaxSoldiers : 0, new Color(0.4f, 0.8f, 0.45f));
             y += 58;
 
-            string[] labels = { "武力", "智力", "统率", "速度" };
+            string[] labels = { "武力", "智力", "防御力", "速度" };
             int[] values = { m.Wu, m.Zhi, m.Tong, m.Su };
             float cw = (rw - 30) / 4;
             for (int i = 0; i < 4; i++)
@@ -218,23 +214,43 @@ namespace LiuBeiRPG.Game
                 if (Gfx.Clicked(sr0)) party.Strategist = m;
             }
             y += 30;
-            string weapon;
-            if (m.WeaponBonus <= 0 || !Weapons.TryGetValue(m.Def.Id, out weapon)) weapon = null;   // 受赠之前空手，和地图上一致
-            string[] slots = { "武器", "防具", "坐骑" };
-            float sw = Mathf.Min(110, (rw - 20) / 3);
-            for (int i = 0; i < 3; i++)
+            // 六格装备，两排三格（顺序见 ItemKind）；点有东西的格子卸回行囊（行囊里点装备按“装备”换上）
+            string[] slots = { "武器", "头盔", "防具", "鞋子", "坐骑", "饰品" }, stats = { "武力", "防御力", "防御力", "速度", "速度", "智力" };
+            const float under = 52;   // 格子下面两行字：名字、加成
+            float sw = Mathf.Min(110, Mathf.Min((rw - 20) / 3, (area.yMax - y - 2 * under) / 2));
+            float sgx = (rw - 3 * sw) / 2;   // 格子变小时横向撑开，左右贴齐
+            for (int i = 0; i < General.GearSlots; i++)
             {
-                var sr = new Rect(x + i * (sw + 10), y, sw, sw);
+                var sr = new Rect(x + (i % 3) * (sw + sgx), y + (i / 3) * (sw + under), sw, sw);
                 Gfx.RoundRect(sr, new Color(1, 1, 1, 0.06f));
                 Gfx.Frame(sr, new Color(1, 1, 1, 0.12f), 1);
-                bool has = i == 0 && weapon != null;
-                if (has) WeaponIcon(sr, weapon);
+                var item = ItemDb.Get(m.Gear[i]);
+                if (item != null) ItemIcon(sr, item);
                 else Gfx.Text(sr, slots[i], 16, new Color(1, 1, 1, 0.25f), TextAnchor.MiddleCenter);
-                string name;
-                string under = has ? (WeaponNames.TryGetValue(weapon, out name) ? name : weapon) : "空";
-                Gfx.Text(new Rect(sr.x - 10, sr.yMax + 6, sr.width + 20, 22), under, 15, has ? Color.white : new Color(1, 1, 1, 0.35f), TextAnchor.MiddleCenter);
-                if (has) Gfx.Text(new Rect(sr.x - 10, sr.yMax + 28, sr.width + 20, 20), "武力 +" + m.WeaponBonus, 14, Accent, TextAnchor.MiddleCenter);
+                Gfx.Text(new Rect(sr.x - 10, sr.yMax + 6, sr.width + 20, 22), item != null ? item.Name : "空", 15, item != null ? Color.white : new Color(1, 1, 1, 0.35f), TextAnchor.MiddleCenter);
+                if (item == null) continue;
+                Gfx.Text(new Rect(sr.x - 10, sr.yMax + 28, sr.width + 20, 20), stats[i] + " +" + item.Power, 14, Accent, TextAnchor.MiddleCenter);
+                if (Gfx.Clicked(sr))
+                {
+                    if (!party.CanHold(item.Id)) Note("行囊满了，卸不下来。", null);
+                    else party.Unequip(m, i);   // 格子一空就看得出卸了，不弹字
+                }
             }
+        }
+
+        /// <summary>物品图标：兵器用引擎贴图斜放，其余 Art/item_&lt;Id&gt;（见 ArtSrc/物品图标提示词.md；缺图就空着，不写字顶替）。</summary>
+        static void ItemIcon(Rect cell, ItemDef item)
+        {
+            if (item.Sprite != null) { WeaponIcon(new Rect(cell.x + 6, cell.y + 6, cell.width - 12, cell.height - 12), item.Sprite); return; }
+            var icon = Gfx.Tex("Art/item_" + item.Id);
+            if (icon != null) Gfx.Image(new Rect(cell.x + 4, cell.y + 4, cell.width - 8, cell.height - 8), icon);
+        }
+
+        /// <summary>同种叠放的件数，写在格子右下角。</summary>
+        void StackCount(Rect cell, string id)
+        {
+            int n = party.Count(id);
+            if (n > 1) Gfx.Text(new Rect(cell.x, cell.yMax - 22, cell.width - 5, 20), n.ToString(), 15, Color.white, TextAnchor.LowerRight);
         }
 
         /// <summary>兵器原图是竖长条，斜 45° 放进格子里。</summary>
@@ -255,10 +271,19 @@ namespace LiuBeiRPG.Game
 
         void UseItem()
         {
-            Note(party.UseItem(itemSel), null);   // 对话框叠在人物页上，看完还停在这页
+            string msg = party.UseItem(party.Slots()[itemSel], party.Members[pageMember]);
+            if (msg != null) Note(msg, null);   // 对话框叠在人物页上，看完还停在这页
         }
 
-        /// <summary>行囊：6 列格子，下面是选中物品的说明和“研读”。</summary>
+        /// <summary>行囊按钮上的字：兵书研读、药酒使用、装备给左边这个人换上。</summary>
+        string UseLabel(ItemDef item)
+        {
+            if (item.Kind == ItemKind.Book) return "研读";
+            if (item.Equip) return "装备";
+            return item.Kind == ItemKind.Heal ? "给" + party.Members[pageMember].Name : "使用";
+        }
+
+        /// <summary>行囊：6 列格子，同种叠一格，下面是选中物品的说明和使用按钮。</summary>
         void DrawBag(Rect area)
         {
             const int cols = 6;
@@ -267,27 +292,27 @@ namespace LiuBeiRPG.Game
             // 格子按宽、高都放得下来算：上面 32 标题，下面留 84 给说明和“研读”
             float cell = Mathf.Min(72, Mathf.Min((gw - (cols - 1) * 8) / cols, (area.height - 32 - 84) / rows - 8));
             float gx = (gw - cols * cell) / (cols - 1);   // 格子变小时横向间距撑开，左右都贴齐，右边不留空
-            Gfx.Text(new Rect(x0, area.y, gw, 26), "物品　" + party.Items.Count + "/" + ItemSlots, 18, new Color(1, 1, 1, 0.6f));
+            var slotsList = party.Slots();
+            Gfx.Text(new Rect(x0, area.y, gw, 26), "物品　" + slotsList.Count + "/" + ItemSlots, 18, new Color(1, 1, 1, 0.6f));
             float gy = area.y + 32;
             for (int i = 0; i < ItemSlots; i++)
             {
                 var cr = new Rect(x0 + (i % cols) * (cell + gx), gy + (i / cols) * (cell + 8), cell, cell);
-                bool has = i < party.Items.Count;
+                bool has = i < slotsList.Count;
                 Gfx.RoundRect(cr, has ? new Color(0.55f, 0.42f, 0.25f, 0.5f) : new Color(1, 1, 1, 0.06f));
                 Gfx.Frame(cr, i == itemSel ? Accent : new Color(1, 1, 1, 0.1f), i == itemSel ? 2 : 1);
-                var icon = has ? Gfx.Tex("Art/item_" + party.Items[i]) : null;   // 图标见 ArtSrc/物品图标提示词.md；缺图就空着，不写字顶替
-                if (icon != null) Gfx.Image(new Rect(cr.x + 4, cr.y + 4, cr.width - 8, cr.height - 8), icon);
+                if (has) { ItemIcon(cr, ItemDb.Get(slotsList[i])); StackCount(cr, slotsList[i]); }
                 if (Gfx.Clicked(cr)) itemSel = i;
             }
-            // 底下：选中物品的说明 + 研读
+            // 底下：选中物品的说明 + 使用
             float y = gy + rows * (cell + 8) + 4;
-            if (itemSel >= party.Items.Count) return;
-            var item = ItemDb.Get(party.Items[itemSel]);
+            if (itemSel >= slotsList.Count) return;
+            var item = ItemDb.Get(slotsList[itemSel]);
             var use = new Rect(area.x + area.width - 16 - 96, y + 16, 96, 48);
-            Gfx.Text(new Rect(x0, y, use.x - x0 - 10, 24), "《" + item.Name + "》", 18, Accent);
+            Gfx.Text(new Rect(x0, y, use.x - x0 - 10, 24), item.Kind == ItemKind.Book ? "《" + item.Name + "》" : item.Name, 18, Accent);
             Gfx.Text(new Rect(x0, y + 26, use.x - x0 - 10, 60), item.Desc, 15, new Color(1, 1, 1, 0.8f), TextAnchor.UpperLeft, true);
             Gfx.RoundRect(use, Accent);
-            Gfx.Text(use, "研读", 20, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
+            Gfx.Text(use, UseLabel(item), 20, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
             if (Gfx.Clicked(use)) UseItem();
         }
 
@@ -363,7 +388,7 @@ namespace LiuBeiRPG.Game
 
         const string SaveKey = "save1";
 
-        [Serializable] class SavedMember { public string Id; public int Soldiers, MaxSoldiers, WeaponBonus; }
+        [Serializable] class SavedMember { public string Id; public string[] Gear; public int Soldiers, MaxSoldiers, WeaponBonus; }   // WeaponBonus：旧档用
         [Serializable] class SaveData
         {
             public int Level, Exp, Gold, TP;
@@ -381,7 +406,7 @@ namespace LiuBeiRPG.Game
         {
             var s = new SaveData { Level = party.Level, Exp = party.Exp, Gold = party.Gold, TP = party.TP, Map = map.Name, X = px, Y = py };
             foreach (var m in party.Members)
-                s.Members.Add(new SavedMember { Id = m.Def.Id, Soldiers = m.Soldiers, MaxSoldiers = m.MaxSoldiers, WeaponBonus = m.WeaponBonus });
+                s.Members.Add(new SavedMember { Id = m.Def.Id, Soldiers = m.Soldiers, MaxSoldiers = m.MaxSoldiers, Gear = m.Gear });
             s.Flags.AddRange(flags.All);
             s.Items.AddRange(party.Items);
             s.Learned.AddRange(party.Learned);
@@ -390,6 +415,8 @@ namespace LiuBeiRPG.Game
             PlayerPrefs.Save();
             Note("已存档。", null);
         }
+
+        static string Nul(string s) { return string.IsNullOrEmpty(s) ? null : s; }   // JsonUtility 把 null 存成 ""
 
         void LoadGame()
         {
@@ -405,7 +432,11 @@ namespace LiuBeiRPG.Game
             foreach (var sm in s.Members)
             {
                 var def = Array.Find(defs, d => d.Id == sm.Id);
-                if (def != null) party.Members.Add(new General(def) { Soldiers = sm.Soldiers, MaxSoldiers = sm.MaxSoldiers, WeaponBonus = sm.WeaponBonus });
+                if (def == null) continue;
+                var g = new General(def) { Soldiers = sm.Soldiers, MaxSoldiers = sm.MaxSoldiers };
+                for (int i = 0; sm.Gear != null && i < sm.Gear.Length && i < General.GearSlots; i++) g.Gear[i] = Nul(sm.Gear[i]);
+                if (g.Weapon == null && sm.WeaponBonus > 0) g.Weapon = ItemDb.Signature(def.Id).Id;   // 旧档：受赠过就是专属兵器
+                party.Members.Add(g);
             }
             party.Strategist = party.Members.Find(m => m.Def.Id == s.Strategist);
             flags = new StoryFlags();
