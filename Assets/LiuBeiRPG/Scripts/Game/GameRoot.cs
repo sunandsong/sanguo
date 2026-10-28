@@ -113,6 +113,7 @@ namespace LiuBeiRPG.Game
         {
             InputKey key;
             if (e.type == EventType.KeyDown && e.keyCode == KeyCode.G) { showGrid = !showGrid; e.Use(); return; }
+            if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Tab && menuPage == PagePeople) { bagTab = 1 - bagTab; e.Use(); return; }   // 人物页切 物品 / 策略
             if (e.type == EventType.KeyDown && e.keyCode != KeyCode.None && MapKey(e.keyCode, out key))
             {
                 bool repeat = held.Contains(key);

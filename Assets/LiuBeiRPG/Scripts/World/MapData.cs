@@ -87,6 +87,9 @@ namespace LiuBeiRPG.World
         /// <summary>飘落物：petal（桃花瓣）/ leaf（落叶）/ null（室内，没有云影）。</summary>
         public string Weather;
 
+        /// <summary>人物画多大（1 = 约 1.1 格高）。野外地图景物比例大，人缩小一点。</summary>
+        public float ActorScale = 1f;
+
         /// <summary>垫在透明贴图（树、山、房屋）下面的地面。</summary>
         public char Ground = '.';
 

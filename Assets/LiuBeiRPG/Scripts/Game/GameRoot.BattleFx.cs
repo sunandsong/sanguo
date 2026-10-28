@@ -20,6 +20,7 @@ namespace LiuBeiRPG.Game
             shakeUntil = hitstopUntil = 0f;
             slashAt = flashAt = -10f;
             slashTarget = null;
+            ResetSpellFx();
         }
 
         static float Rnd(float a, float b) { return Random.Range(a, b); }

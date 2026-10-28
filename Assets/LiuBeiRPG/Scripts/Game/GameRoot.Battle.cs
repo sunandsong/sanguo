@@ -13,7 +13,7 @@ namespace LiuBeiRPG.Game
     /// </summary>
     public partial class GameRoot
     {
-        enum BState { Playing, GeneralMenu, TacticMenu, TargetEnemy, TargetAlly, ConfirmTarget }
+        enum BState { Playing, GeneralMenu, TacticMenu, TargetEnemy, TargetAlly, ConfirmTarget, Result }
 
         const float EventDelay = 0.75f;
 
@@ -85,7 +85,7 @@ namespace LiuBeiRPG.Game
             strike = null;
             ResetBattleFx();
             rewardsGiven = false;
-            foreach (var g in party.Members.Concat(enemies)) shownSoldiers[g] = g.Soldiers;
+            foreach (var g in battle.Players.Concat(enemies)) shownSoldiers[g] = g.Soldiers;
 
             var intro = new List<BattleEvent>
             {
@@ -126,14 +126,15 @@ namespace LiuBeiRPG.Game
                 if (frozen) strikeStart += Time.deltaTime;   // 顿帧：这一刀的时间轴停住
                 UpdateStrike();
             }
+            UpdateSpell();
             foreach (var kv in battlePuppets)
             {
                 var a = kv.Value;
                 if (a == null) continue;
-                bool acting = strike != null && kv.Key == strike.Actor;
+                bool acting = strike != null && kv.Key == strike.Actor || spell != null && kv.Key == spell.Actor;
                 if (frozen && (acting || kv.Key == slashTarget)) continue;   // 顿帧：砍人的和挨砍的都定住
                 a.Tick(Time.deltaTime);
-                if (acting) continue;   // 正在砍的人动作由 UpdateStrike 管
+                if (acting) continue;   // 正在砍 / 施法的人动作由 UpdateStrike / Spell 管
                 int shown;
                 if (shownSoldiers.TryGetValue(kv.Key, out shown) && shown <= 0) continue;   // 倒地的不回待机
                 if (walking) a.Play("walk");
@@ -146,9 +147,11 @@ namespace LiuBeiRPG.Game
         void StepPlayback()
         {
             if (strike != null) { FinishStrike(); return; }   // 快进：这一刀直接砍完
+            if (spell != null) { FinishSpell(); flips.Clear(); return; }   // 快进：法术直接结算
             if (playQueue.Count > 0)
             {
                 var e = playQueue.Dequeue();
+                if (TryStartSpell(e)) return;   // 法术：施法 → 放出 → 命中时结算（GameRoot.Spell.cs）
                 if (e.Actor != null && e.IsDamage && slots.ContainsKey(e.Actor) && slots.ContainsKey(e.Target))
                 {
                     // 普通攻击：冲过去砍一刀，刀落下时才结算（UpdateStrike）
@@ -175,6 +178,9 @@ namespace LiuBeiRPG.Game
         {
             log.Add(e.Text);
             if (log.Count > 50) log.RemoveAt(0);
+            Vector2 mp;
+            if (e.Target != null && e.SoldiersAfter < 0 && slots.TryGetValue(e.Target, out mp))   // 法术被识破
+                popups.Add(new Popup { text = "识破", at = mp + new Vector2(0, -HeightOf(e.Target) - 20f), born = Time.time });
             if (e.Target == null || e.SoldiersAfter < 0) return;
             int before;
             if (!shownSoldiers.TryGetValue(e.Target, out before)) before = e.SoldiersAfter;
@@ -265,7 +271,7 @@ namespace LiuBeiRPG.Game
                     if (!rewardsGiven)
                     {
                         rewardsGiven = true;
-                        Play(battle.GrantRewards(), EndBattle);
+                        ShowResult();   // 胜利结算面板，点一下才出场（GameRoot.BattleResult.cs）
                     }
                     break;
                 case BattleResult.Defeat:
@@ -284,7 +290,7 @@ namespace LiuBeiRPG.Game
             battleExit = Time.time;
             bstate = BState.Playing;
             foreach (var kv in battlePuppets)
-                if (kv.Value != null) kv.Value.Facing = party.Members.Contains(kv.Key) ? "side" : "left";   // 转身往外走
+                if (kv.Value != null) kv.Value.Facing = battle.Players.Contains(kv.Key) ? "side" : "left";   // 转身往外走
         }
 
         void FinishBattle()
@@ -302,7 +308,7 @@ namespace LiuBeiRPG.Game
         // ---------------- 菜单 ----------------
 
         // 每个武将轮流下令。物品还没有，按钮先灰着；MenuCancel 从策略退回时 menuIndex = 1 对应“策略”
-        static readonly string[] GeneralItems = { "攻击", "策略", "防御", "物品", "逃跑", "自动" };
+        static readonly string[] GeneralItems = { "攻击", "法术", "防御", "物品", "逃跑", "自动" };
 
         // 自动战斗：开了以后每回合全员自动攻击兵力最少的敌人，直到按取消键或点右上角的牌子关掉；每场战斗开始时关
         bool autoBattle;
@@ -324,6 +330,9 @@ namespace LiuBeiRPG.Game
             menuIndex = 0;
             if (autoBattle) AutoCommands();
         }
+
+        /// <summary>法术只有军师能放（吞食天地）。</summary>
+        bool CanCast { get { return CurrentCommander != null && CurrentCommander == party.Strategist && party.AvailableTactics().Count > 0; } }
 
         General CurrentCommander { get { return commandOrder != null && commandIdx < commandOrder.Count ? commandOrder[commandIdx] : null; } }
 
@@ -371,6 +380,11 @@ namespace LiuBeiRPG.Game
         void BattleKey(InputKey key)
         {
             if (battle == null) return;
+            if (bstate == BState.Result)
+            {
+                if (key == InputKey.Confirm || key == InputKey.Cancel) CloseResult();
+                return;
+            }
             if (bstate == BState.Playing)
             {
                 if (key == InputKey.Confirm) StepPlayback();   // 按确认加速
@@ -381,7 +395,7 @@ namespace LiuBeiRPG.Game
             if (n > 0)
             {
                 // 指令按钮是每排 3 个的格子：上下键跨一整排（越界就停在首 / 末个），左右键挨个走；选目标时上下左右都挨个走
-                bool grid = bstate == BState.GeneralMenu || bstate == BState.TacticMenu;
+                bool grid = bstate == BState.GeneralMenu;   // 法术是一排卡片，上下左右都挨个走
                 if (grid && key == InputKey.Up) { menuIndex = Mathf.Max(0, menuIndex - 3); return; }
                 if (grid && key == InputKey.Down) { menuIndex = Mathf.Min(n - 1, menuIndex + 3); return; }
                 if (key == InputKey.Up || key == InputKey.Left) { menuIndex = (menuIndex + n - 1) % n; return; }
@@ -398,7 +412,7 @@ namespace LiuBeiRPG.Game
                 case BState.GeneralMenu:
                     pending = new BattleCommand { Actor = CurrentCommander };
                     if (index == 0) { pending.Type = CommandType.Attack; bstate = BState.TargetEnemy; menuIndex = 0; }
-                    else if (index == 1) { bstate = BState.TacticMenu; menuIndex = 0; }
+                    else if (index == 1 && CanCast) { bstate = BState.TacticMenu; menuIndex = 0; }
                     else if (index == 2) { pending.Type = CommandType.Defend; CommitCommand(pending); }
                     else if (index == 4) { commands.Clear(); reservedTP = 0; Play(battle.TryRetreat(), AfterTurn); }   // 任何一人选逃跑，全军撤退
                     else if (index == 5) { autoBattle = true; AutoCommands(); }   // 这一位和后面的人都自动攻击
@@ -408,7 +422,7 @@ namespace LiuBeiRPG.Game
                 case BState.TacticMenu:
                 {
                     var t = party.AvailableTactics()[index];
-                    if (party.TP - reservedTP < t.Cost) { log.Add("策略点不足！"); return; }
+                    if (party.TP - reservedTP < t.Cost) { log.Add("法力不足！"); return; }
                     pending.Type = CommandType.Tactic;
                     pending.Tactic = t;
                     if (t.TargetsAll) CommitCommand(pending);
@@ -480,6 +494,7 @@ namespace LiuBeiRPG.Game
             }
             DrawScreenFlash();
             DrawBattleTitle();
+            if (bstate == BState.Result) DrawResult();
         }
 
         const float DiscAlpha = 0.7f;   // 圆盘不透明度，淡一点衬人物
@@ -520,7 +535,7 @@ namespace LiuBeiRPG.Game
             };
             var es = battle.Enemies;
             column(es, cx - ColGap * 0.5f, -1f);
-            column(party.Members, cx + ColGap * 0.5f, 1f);
+            column(battle.Players, cx + ColGap * 0.5f, 1f);
             slots.Clear();
             var shake = Shake();
             float st = strike != null ? Time.time - strikeStart : 0f;
@@ -611,6 +626,7 @@ namespace LiuBeiRPG.Game
             }
             DrawSlash();
             DrawSparks();
+            DrawFlips();
             DrawPopups();
             Gfx.Paper = false;
             if (bstate == BState.Playing && Gfx.Clicked(new Rect(bx, top, bw, bottom - top))) StepPlayback();   // 点战场快进
@@ -623,15 +639,22 @@ namespace LiuBeiRPG.Game
             var enabled = new List<bool>();
             switch (bstate)
             {
-                case BState.GeneralMenu: items.AddRange(GeneralItems); enabled.AddRange(new[] { true, true, true, false, true, true }); break;
+                case BState.GeneralMenu: items.AddRange(GeneralItems); enabled.AddRange(new[] { true, CanCast, true, false, true, true }); break;
                 case BState.ConfirmTarget: items.AddRange(ConfirmItems); break;
-                case BState.TacticMenu:
-                    foreach (var t in party.AvailableTactics())
-                    {
-                        items.Add(t.Name + " " + t.Cost);
-                        enabled.Add(party.TP - reservedTP >= t.Cost);
-                    }
-                    break;
+                case BState.TacticMenu: DrawTacticCards(); return;
+                case BState.Result: return;
+                case BState.TargetEnemy:
+                case BState.TargetAlly:
+                {
+                    // 选目标：在战场上点人；底下一行提示 + 返回（手机上没有取消键）
+                    var back = new Rect(bx + bw * 0.5f - 60, by + bh - 12 - 52, 120, 52);
+                    string what = pending.Type == CommandType.Tactic ? pending.Tactic.Name : "攻击";
+                    Gfx.Text(new Rect(bx, back.y - 30, bw, 24), CurrentCommander.Name + "：" + what + "　点选" + (bstate == BState.TargetEnemy ? "敌人" : "队友"), 16, Accent, TextAnchor.MiddleCenter);
+                    Gfx.Modern(back, 0.94f);
+                    Gfx.Text(back, "返回", 20, Color.white, TextAnchor.MiddleCenter);
+                    if (Gfx.Clicked(back)) MenuCancel();
+                    return;
+                }
                 default:
                     // 播战报时这条栏显示最新一句战报
                     if (log.Count == 0 || battleExit >= 0f) return;
@@ -657,7 +680,7 @@ namespace LiuBeiRPG.Game
             // 按钮上方小字：轮到谁下令（选策略时带上剩余策略点）
             string caption = bstate == BState.ConfirmTarget
                 ? CurrentCommander.Name + "：" + (pending.Type == CommandType.Tactic ? pending.Tactic.Name : "攻击") + " " + pending.Target.Name + "？"
-                : CurrentCommander.Name + (bstate == BState.TacticMenu ? "　策略点 " + (party.TP - reservedTP) : "");
+                : CurrentCommander.Name + (bstate == BState.TacticMenu ? "　法力 " + (party.TP - reservedTP) : "");
             Gfx.Text(new Rect(first.x + 4, first.y - 26, 400, 22), caption, 15, Accent);
             for (int i = 0; i < items.Count; i++)
             {
@@ -671,6 +694,51 @@ namespace LiuBeiRPG.Game
                 Gfx.Text(ir, items[i], 18, col, TextAnchor.MiddleCenter, false, !sel);
                 if (Gfx.Clicked(ir)) { menuIndex = i; MenuConfirm(i); return; }
             }
+        }
+
+        /// <summary>选法术：底部一排大图标卡片（右上角法力消耗），选中的抬起发金光；上方一行写名字和效果。法力不够的压暗。</summary>
+        void DrawTacticCards()
+        {
+            var list = party.AvailableTactics();
+            int tp = party.TP - reservedTP;
+            const float cw = 100f, ch = 118f, gap = 12f, backW = 72f;
+            float total = list.Count * cw + (list.Count - 1) * gap + gap + backW;
+            float x0 = bx + (bw - total) * 0.5f, y0 = by + bh - 12 - ch;
+            menuIndex = Mathf.Clamp(menuIndex, 0, Mathf.Max(0, list.Count - 1));
+
+            if (list.Count > 0)
+            {
+                var cur = list[menuIndex];
+                Gfx.Text(new Rect(x0, y0 - 34, total, 24), CurrentCommander.Name + "：" + cur.Name + " · " + cur.Desc, 16, Accent);
+                Gfx.Text(new Rect(x0, y0 - 34, total, 24), "法力 " + tp, 16, Color.white, TextAnchor.UpperRight);
+            }
+            for (int i = 0; i < list.Count; i++)
+            {
+                var t = list[i];
+                bool sel = i == menuIndex, en = tp >= t.Cost;
+                var r = new Rect(x0 + i * (cw + gap), y0 - (sel ? 10f : 0f), cw, ch);
+                if (sel) Gfx.RoundRect(new Rect(r.x - 5, r.y - 5, r.width + 10, r.height + 10), new Color(Accent.r, Accent.g, Accent.b, 0.25f + 0.1f * Mathf.Sin(Time.time * 5f)));
+                Gfx.Modern(r, 0.94f);
+                if (sel) Gfx.Frame(r, Accent, 2);
+                var icon = Gfx.Tex("Art/tactic_" + t.Id);
+                if (icon != null)
+                {
+                    var old = GUI.color;
+                    GUI.color = en ? Color.white : new Color(0.35f, 0.35f, 0.35f, 0.9f);
+                    Gfx.Image(new Rect(r.x + 8, r.y + 10, cw - 16, cw - 16), icon);
+                    GUI.color = old;
+                }
+                // 法力消耗小圆牌
+                var badge = new Rect(r.center.x - 22, r.yMax - 26, 44, 20);
+                Gfx.RoundRect(badge, new Color(0, 0, 0, 0.55f));
+                Gfx.Text(badge, t.Cost.ToString(), 15, en ? new Color(0.55f, 0.8f, 1f) : new Color(1, 0.4f, 0.35f), TextAnchor.MiddleCenter);
+                if (Gfx.Clicked(r)) { menuIndex = i; MenuConfirm(i); return; }
+            }
+            // 返回（手机上没有取消键）
+            var back = new Rect(x0 + list.Count * (cw + gap), y0 + ch - 48, backW, 48);
+            Gfx.Modern(back, 0.92f);
+            Gfx.Text(back, "返回", 18, Color.white, TextAnchor.MiddleCenter);
+            if (Gfx.Clicked(back)) MenuCancel();
         }
     }
 }

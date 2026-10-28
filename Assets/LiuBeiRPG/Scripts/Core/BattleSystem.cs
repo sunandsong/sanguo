@@ -20,7 +20,7 @@ namespace LiuBeiRPG.Core
     {
         public string Text;
         public General Target;          // 受影响的武将（可空）
-        public General Actor;           // 出手的人（只有普通攻击带，画面上要冲过去砍）
+        public General Actor;           // 出手的人：普通攻击（画面上冲过去砍）和“施展「X」”那条（画面上播施法动作）带
         public bool IsCrit;             // 会心一击
         public string Fx;               // 策略特效：策略 Id（huoji / luoshi / yaoshu / liaobing / guwu）
         public int SoldiersAfter = -1;  // 播放到这条时该武将应显示的兵力
@@ -38,6 +38,7 @@ namespace LiuBeiRPG.Core
     public class BattleSystem
     {
         public readonly Party Party;
+        public readonly List<General> Players;   // 这一仗上场的（开打时活着的前 5 个），后备不参战
         public readonly List<General> Enemies;
         public readonly bool IsBoss;
         public BattleResult Result = BattleResult.None;
@@ -48,13 +49,14 @@ namespace LiuBeiRPG.Core
         public BattleSystem(Party party, List<General> enemies, bool isBoss, Random rng)
         {
             Party = party;
+            Players = party.Fighters();
             Enemies = enemies;
             IsBoss = isBoss;
             this.rng = rng;
             foreach (var m in party.Members) m.Defending = false;
         }
 
-        public List<General> AlivePlayers { get { return Party.Members.Where(m => m.Alive).ToList(); } }
+        public List<General> AlivePlayers { get { return Players.Where(m => m.Alive).ToList(); } }
         public List<General> AliveEnemies { get { return Enemies.Where(e => e.Alive).ToList(); } }
 
         // ---------------- 玩家指令 ----------------
@@ -147,7 +149,7 @@ namespace LiuBeiRPG.Core
 
         // ---------------- 结算 ----------------
 
-        bool IsPlayer(General g) { return Party.Members.Contains(g); }
+        bool IsPlayer(General g) { return Players.Contains(g); }
 
         List<General> FoesOf(General g) { return IsPlayer(g) ? AliveEnemies : AlivePlayers; }
         List<General> AlliesOf(General g) { return IsPlayer(g) ? AlivePlayers : AliveEnemies; }
@@ -179,14 +181,14 @@ namespace LiuBeiRPG.Core
             {
                 if (Party.TP < t.Cost)
                 {
-                    events.Add(new BattleEvent("策略点不足，" + cmd.Actor.Name + " 改为攻击。"));
+                    events.Add(new BattleEvent("法力不足，" + cmd.Actor.Name + " 改为攻击。"));
                     DoAttack(cmd, events);
                     return;
                 }
                 Party.TP -= t.Cost;
             }
 
-            events.Add(new BattleEvent(cmd.Actor.Name + " 施展「" + t.Name + "」！"));
+            events.Add(new BattleEvent(cmd.Actor.Name + " 施展「" + t.Name + "」！") { Actor = cmd.Actor, Fx = t.Id });
 
             List<General> targets;
             if (t.TargetsFoe)
@@ -218,7 +220,7 @@ namespace LiuBeiRPG.Core
                 {
                     if (!Formula.TacticHits(cmd.Actor, target, rng))
                     {
-                        events.Add(new BattleEvent(target.Name + " 识破了计策！"));
+                        events.Add(new BattleEvent(target.Name + " 识破了计策！") { Target = target });
                         continue;
                     }
                     int dealt = target.TakeDamage(Formula.TacticDamage(cmd.Actor, target, t, rng));
@@ -236,11 +238,13 @@ namespace LiuBeiRPG.Core
         }
 
         /// <summary>胜利后发放经验和金钱。</summary>
+        public int RewardExp, RewardGold;   // GrantRewards 之后可读，结算面板用
+
         public List<BattleEvent> GrantRewards()
         {
             var events = new List<BattleEvent>();
-            int exp = Enemies.Sum(e => e.Def.ExpReward);
-            int gold = Enemies.Sum(e => e.Def.GoldReward);
+            int exp = RewardExp = Enemies.Sum(e => e.Def.ExpReward);
+            int gold = RewardGold = Enemies.Sum(e => e.Def.GoldReward);
             Party.Gold += gold;
             events.Add(new BattleEvent("胜利！获得经验 " + exp + "，金钱 " + gold));
             foreach (var m in Party.GainExp(exp)) events.Add(new BattleEvent(m));

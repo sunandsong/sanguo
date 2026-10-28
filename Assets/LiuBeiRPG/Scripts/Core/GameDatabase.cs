@@ -27,6 +27,7 @@ namespace LiuBeiRPG.Core
         };
 
         // ---------- 黄巾军 ----------
+        // 弱点靠统率 / 智力拉开：力士甲厚脑笨（砍不动，怕策略），术士身弱智高（策略打不动，怕砍），兵和头目两样都行
         public static readonly GeneralDef HuangJinBing = new GeneralDef
         {
             Id = "hjb", Name = "黄巾兵", Glyph = "兵", Color = "#e8c547",
@@ -35,18 +36,18 @@ namespace LiuBeiRPG.Core
         public static readonly GeneralDef HuangJinLiShi = new GeneralDef
         {
             Id = "hjls", Name = "黄巾力士", Glyph = "力", Color = "#e89a47",
-            Wu = 90, Zhi = 15, Tong = 45, Su = 40, BaseSoldiers = 230, ExpReward = 15, GoldReward = 12
+            Wu = 90, Zhi = 15, Tong = 110, Su = 40, BaseSoldiers = 230, ExpReward = 15, GoldReward = 12
         };
         public static readonly GeneralDef HuangJinShuShi = new GeneralDef
         {
             Id = "hjss", Name = "黄巾术士", Glyph = "术", Color = "#c47be8",
-            Wu = 35, Zhi = 72, Tong = 35, Su = 60, BaseSoldiers = 130, ExpReward = 14, GoldReward = 15,
+            Wu = 35, Zhi = 110, Tong = 35, Su = 60, BaseSoldiers = 130, ExpReward = 14, GoldReward = 15,
             Tactics = new[] { "yaoshu" }
         };
         public static readonly GeneralDef HuangJinTouMu = new GeneralDef
         {
             Id = "hjtm", Name = "黄巾头目", Glyph = "头", Color = "#ff7a5c",
-            Wu = 82, Zhi = 35, Tong = 55, Su = 55, BaseSoldiers = 380, ExpReward = 30, GoldReward = 30
+            Wu = 82, Zhi = 60, Tong = 70, Su = 55, BaseSoldiers = 380, ExpReward = 30, GoldReward = 30
         };
 
         // ---------- 第一章 Boss（演义第一回：刘关张初战程远志） ----------
@@ -68,7 +69,7 @@ namespace LiuBeiRPG.Core
             if (partyLevel >= 2) pool.Add(HuangJinLiShi);
             if (partyLevel >= 3) pool.Add(HuangJinTouMu);
 
-            int count = 2 + rng.Next(partyLevel >= 2 ? 3 : 2);   // 1级：2~3 队，2级起：2~4 队
+            int count = 1 + rng.Next(partyLevel >= 2 ? 5 : 3);   // 和吞食天地一样最多 5 队：1级 1~3 队，2级起 1~5 队
             var list = new List<General>();
             for (int i = 0; i < count; i++) list.Add(new General(pool[rng.Next(pool.Count)]));
             return list;
@@ -82,6 +83,7 @@ namespace LiuBeiRPG.Core
                 new General(DengMao),
                 new General(ChengYuanZhi),
                 new General(HuangJinShuShi),
+                new General(HuangJinLiShi),
             };
         }
     }

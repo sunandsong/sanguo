@@ -7,17 +7,17 @@ using LiuBeiRPG.World;
 namespace LiuBeiRPG.Game
 {
     /// <summary>
-    /// 大地图菜单（X / Esc / 手机“菜单”键）：人物、策略、物品、存档、读档。
-    /// 列表借用选项框 Choose；人物详情、物品格子是单独画的页。
+    /// 大地图菜单（X / Esc / 手机“菜单”键）：人物（装备 + 物品 + 策略）、存档、读档。
     /// </summary>
     public partial class GameRoot
     {
-        int menuPage;      // 0 = 没开，PagePeople = 人物详情，PageItems = 物品格子
-        int pageMember;    // 人物详情正在看第几个人
-        const int PagePeople = 1, PageItems = 2;
+        int menuPage;      // 0 = 没开，PageMain = 菜单首页，PagePeople = 人物（装备 + 物品）
+        int pageMember;    // 人物页正在看第几个人
+        int mainSel;       // 首页选中的按钮
+        const int PagePeople = 1, PageMain = 3;
         const int ItemSlots = 24;
 
-        static readonly string[] MenuItems = { "人物", "策略", "物品", "存档", "读档", "返回" };
+        static readonly string[] MenuItems = { "人物 · 物品 · 法术", "存档", "读档" };
 
         // 兵器的中文名（Weapons 表里的引擎名 → 显示名）
         static readonly Dictionary<string, string> WeaponNames = new Dictionary<string, string>
@@ -25,37 +25,49 @@ namespace LiuBeiRPG.Game
             { "jian", "双股剑" }, { "dao", "青龙偃月刀" }, { "qiang", "丈八蛇矛" },
         };
 
-        void OpenMenu()
+        void OpenMenu() { menuPage = PageMain; }
+
+        void MainPick(int i)
         {
-            Choose("等级 " + party.Level + "　金 " + party.Gold + "　策略点 " + party.TP + "/" + party.MaxTP, MenuItems, i =>
+            mainSel = i;
+            switch (i)
             {
-                switch (i)
-                {
-                    case 0: menuPage = PagePeople; pageMember = 0; break;
-                    case 1: TacticMenu(); break;
-                    case 2: menuPage = PageItems; itemSel = 0; break;
-                    case 3: SaveGame(); break;
-                    case 4: LoadGame(); break;
-                }
-            });
+                case 0: menuPage = PagePeople; pageMember = 0; itemSel = 0; tacticSel = 0; break;
+                case 1: SaveGame(); break;                  // 提示框叠在菜单上，看完还在菜单
+                case 2: menuPage = 0; LoadGame(); break;
+            }
         }
 
         void MenuPageKey(InputKey key)
         {
-            if (menuPage == PageItems) { ItemsKey(key); return; }
-            int n = party.Members.Count;
-            if (menuPage == PagePeople && key == InputKey.Left) pageMember = (pageMember + n - 1) % n;
-            else if (menuPage == PagePeople && key == InputKey.Right) pageMember = (pageMember + 1) % n;
-            else if (key == InputKey.Confirm || key == InputKey.Cancel) CloseMenuPage();
+            if (menuPage == PageMain)
+            {
+                if (key == InputKey.Up) mainSel = (mainSel + MenuItems.Length - 1) % MenuItems.Length;
+                else if (key == InputKey.Down) mainSel = (mainSel + 1) % MenuItems.Length;
+                else if (key == InputKey.Confirm) MainPick(mainSel);
+                else if (key == InputKey.Cancel) menuPage = 0;
+                return;
+            }
+            // 人物页：左右换人，上下在当前页签里挑，确认使用；Tab 键切 物品 / 策略（见 GameRoot.cs）
+            int n = party.Members.Count, d = key == InputKey.Up ? -1 : key == InputKey.Down ? 1 : 0;
+            if (key == InputKey.Left) pageMember = (pageMember + n - 1) % n;
+            else if (key == InputKey.Right) pageMember = (pageMember + 1) % n;
+            else if (d != 0 && bagTab == 0) itemSel = Mathf.Clamp(itemSel + d, 0, ItemSlots - 1);
+            else if (d != 0) tacticSel = Mathf.Clamp(tacticSel + d, 0, Mathf.Max(0, party.AvailableTactics().Count - 1));
+            else if (key == InputKey.Confirm && bagTab == 0 && itemSel < party.Items.Count) UseItem();
+            else if (key == InputKey.Confirm && bagTab == 1 && tacticSel < party.AvailableTactics().Count) UseTactic(party.AvailableTactics()[tacticSel]);
+            else if (key == InputKey.Cancel) CloseMenuPage();
         }
 
-        void CloseMenuPage() { menuPage = 0; OpenMenu(); }
+        /// <summary>子页返回首页，首页返回地图。</summary>
+        void CloseMenuPage() { menuPage = menuPage == PageMain ? 0 : PageMain; }
 
         void DrawMenuPage()
         {
             if (menuPage == 0) return;
             Gfx.Rect(new Rect(0, 0, Gfx.VW, Gfx.VH), new Color(0, 0, 0, 0.45f));
-            if (menuPage == PagePeople) DrawPeoplePage(); else DrawItemsPage();
+            if (menuPage == PageMain) DrawMainPage();
+            else DrawPeoplePage();
         }
 
         /// <summary>面板 + 右上角“返回”。点返回关掉这一页。</summary>
@@ -63,50 +75,117 @@ namespace LiuBeiRPG.Game
         {
             var r = new Rect((Gfx.VW - w) * 0.5f, (Gfx.VH - h) * 0.5f, w, h);
             Gfx.Modern(r, 0.95f);
-            var back = new Rect(r.xMax - 96, r.y + 14, 80, 34);
+            var back = new Rect(r.xMax - 112, r.y + 12, 96, 44);
             Gfx.RoundRect(back, new Color(1, 1, 1, 0.1f));
-            Gfx.Text(back, "返回", 17, Color.white, TextAnchor.MiddleCenter);
+            Gfx.Text(back, "返回", 20, Color.white, TextAnchor.MiddleCenter);
             if (Gfx.Clicked(back)) CloseMenuPage();
             return r;
         }
 
+        /// <summary>菜单首页：左边主公立绘 + 全队兵力，右边一列大按钮（手指好点，64 高）。</summary>
+        void DrawMainPage()
+        {
+            float w = Mathf.Min(Gfx.VW - 24, 660), h = Mathf.Min(Gfx.VH - 24, 470);
+            var r = PagePanel(w, h);
+            if (menuPage != PageMain) return;   // 刚点了返回
+            float lw = w * 0.5f;
+
+            // 左：主公站在圆盘上
+            var foot = new Vector2(r.x + lw * 0.5f, r.y + 230);
+            var disc = Gfx.Tex("Art/battle_disc");
+            if (disc != null)
+            {
+                var old = GUI.color;
+                GUI.color = new Color(1, 1, 1, 0.8f);
+                Gfx.Image(new Rect(foot.x - 100, foot.y - 28, 200, 200f * disc.height / disc.width), disc);
+                GUI.color = old;
+            }
+            var leader = Portrait(party.Members[0].Name);
+            if (leader != null) leader.DrawGUI(foot, 180 / 950f);
+
+            // 左下：每人一条兵力
+            float y = foot.y + 40;
+            foreach (var m in party.Members)
+            {
+                Gfx.Text(new Rect(r.x + 24, y, 60, 26), m.Name, 18, m.Alive ? Color.white : Color.gray);
+                Gfx.Bar(new Rect(r.x + 84, y + 8, lw - 160, 10), m.MaxSoldiers > 0 ? (float)m.Soldiers / m.MaxSoldiers : 0, new Color(0.4f, 0.8f, 0.45f));
+                Gfx.Text(new Rect(r.x + lw - 72, y, 60, 26), m.Soldiers.ToString(), 15, new Color(1, 1, 1, 0.75f), TextAnchor.UpperRight);
+                y += 32;
+            }
+            Gfx.Text(new Rect(r.x + 24, r.yMax - 40, lw - 30, 26), "Lv " + party.Level + "　金 " + party.Gold + "　法力 " + party.TP + "/" + party.MaxTP, 17, Accent);
+            Gfx.Rect(new Rect(r.x + lw, r.y + 24, 1, h - 48), new Color(1, 1, 1, 0.1f));
+
+            // 右：大按钮
+            float bx = r.x + lw + 24, bw = w - lw - 48, bh = 64, gap = 10;
+            float by0 = r.y + 64 + (h - 64 - 20 - MenuItems.Length * (bh + gap)) * 0.5f;
+            for (int i = 0; i < MenuItems.Length; i++)
+            {
+                var br = new Rect(bx, by0 + i * (bh + gap), bw, bh);
+                bool sel = i == mainSel;
+                Gfx.RoundRect(br, sel ? Accent : new Color(1, 1, 1, 0.07f));
+                Gfx.Text(br, MenuItems[i], 24, sel ? new Color(0.12f, 0.09f, 0.04f) : Color.white, TextAnchor.MiddleCenter, false, !sel);
+                if (Gfx.Clicked(br)) { MainPick(i); return; }
+            }
+        }
+
+        /// <summary>人物页：横屏左边人物（立绘 + 数值 + 装备）右边行囊；竖屏上下排。</summary>
         void DrawPeoplePage()
         {
             bool portrait = Gfx.Portrait;
-            float w = Mathf.Min(Gfx.VW - 24, 780), h = Mathf.Min(Gfx.VH - 24, portrait ? 760 : 480);
+            float w = portrait ? Gfx.VW - 24 : Mathf.Min(Gfx.VW - 24, 940);
+            float h = portrait ? Mathf.Min(Gfx.VH - 24, 860) : Mathf.Min(Gfx.VH - 24, 500);
             var r = PagePanel(w, h);
-            if (menuPage == 0) return;   // 刚点了返回
+            if (menuPage != PagePeople) return;   // 刚点了返回
             pageMember = Mathf.Clamp(pageMember, 0, party.Members.Count - 1);
 
             // 顶上一排人名页签
             for (int i = 0; i < party.Members.Count; i++)
             {
-                var tr = new Rect(r.x + 16 + i * 96, r.y + 14, 88, 34);
+                var tr = new Rect(r.x + 16 + i * 96, r.y + 12, 88, 44);
                 bool sel = i == pageMember;
                 if (sel) Gfx.RoundRect(tr, Accent); else Gfx.RoundRect(tr, new Color(1, 1, 1, 0.08f));
-                Gfx.Text(tr, party.Members[i].Name, 18, sel ? new Color(0.12f, 0.09f, 0.04f) : Color.white, TextAnchor.MiddleCenter, false, !sel);
+                Gfx.Text(tr, party.Members[i].Name, 20, sel ? new Color(0.12f, 0.09f, 0.04f) : Color.white, TextAnchor.MiddleCenter, false, !sel);
                 if (Gfx.Clicked(tr)) pageMember = i;
             }
 
-            var m = party.Members[pageMember];
-            float top = r.y + 62;
-            // 人：横屏在左边一栏，竖屏在上面
-            var stage = portrait ? new Rect(r.x, top, w, 300) : new Rect(r.x, top, 290, r.yMax - top);
+            float top = r.y + 68;
+            Rect who, bag;
+            if (portrait) { who = new Rect(r.x, top, w, 330); bag = new Rect(r.x, top + 340, w, r.yMax - top - 340); }
+            else { who = new Rect(r.x, top, 540, r.yMax - top); bag = new Rect(r.x + 550, top, w - 550, r.yMax - top); }
+            Gfx.Rect(portrait ? new Rect(r.x + 20, bag.y - 6, w - 40, 1) : new Rect(bag.x - 4, top, 1, bag.height - 16), new Color(1, 1, 1, 0.1f));
+            DrawCharacter(party.Members[pageMember], who);
+            // 右边两个页签：物品 / 策略
+            string[] tabs = { "物品", "法术" };
+            for (int i = 0; i < 2; i++)
+            {
+                var tr = new Rect(bag.x + 16 + i * 104, bag.y, 96, 40);
+                bool sel = i == bagTab;
+                Gfx.RoundRect(tr, sel ? Accent : new Color(1, 1, 1, 0.08f));
+                Gfx.Text(tr, tabs[i], 20, sel ? new Color(0.12f, 0.09f, 0.04f) : Color.white, TextAnchor.MiddleCenter, false, !sel);
+                if (Gfx.Clicked(tr)) bagTab = i;
+            }
+            var content = new Rect(bag.x, bag.y + 52, bag.width, bag.height - 52);
+            if (bagTab == 0) DrawBag(content); else DrawTactics(content, party.Members[pageMember]);
+        }
+
+        void DrawCharacter(General m, Rect area)
+        {
+            var stage = new Rect(area.x, area.y, 210, area.height);
             var foot = new Vector2(stage.center.x, stage.yMax - 56);
             var disc = Gfx.Tex("Art/battle_disc");
             if (disc != null)
             {
                 var old = GUI.color;
                 GUI.color = new Color(1, 1, 1, 0.8f);
-                Gfx.Image(new Rect(foot.x - 120, foot.y - 34, 240, 240f * disc.height / disc.width), disc);
+                Gfx.Image(new Rect(foot.x - 100, foot.y - 28, 200, 200f * disc.height / disc.width), disc);
                 GUI.color = old;
             }
             var bust = Portrait(m.Name);
-            if (bust != null) { bust.Tint = m.Alive ? Color.white : new Color(0.5f, 0.5f, 0.5f); bust.DrawGUI(foot, (stage.height - 110) / 950f); bust.Tint = Color.white; }   // 和对话头像是同一个，画完复原
+            if (bust != null) { bust.Tint = m.Alive ? Color.white : new Color(0.5f, 0.5f, 0.5f); bust.DrawGUI(foot, Mathf.Min(stage.height - 110, 300) / 950f); bust.Tint = Color.white; }   // 和对话头像是同一个，画完复原
             Gfx.Text(new Rect(stage.x, foot.y + 18, stage.width, 30), m.Name + "　Lv " + party.Level, 22, Accent, TextAnchor.MiddleCenter);
 
             // 数值和装备
-            float x = portrait ? r.x + 20 : stage.xMax + 10, y = portrait ? stage.yMax + 4 : top + 6, rw = r.xMax - 20 - x;
+            float x = stage.xMax + 10, y = area.y + 4, rw = area.xMax - 10 - x;
             Gfx.Text(new Rect(x, y, rw, 24), "兵力", 16, new Color(1, 1, 1, 0.6f));
             Gfx.Text(new Rect(x, y, rw, 24), m.Soldiers + " / " + m.MaxSoldiers, 18, Color.white, TextAnchor.UpperRight);
             Gfx.Bar(new Rect(x, y + 28, rw, 14), m.MaxSoldiers > 0 ? (float)m.Soldiers / m.MaxSoldiers : 0, new Color(0.4f, 0.8f, 0.45f));
@@ -125,6 +204,19 @@ namespace LiuBeiRPG.Game
             y += 90;
 
             Gfx.Text(new Rect(x, y, rw, 24), "装备", 16, new Color(1, 1, 1, 0.6f));
+            // 军师：只有军师能放法术（吞食天地）。是军师的挂金牌，不是的给个任命按钮
+            var sr0 = new Rect(x + rw - 120, y - 8, 120, 34);
+            if (m == party.Strategist)
+            {
+                Gfx.RoundRect(sr0, new Color(Accent.r, Accent.g, Accent.b, 0.2f));
+                Gfx.Text(sr0, "军师", 17, Accent, TextAnchor.MiddleCenter);
+            }
+            else
+            {
+                Gfx.RoundRect(sr0, new Color(1, 1, 1, 0.1f));
+                Gfx.Text(sr0, "任命为军师", 16, Color.white, TextAnchor.MiddleCenter);
+                if (Gfx.Clicked(sr0)) party.Strategist = m;
+            }
             y += 30;
             string weapon;
             if (m.WeaponBonus <= 0 || !Weapons.TryGetValue(m.Def.Id, out weapon)) weapon = null;   // 受赠之前空手，和地图上一致
@@ -152,94 +244,116 @@ namespace LiuBeiRPG.Game
             if (tex == null) return;
             float len = slot.width * 1.2f, wid = len * tex.width / tex.height;
             var old = GUI.matrix;
-            GUIUtility.RotateAroundPivot(45, slot.center);
+            // 不用 GUIUtility.RotateAroundPivot：它把中心点当屏幕像素，GUI.matrix 有缩放时会转到格子外面去
+            var c = (Vector3)slot.center;
+            GUI.matrix = old * Matrix4x4.TRS(c, Quaternion.Euler(0, 0, 45), Vector3.one) * Matrix4x4.TRS(-c, Quaternion.identity, Vector3.one);
             Gfx.Image(new Rect(slot.center.x - wid * 0.5f, slot.center.y - len * 0.5f, wid, len), tex);
             GUI.matrix = old;
         }
 
-        int itemSel;   // 物品页选中的格子
-        int ItemCols { get { return Gfx.Portrait ? 4 : 6; } }
-
-        void ItemsKey(InputKey key)
-        {
-            int d = key == InputKey.Left ? -1 : key == InputKey.Right ? 1 : key == InputKey.Up ? -ItemCols : key == InputKey.Down ? ItemCols : 0;
-            if (d != 0) itemSel = Mathf.Clamp(itemSel + d, 0, ItemSlots - 1);
-            else if (key == InputKey.Confirm && itemSel < party.Items.Count) UseItem();
-            else if (key == InputKey.Cancel) CloseMenuPage();
-        }
+        int itemSel;   // 行囊里选中的格子
 
         void UseItem()
         {
-            Note(party.UseItem(itemSel), null);   // 对话框叠在物品页上，看完还停在这页
+            Note(party.UseItem(itemSel), null);   // 对话框叠在人物页上，看完还停在这页
         }
 
-        void DrawItemsPage()
+        /// <summary>行囊：6 列格子，下面是选中物品的说明和“研读”。</summary>
+        void DrawBag(Rect area)
         {
-            int cols = ItemCols, rows = (ItemSlots + cols - 1) / cols;
-            float cell = Mathf.Min(84, (Mathf.Min(Gfx.VW - 24, 640) - 40 - (cols - 1) * 10) / cols);
-            float w = cols * cell + (cols - 1) * 10 + 40, gridH = rows * (cell + 10);
-            var r = PagePanel(w, 64 + gridH + 96);
-            if (menuPage == 0) return;
-            Gfx.Text(new Rect(r.x + 20, r.y + 18, 200, 28), "物品　" + party.Items.Count + "/" + ItemSlots, 20, Accent);
-            // ponytail: 还没有物品图标，格子里先写书名；出了图标再换成图
+            const int cols = 6;
+            int rows = (ItemSlots + cols - 1) / cols;
+            float x0 = area.x + 16, gw = area.width - 32;
+            // 格子按宽、高都放得下来算：上面 32 标题，下面留 84 给说明和“研读”
+            float cell = Mathf.Min(72, Mathf.Min((gw - (cols - 1) * 8) / cols, (area.height - 32 - 84) / rows - 8));
+            float gx = (gw - cols * cell) / (cols - 1);   // 格子变小时横向间距撑开，左右都贴齐，右边不留空
+            Gfx.Text(new Rect(x0, area.y, gw, 26), "物品　" + party.Items.Count + "/" + ItemSlots, 18, new Color(1, 1, 1, 0.6f));
+            float gy = area.y + 32;
             for (int i = 0; i < ItemSlots; i++)
             {
-                var cr = new Rect(r.x + 20 + (i % cols) * (cell + 10), r.y + 64 + (i / cols) * (cell + 10), cell, cell);
+                var cr = new Rect(x0 + (i % cols) * (cell + gx), gy + (i / cols) * (cell + 8), cell, cell);
                 bool has = i < party.Items.Count;
                 Gfx.RoundRect(cr, has ? new Color(0.55f, 0.42f, 0.25f, 0.5f) : new Color(1, 1, 1, 0.06f));
                 Gfx.Frame(cr, i == itemSel ? Accent : new Color(1, 1, 1, 0.1f), i == itemSel ? 2 : 1);
-                if (has) Gfx.Text(cr, ItemDb.Get(party.Items[i]).Name, 20, Color.white, TextAnchor.MiddleCenter);
+                var icon = has ? Gfx.Tex("Art/item_" + party.Items[i]) : null;   // 图标见 ArtSrc/物品图标提示词.md；缺图就空着，不写字顶替
+                if (icon != null) Gfx.Image(new Rect(cr.x + 4, cr.y + 4, cr.width - 8, cr.height - 8), icon);
                 if (Gfx.Clicked(cr)) itemSel = i;
             }
-            // 底下：选中物品的说明 + 使用
-            float y = r.y + 64 + gridH + 6;
+            // 底下：选中物品的说明 + 研读
+            float y = gy + rows * (cell + 8) + 4;
             if (itemSel >= party.Items.Count) return;
             var item = ItemDb.Get(party.Items[itemSel]);
-            var use = new Rect(r.xMax - 116, y + 22, 96, 40);
-            Gfx.Text(new Rect(r.x + 20, y, use.x - r.x - 30, 24), "《" + item.Name + "》", 18, Accent);
-            Gfx.Text(new Rect(r.x + 20, y + 28, use.x - r.x - 30, 56), item.Desc, 15, new Color(1, 1, 1, 0.8f), TextAnchor.UpperLeft, true);
+            var use = new Rect(area.x + area.width - 16 - 96, y + 16, 96, 48);
+            Gfx.Text(new Rect(x0, y, use.x - x0 - 10, 24), "《" + item.Name + "》", 18, Accent);
+            Gfx.Text(new Rect(x0, y + 26, use.x - x0 - 10, 60), item.Desc, 15, new Color(1, 1, 1, 0.8f), TextAnchor.UpperLeft, true);
             Gfx.RoundRect(use, Accent);
-            Gfx.Text(use, "研读", 18, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
+            Gfx.Text(use, "研读", 20, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
             if (Gfx.Clicked(use)) UseItem();
         }
 
         // ---------------- 策略：地图上只能用恢复类 ----------------
 
-        void TacticMenu()
+        int bagTab;      // 人物页右边：0 = 物品，1 = 策略
+        int tacticSel;
+
+        /// <summary>法术：和物品一样一格一个图标，不写字；只列学会的。选中的在下面写名字和说明。
+        /// 恢复类在地图上能用，单体的给左边正在看的这个人。</summary>
+        void DrawTactics(Rect area, General who)
         {
-            var list = party.AvailableTactics();
-            var names = new string[list.Count + 1];
-            for (int i = 0; i < list.Count; i++) names[i] = list[i].Name + "　" + list[i].Cost + "点";
-            names[list.Count] = "返回";
-            Choose("策略点 " + party.TP + "/" + party.MaxTP + "（地图上只能用恢复类）", names, i =>
+            const int cols = 4;
+            float x0 = area.x + 16, gw = area.width - 32;
+            float cell = Mathf.Min(80, (gw - (cols - 1) * 10) / cols);
+            float gx = (gw - cols * cell) / (cols - 1);   // 和物品格子一样左右贴齐
+            Gfx.Text(new Rect(x0, area.y, gw, 24), "法力 " + party.TP + "/" + party.MaxTP + "　军师 " + party.Strategist.Name, 17, new Color(1, 1, 1, 0.6f));
+            var learned = party.AvailableTactics();   // 只列学会的，没学会的不出现
+            if (learned.Count == 0) return;
+            tacticSel = Mathf.Clamp(tacticSel, 0, learned.Count - 1);
+            float gy = area.y + 32;
+            for (int i = 0; i < learned.Count; i++)
             {
-                if (i >= list.Count) { OpenMenu(); return; }
-                var t = list[i];
-                if (t.Kind != TacticKind.Heal) { Note(t.Name + "只能在战斗中使用。", TacticMenu); return; }
-                if (party.TP < t.Cost) { Note("策略点不足。", TacticMenu); return; }
-                if (t.TargetsAll) { CastHeal(t, party.Members); return; }
-                var targets = party.Members.FindAll(m => m.Alive);
-                var opts = new string[targets.Count + 1];
-                for (int j = 0; j < targets.Count; j++) opts[j] = targets[j].Name + "　" + targets[j].Soldiers + "/" + targets[j].MaxSoldiers;
-                opts[targets.Count] = "返回";
-                Choose("对谁使用" + t.Name + "？", opts, j =>
-                {
-                    if (j >= targets.Count) TacticMenu();
-                    else CastHeal(t, new List<General> { targets[j] });
-                });
-            });
+                var t = learned[i];
+                var cr = new Rect(x0 + (i % cols) * (cell + gx), gy + (i / cols) * (cell + 10), cell, cell);
+                Gfx.RoundRect(cr, new Color(1, 1, 1, 0.06f));
+                Gfx.Frame(cr, i == tacticSel ? Accent : new Color(1, 1, 1, 0.1f), i == tacticSel ? 2 : 1);
+                var icon = Gfx.Tex("Art/tactic_" + t.Id);   // 图标见 ArtSrc/法术图标提示词.md；缺图就空着，不写字顶替
+                if (icon != null) Gfx.Image(new Rect(cr.x + 4, cr.y + 4, cr.width - 8, cr.height - 8), icon);
+                if (Gfx.Clicked(cr)) tacticSel = i;
+            }
+
+            // 底下：选中策略的名字、消耗、说明；能在地图上用的出“使用”按钮
+            var cur = learned[tacticSel];
+            bool usable = cur.Kind == TacticKind.Heal;
+            float y = gy + ((learned.Count + cols - 1) / cols) * (cell + 10) + 4;
+            float tw = usable ? gw - 190 : gw;
+            Gfx.Text(new Rect(x0, y, tw, 26), cur.Name + "　" + cur.Cost + " 点", 19, Accent);
+            string line2 = usable ? cur.Desc : cur.Desc + "（战斗中使用）";
+            Gfx.Text(new Rect(x0, y + 28, tw, 44), line2, 15, new Color(1, 1, 1, 0.75f), TextAnchor.UpperLeft, true);
+            if (!usable) return;
+            var use = new Rect(area.xMax - 16 - 180, y + 10, 180, 48);
+            Gfx.RoundRect(use, Accent);
+            Gfx.Text(use, cur.TargetsAll ? "使用（全队）" : "使用（" + who.Name + "）", 19, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
+            if (Gfx.Clicked(use)) UseTactic(cur);
         }
 
-        /// <summary>智力最高的活人施放，和战斗里同一个公式。</summary>
+        void UseTactic(TacticDef t)
+        {
+            if (t.Kind != TacticKind.Heal) { Note(t.Name + "只能在战斗中使用。", null); return; }
+            if (party.TP < t.Cost) { Note("法力不足。", null); return; }
+            if (!party.Strategist.Alive) { Note("军师" + party.Strategist.Name + "已经败走，放不了法术。", null); return; }
+            var who = party.Members[pageMember];
+            if (!t.TargetsAll && !who.Alive) { Note(who.Name + "已经败走，疗兵救不回来。", null); return; }
+            CastHeal(t, t.TargetsAll ? party.Members : new List<General> { who });
+        }
+
+        /// <summary>军师施放，和战斗里同一个公式。</summary>
         void CastHeal(TacticDef t, List<General> targets)
         {
-            General caster = null;
-            foreach (var m in party.Members) if (m.Alive && (caster == null || m.Zhi > caster.Zhi)) caster = m;
+            var caster = party.Strategist;
             party.TP -= t.Cost;
             var lines = new List<DialogueLine> { new DialogueLine(null, caster.Name + "使用了" + t.Name + "。") };
             foreach (var g in targets)
                 if (g.Alive) lines.Add(new DialogueLine(null, g.Name + " 兵力恢复 " + g.Heal(Formula.TacticHeal(caster, t, rng))));
-            Say(lines, TacticMenu);
+            Say(lines);   // 对话框叠在人物页上，看完还停在这页
         }
 
         void Note(string text, Action then) { Say(new List<DialogueLine> { new DialogueLine(null, text) }, then); }
@@ -253,6 +367,7 @@ namespace LiuBeiRPG.Game
         [Serializable] class SaveData
         {
             public int Level, Exp, Gold, TP;
+            public string Strategist;
             public List<SavedMember> Members = new List<SavedMember>();
             public List<string> Flags = new List<string>();
             public List<string> Items = new List<string>(), Learned = new List<string>();
@@ -270,6 +385,7 @@ namespace LiuBeiRPG.Game
             s.Flags.AddRange(flags.All);
             s.Items.AddRange(party.Items);
             s.Learned.AddRange(party.Learned);
+            s.Strategist = party.Strategist.Def.Id;
             PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(s));
             PlayerPrefs.Save();
             Note("已存档。", null);
@@ -291,6 +407,7 @@ namespace LiuBeiRPG.Game
                 var def = Array.Find(defs, d => d.Id == sm.Id);
                 if (def != null) party.Members.Add(new General(def) { Soldiers = sm.Soldiers, MaxSoldiers = sm.MaxSoldiers, WeaponBonus = sm.WeaponBonus });
             }
+            party.Strategist = party.Members.Find(m => m.Def.Id == s.Strategist);
             flags = new StoryFlags();
             foreach (var f in s.Flags) flags.Set(f);
             dialogueQueue.Clear();

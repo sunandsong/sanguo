@@ -403,8 +403,8 @@ namespace LiuBeiRPG.Game
         void DrawPuppet(PuppetActor a, Vector2 cell, bool dead = false)
         {
             var foot = new Vector2(cell.x + 0.5f, -(cell.y + 1f - 0.08f));
-            float scale = 1.1f / 950f;
-            World.Quad(ShadowTex(), new Rect(foot.x - 0.28f, -foot.y - 0.07f, 0.56f, 0.14f), Color.white);
+            float k = map.ActorScale, scale = 1.1f * k / 950f;
+            World.Quad(ShadowTex(), new Rect(foot.x - 0.28f * k, -foot.y - 0.07f * k, 0.56f * k, 0.14f * k), Color.white);
             // 深色描边：剪影朝 8 个方向各偏一点先画，贴近地图像素画的粗描边（偏 1.2 虚拟像素）
             var outline = new Color(0.14f, 0.09f, 0.06f);
             float o = 1.2f / tile;

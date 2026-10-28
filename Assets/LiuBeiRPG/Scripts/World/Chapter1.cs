@@ -352,7 +352,7 @@ namespace LiuBeiRPG.World
                         if (host.Party.Gold < InnCost) { Say(L("店小二", "客官，您这钱……不太够啊。")); return; }
                         host.Party.Gold -= InnCost;
                         host.Party.FullRestore();
-                        Say(L(null, "一夜休整。全军兵力、策略点已恢复！"));
+                        Say(L(null, "一夜休整。全军兵力、法力已恢复！"));
                     });
                 }
             });
@@ -457,6 +457,7 @@ namespace LiuBeiRPG.World
                 Art = "field",
                 Grade = "#f0f5ff", Light = "#f4f0ea", Weather = "leaf",
                 EncounterRate = 0.09,
+                ActorScale = 0.8f,
                 Ground = ',',
                 Rows = new[]
                 {
