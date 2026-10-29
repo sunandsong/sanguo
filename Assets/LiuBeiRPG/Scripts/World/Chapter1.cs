@@ -28,6 +28,7 @@ namespace LiuBeiRPG.World
         const string F_Boss = "c1_boss";
         const string F_Liutao = "c1_liutao";   // 母亲给了《六韬》
         const string F_ChestHome = "c1_chest_home", F_ChestInn = "c1_chest_inn2f";   // 宝箱开过了
+        const string F_ChestFieldNE = "c1_chest_field_ne", F_ChestFieldSW = "c1_chest_field_sw", F_ChestFieldE = "c1_chest_field_e";
 
         // 涿县商店（设计文档 8.3）。ponytail: 狼烟要等战斗里能用物品再上架
         static readonly string[] ShopGoods = { "caoyao", "zhuojiu", "qimeigun", "tiejian", "huanshoudao", "changqiang", "shoufu", "pikui", "pijia", "buxue", "numa", "yupei" };
@@ -49,21 +50,35 @@ namespace LiuBeiRPG.World
         static DialogueLine L(string speaker, string text) { return new DialogueLine(speaker, text); }
 
         /// <summary>宝箱（通用）：开一次给钱，开过换成打开的图。图见 ArtSrc/宝箱提示词.md，缺图时箱子看不见但照样能开。</summary>
-        Npc Chest(string flag, int x, int y, int gold)
+        Npc Chest(string flag, int x, int y, int gold, string item = null, int count = 1)
         {
             var flags = host.Flags;
             var n = new Npc { Id = flag, Name = "宝箱", Glyph = "箱", X = x, Y = y, Size = 1f, Sprite = flags.Has(flag) ? "Art/chest_open" : "Art/chest" };
             n.Talk = () =>
             {
                 if (flags.Has(flag)) { Say(L(null, "箱子是空的。")); return; }
+                var it = ItemDb.Get(item);
+                if (it != null && !host.Party.CanHold(item)) { Say(L(null, "行囊满了，拿不下。")); return; }
                 flags.Set(flag);
                 host.Party.Gold += gold;
+                for (int i = 0; it != null && i < count; i++) host.Party.Items.Add(item);
                 n.Sprite = "Art/chest_open";
-                Say(L(null, "打开宝箱，获得金钱 " + gold + "！"));
+                string got = it == null ? "金钱 " + gold : it.Name + (count > 1 ? " ×" + count : "") + (gold > 0 ? "、金钱 " + gold : "");
+                Say(L(null, "打开宝箱，获得" + got + "！"));
             };
             return n;
         }
         void Say(params DialogueLine[] lines) { host.Say(new List<DialogueLine>(lines)); }
+
+        static readonly System.Random chatRng = new System.Random();
+
+        /// <summary>路人：沿 route（x0,y0,x1,y1…）来回闲逛，搭话时随机说一句。skin 是引擎里的骨骼角色，weapon 是手里拿的东西。</summary>
+        Npc Walker(string id, string name, string skin, string weapon, float step, int[] route, params string[] lines)
+        {
+            var n = new Npc { Id = id, Name = name, Glyph = name.Substring(0, 1), Skin = skin, Weapon = weapon, StepSeconds = step, Route = route, X = route[0], Y = route[1] };
+            n.Talk = () => Say(L(name, lines[chatRng.Next(lines.Length)]));
+            return n;
+        }
 
         public void Begin()
         {
@@ -99,30 +114,42 @@ namespace LiuBeiRPG.World
             {
                 Id = "zhuoxian",
                 Name = "涿县",
-                Art = "zhuoxian",
+                Art = "zhuoxian_ground",
                 Grade = "#fff6ec", Weather = "petal",
                 EncounterRate = 0,
                 Rows = new[]
                 {
                     "TTTTTTTTTTTTTTTTTTTT",
-                    "TTTHHHH.....PPPPPPPT",
-                    "T.HHHHHH....PPfSfPPT",
-                    "T.HHH=HH.....PfffPPT",
-                    "T....=.......PPfPPPT",
-                    "T....=.........=...T",
-                    "T....==========....T",
-                    "THHHHH..=.....HHHHHT",
-                    "THHHHH..=.....HHHHHT",
-                    "THH.....=.....HHHHHT",
-                    "T.......=..........T",
-                    "TTTTTTT.=.TTTTTTTTTT",
-                    "TTTTTTTT=TTTTTTTTTTT",
-                    "TTTTTTTTgTTTTTTTTTTT",
+                    "TTTHHHHTTTTTTTPTTPTT",
+                    "T..HHHH......fffff.T",
+                    "T..HHHH.....PffSSf.T",
+                    "T....=.......fffffPT",
+                    "T....=......P..==..T",
+                    "T....============..T",
+                    "T.HHHH..==....HHHHHT",
+                    "T.HHHH..==....HHHHHT",
+                    "T.HHHH..==....HHHHHT",
+                    "T.......==.........T",
+                    "TTTTTTT.==.TTTTTTTTT",
+                    "TTTTTTTT==TTTTTTTTTT",
+                    "TTTTTTTTg=TTTTTTTTTT",
                 }
             };
-            m.Props.Add(new MapProp("house_liubei", 3, 1, 4, 3));
-            m.Props.Add(new MapProp("tavern", 2, 7, 3, 3));
-            m.Props.Add(new MapProp("inn", 14, 7, 3, 3));
+            // 底图只有地面；房子、树、桃园、灯笼都在物件清单里（Resources/Map/Decor/zhuoxian_ground.txt）
+            m.DecorFile = "zhuoxian_ground";
+            // 活气：刘备家烟囱冒炊烟，院子里有鸡，草地上有麻雀和蝴蝶
+            m.Emitters.Add(new MapEmitter("smoke", 4.3f, 0.95f));
+            // 路人：城里地方小，只放三个——扛锄头的农夫、挎篮的村妇、挑担的货郎（引擎里还有巡街兵 shouwei、老人 laoren、小孩 xiaohai 可换）
+            m.Npcs.Add(Walker("farmer", "农夫", "cunmin_nan", "chutou", 1.0f, new[] { 11, 7, 13, 7, 13, 10, 11, 10 },
+                "听说东边村子被黄巾烧了，造孽啊。", "今年收成不好，地里的苗都旱蔫了。", "我那块地就在城外，如今都不敢去了。"));
+            m.Npcs.Add(Walker("villager_f", "村妇", "cunmin_nv", null, 1.0f, new[] { 7, 2, 11, 2, 11, 4, 7, 4 },
+                "桃园的花开得正好，城东北那片。", "我家那口子也想去投军，我拦不住啊。", "米价又涨了，这日子……"));
+            m.Npcs.Add(Walker("peddler", "货郎", "huolang", "biandan", 0.9f, new[] { 9, 7, 9, 11 },
+                "针头线脑、胭脂水粉——客官瞧一瞧！", "从中山过来，路上全是逃难的。", "张世平张掌柜？那可是做大买卖的。"));
+            m.Critters.Add(new CritterSpawn("chicken", 3));
+            m.Critters.Add(new CritterSpawn("sparrow", 3));
+            m.Critters.Add(new CritterSpawn("butterfly", 2));
+            m.Critters.Add(new CritterSpawn("butterfly2", 2));
 
             var flags = host.Flags;
 
@@ -209,11 +236,11 @@ namespace LiuBeiRPG.World
             m.OnTouch = (x, y) =>
             {
                 // 桃园石桌：走到桌前往上撞，三结义
-                if (x == 15 && y == 2 && flags.Has(F_MetGuanYu) && !flags.Has(F_Oath)) { Oath(); return true; }
-                // 刘备家门（门口 (5,3) 往上撞）
-                if (x == 5 && y == 2) { host.Warp(Home, 6, 7); return true; }
-                // 酒馆门（门口 (3,9) 往上撞）
-                if (x == 3 && y == 8) { host.Warp(Tavern, 6, 7); return true; }
+                if ((x == 15 || x == 16) && y == 3 && flags.Has(F_MetGuanYu) && !flags.Has(F_Oath)) { Oath(); return true; }
+                // 刘备家门（门口 (5,4) 往上撞）
+                if (x == 5 && y == 3) { host.Warp(Home, 6, 7); return true; }
+                // 酒馆门（门口 (3,10) 往上撞）
+                if (x == 3 && y == 9) { host.Warp(Tavern, 6, 7); return true; }
                 // 客栈门（门口 (15,10)/(16,10) 往上撞）
                 if ((x == 15 || x == 16) && y == 9) { host.Warp(Inn, 4, 5); return true; }
                 return false;
@@ -274,7 +301,7 @@ namespace LiuBeiRPG.World
 
             m.OnTouch = (x, y) =>
             {
-                if (y >= m.Height) { host.Warp(Town, 5, 3); return true; }
+                if (y >= m.Height) { host.Warp(Town, 5, 4); return true; }
                 return false;
             };
 
@@ -334,7 +361,7 @@ namespace LiuBeiRPG.World
 
             m.OnTouch = (x, y) =>
             {
-                if (y >= m.Height) { host.Warp(Town, 3, 9); return true; }
+                if (y >= m.Height) { host.Warp(Town, 3, 10); return true; }
                 return false;
             };
 
@@ -375,6 +402,7 @@ namespace LiuBeiRPG.World
                         if (host.Party.Gold < InnCost) { Say(L("店小二", "客官，您这钱……不太够啊。")); return; }
                         host.Party.Gold -= InnCost;
                         host.Party.FullRestore();
+                        host.SetHour(7f);
                         Say(L(null, "一夜休整。全军兵力、法力已恢复！"));
                     });
                 }
@@ -456,6 +484,7 @@ namespace LiuBeiRPG.World
             host.Party.Add(new General(GameDatabase.ZhangFei));
             host.Party.Gold += 100;
             host.Party.FullRestore();
+            host.SetHour(8f);
             host.Say(new List<DialogueLine>
             {
                 L(null, "次日，桃园之中，备下乌牛白马，三人焚香再拜。"),
@@ -479,36 +508,66 @@ namespace LiuBeiRPG.World
             {
                 Id = "zhuojun_field",
                 Name = "涿郡郊外",
-                Art = "field",
+                Art = "field_big",
                 Grade = "#f0f5ff", Light = "#f4f0ea", Weather = "leaf",
                 EncounterRate = 0.09,
                 ActorScale = 0.8f,
                 Ground = ',',
                 Rows = new[]
                 {
-                    "MMMMMMMMtMMMMMMMMMMM",
-                    "MTTTT,,,=,TTTT,,,,TM",
-                    "MTTMTTT,=,,,T,~~~~,M",
-                    "MT,,T,TT===,TT~~~~,M",
-                    "M,,TMT,,,,=,,,M~~,,M",
-                    "M,TMMMT,,,====,,,,,M",
-                    "M,,MMM,,,,,,,=,,,TTM",
-                    "MTTTT,,,~~,,,=,,,MTM",
-                    "MTTTT,,~~~,,,==,,,,M",
-                    "MT,,,,,MMM,,,,CC=CCM",
-                    "MT,TTT,,,,,,,,CCCCCM",
-                    "MTMTTTTTT,,M,CCCCCCM",
-                    "MMMMMMMMMMMMMMMMMMMM",
-                    "MMMMMMMMMMMMMMMMMMMM",
+                    "MMMMMMMMtMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+                    "MT,,,,T,=,,T,,,,,MMMMMMM,,,,,,,,,==,M",
+                    "M,MM,,,,==,,,MwwM,,MM,,,,,T,T,,,===,M",
+                    "M,,,,,,,,,=,,M~~~w,MM,,,,,,,,,,==,,,M",
+                    "M,,MM,,,,,=,T,MMwMMMMM,,,,,,,,=,,,T,M",
+                    "M,MMMM,,,,====,,,,MMMM,,,,,,,,=,,T,,M",
+                    "M,MMMM,,,,,,,=,,,,,,,,,,,,,,==,,,,,,M",
+                    ",,,,,,,MwM,T,=,,,HHHMMT,,,==,,,,,,,TM",
+                    "MT,,,,w~~w,HH====HHHM,,,==,,,,,MMM,,M",
+                    "M,T,,,,MM,,HH,,==,,,,===,,,,,,,T,,,,M",
+                    ",,,,,,,,,H,,,,,======,,,T,,,,,,,,,,,M",
+                    "MMM,,TT,T,,MM,H===H,,,,,,,,,,,,,,,,,M",
+                    "MMMM,,,,,T,MMM,,=,,MM,,,,MM,,,,,,T,,M",
+                    "MMM,,MM,M,,,MM,,=,MMM,,,MMM,,T,,,,,,M",
+                    "M,,,,,,,,,,,,,,,=,,M,,,,,,M,T,,,,,,,M",
+                    "~w,,,,,,M,,,,,,=,,,,,,T,,,,,,,MM,,M,M",
+                    "~~~wM,,,,,,,,,==,,,,,,,,,,,,M,,,w~~~w",
+                    "Mww~~wM,,,,,,M=M,,,,,,,,,ww~~~~~~~ww~",
+                    ",,,M~~~~ww~~~~=~~wM,,,,,w~~wwwwww,,,M",
+                    ",,,,,ww~~~Mwww=M~~~~~ww~~~M,,,,,,,,,M",
+                    "M,,T,,,,,,,,,,,=,ww~~~~~wM=====CCCCCM",
+                    "M,,,,,,T,,T,,,,,==,,======,,,,=CCCCCM",
+                    "MMM,,,,,,,,,,,,,,,==,T,,,,,,,,=CCCCCM",
+                    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
                 }
             };
-            m.Props.Add(new MapProp("yellow_turban_camp", 17, 11, 2, 2));
+            // 2×2 四屏的大郊外（底图由四块拼成，见 ArtSrc/郊外扩大提示词.md）；树、村子、桥、营寨在物件清单里（Resources/Map/Decor/field_big.txt）
+            m.DecorFile = "field_big";
+            // 活气：水面起波纹（w = 水塘边的浅水，能趟）、营地篝火冒烟、水里有鱼和鸭子、岸边有蜻蜓、草地上有兔子麻雀
+            m.WaterMask = "Art/field_big_water";
+            m.Emitters.Add(new MapEmitter("fire", 33.6f, 23.05f));
+            m.Critters.Add(new CritterSpawn("fish", 7));
+            m.Critters.Add(new CritterSpawn("duck", 2));
+            m.Critters.Add(new CritterSpawn("dragonfly", 3));
+            m.Critters.Add(new CritterSpawn("rabbit", 4));
+            m.Critters.Add(new CritterSpawn("sparrow", 5));
+            m.Critters.Add(new CritterSpawn("butterfly", 3));
+            m.Critters.Add(new CritterSpawn("butterfly2", 2));
+            // 宝箱：右上秋林尽头、河南岸西边、东边草地
+            m.Npcs.Add(Chest(F_ChestFieldNE, 34, 1, 0, "pijia"));
+            m.Npcs.Add(Chest(F_ChestFieldSW, 5, 21, 0, "caoyao", 3));
+            m.Npcs.Add(Chest(F_ChestFieldE, 35, 10, 120));
+            // 路口的小村子：村妇在井边转悠，老人在农舍门口
+            m.Npcs.Add(Walker("field_villager", "村妇", "cunmin_nv", null, 1.0f, new[] { 15, 12, 17, 12, 17, 13, 15, 13 },
+                "黄巾贼来过一回，抢了粮就走了。", "井水甜着呢，将军要不要喝一口？", "营寨就在河对岸东南边，过了木桥一直走。"));
+            m.Npcs.Add(Walker("field_elder", "老人", "laoren", "guaizhang", 1.2f, new[] { 13, 10, 13, 9 },
+                "老朽守着这几间草房，哪儿也不去了。", "河上那座木桥是我年轻时搭的。", "东北那片秋林里，好像有人藏过东西……"));
 
             var flags = host.Flags;
 
             m.Npcs.Add(new Npc
             {
-                Id = "nanmin", Name = "逃难村民", Glyph = "民", Color = "#e0e0e0", X = 5, Y = 1,
+                Id = "nanmin", Name = "逃难村民", Glyph = "民", Color = "#e0e0e0", X = 19, Y = 11,
                 Talk = () =>
                 {
                     if (flags.Has(F_Boss)) Say(L("逃难村民", "多谢三位将军，我们终于可以回家了！"));

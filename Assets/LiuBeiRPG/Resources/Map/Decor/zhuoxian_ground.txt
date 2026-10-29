@@ -1,0 +1,132 @@
+# 涿县：四周树林（ArtSrc 里脚本生成后手调），然后房子、桃园、挂件、花草
+# 上边两层
+tree_green_0 -0.21 0.65 1.83 plant amp=0.033
+tree_green_3 0.94 0.62 1.04 plant amp=0.026
+tree_green_3 2.11 0.67 1.09 plant amp=0.037
+tree_green_3 3.16 0.67 1.22 plant amp=0.034
+tree_green_0 4.32 0.89 2.04 plant amp=0.027
+tree_green_3 5.48 0.76 1.06 plant amp=0.037
+tree_green_0 6.56 0.77 1.96 plant amp=0.033
+tree_green_0 7.58 0.62 2.02 plant amp=0.033
+tree_green_1 8.89 0.74 1.13 plant amp=0.029
+tree_green_0 9.96 0.83 2.05 plant amp=0.033
+tree_green_2 11.31 0.82 1.65 plant amp=0.026
+tree_green_2 12.52 0.65 1.49 plant amp=0.032
+tree_green_3 13.53 0.80 1.13 plant amp=0.038
+tree_green_3 14.66 0.81 1.11 plant amp=0.037
+tree_green_2 15.69 0.63 1.61 plant amp=0.035
+tree_green_3 16.71 0.81 1.23 plant amp=0.037
+tree_green_2 17.83 0.72 1.45 plant amp=0.032
+tree_green_0 18.89 0.64 1.9 plant amp=0.029
+tree_green_1 20.19 0.72 1.06 plant amp=0.032
+tree_green_3 0.13 1.70 1.06 plant amp=0.031
+tree_green_0 1.27 1.72 1.87 plant amp=0.028
+tree_green_1 2.37 1.52 1.25 plant amp=0.028
+tree_green_3 3.48 1.49 1.08 plant amp=0.033
+tree_green_3 4.86 1.66 1.22 plant amp=0.035
+tree_green_3 6.16 1.59 1.08 plant amp=0.031
+tree_green_0 7.20 1.64 1.88 plant amp=0.040
+tree_green_3 8.37 1.48 1.0 plant amp=0.025
+tree_green_2 9.43 1.48 1.66 plant amp=0.026
+tree_green_2 10.52 1.56 1.78 plant amp=0.034
+tree_green_1 11.71 1.48 1.29 plant amp=0.032
+tree_green_0 12.90 1.48 2.13 plant amp=0.036
+tree_green_3 14.09 1.66 1.0 plant amp=0.039
+tree_green_3 15.30 1.49 1.21 plant amp=0.036
+tree_green_0 16.42 1.64 2.11 plant amp=0.029
+tree_green_0 17.57 1.50 2.03 plant amp=0.037
+tree_green_0 18.70 1.52 2.15 plant amp=0.037
+tree_green_3 20.00 1.52 1.11 plant amp=0.036
+# 左右两列
+tree_green_1 -0.08 2.40 1.1 plant amp=0.035
+tree_green_2 -0.22 3.68 1.78 plant amp=0.030
+tree_green_0 -0.31 4.67 1.95 plant amp=0.032
+tree_green_0 -0.16 5.96 2.01 plant amp=0.035
+tree_green_0 -0.37 7.18 2.2 plant amp=0.037
+tree_green_0 -0.21 8.38 1.99 plant amp=0.035
+tree_green_1 -0.02 9.32 1.15 plant amp=0.036
+tree_green_0 -0.34 10.25 1.81 plant amp=0.034
+tree_green_3 -0.14 11.34 1.19 plant amp=0.040
+tree_green_3 19.64 2.40 1.12 plant amp=0.025
+tree_green_0 19.79 3.62 2.03 plant amp=0.039
+tree_green_0 19.85 4.69 1.81 plant amp=0.028
+tree_green_2 19.81 5.79 1.53 plant amp=0.031
+tree_green_2 19.86 6.75 1.76 plant amp=0.035
+tree_green_3 19.71 7.97 1.02 plant amp=0.027
+tree_green_0 19.85 9.08 2.07 plant amp=0.037
+tree_green_3 19.56 10.04 1.17 plant amp=0.033
+tree_green_3 19.71 11.07 1.11 plant amp=0.037
+# 下边三层（让出城门）
+tree_green_0 -0.47 12.81 2.14 plant amp=0.033
+tree_green_0 0.73 12.98 2.0 plant amp=0.034
+tree_green_2 1.90 12.90 1.6 plant amp=0.033
+tree_green_3 3.07 13.03 1.2 plant amp=0.039
+tree_green_0 4.16 12.92 2.17 plant amp=0.027
+tree_green_0 5.20 12.88 2.1 plant amp=0.031
+tree_green_0 6.28 12.84 2.19 plant amp=0.027
+tree_green_0 11.12 13.04 2.13 plant amp=0.026
+tree_green_0 12.43 12.80 1.87 plant amp=0.031
+tree_green_0 13.61 12.85 1.96 plant amp=0.026
+tree_green_1 14.74 12.85 1.15 plant amp=0.025
+tree_green_3 15.85 12.94 1.22 plant amp=0.027
+tree_green_0 17.17 12.82 1.84 plant amp=0.029
+tree_green_0 18.49 12.80 2.16 plant amp=0.038
+tree_green_1 19.73 13.03 1.07 plant amp=0.039
+tree_green_0 -0.15 13.58 2.15 plant amp=0.028
+tree_green_0 1.16 13.63 2.08 plant amp=0.037
+tree_green_0 2.19 13.81 1.92 plant amp=0.027
+tree_green_1 3.20 13.85 1.27 plant amp=0.029
+tree_green_0 4.24 13.71 2.21 plant amp=0.040
+tree_green_2 5.33 13.60 1.66 plant amp=0.033
+tree_green_0 6.41 13.68 1.92 plant amp=0.037
+tree_green_0 12.29 13.70 2.21 plant amp=0.027
+tree_green_1 13.58 13.68 1.17 plant amp=0.038
+tree_green_0 14.92 13.64 2.23 plant amp=0.030
+tree_green_0 16.21 13.76 1.98 plant amp=0.030
+tree_green_0 17.23 13.59 2.08 plant amp=0.038
+tree_green_1 18.38 13.57 1.26 plant amp=0.035
+tree_green_2 19.48 13.62 1.46 plant amp=0.028
+tree_green_2 -0.50 14.46 1.78 plant amp=0.033
+tree_green_2 0.59 14.64 1.52 plant amp=0.028
+tree_green_2 1.70 14.38 1.62 plant amp=0.028
+tree_green_2 2.88 14.35 1.73 plant amp=0.027
+tree_green_2 4.09 14.47 1.55 plant amp=0.028
+tree_green_0 5.29 14.51 2.09 plant amp=0.036
+tree_green_2 6.60 14.47 1.69 plant amp=0.032
+tree_green_3 11.25 14.56 1.14 plant amp=0.036
+tree_green_3 12.54 14.39 1.17 plant amp=0.034
+tree_green_3 13.82 14.35 1.18 plant amp=0.036
+tree_green_0 15.16 14.54 1.81 plant amp=0.027
+tree_green_1 16.28 14.38 1.18 plant amp=0.034
+tree_green_1 17.50 14.55 1.1 plant amp=0.032
+tree_green_3 18.53 14.63 1.01 plant amp=0.033
+tree_green_0 19.79 14.49 2.17 plant amp=0.029
+# 房子：底边压在院子底边上
+house_liubei 5.00 3.55 4.2
+house_tavern 3.50 9.60 4.3
+house_inn 16.30 9.86 3.9
+gate 8.85 14.00 4.6
+# 挂件：Y 跟房子一样（排在房子前面），lift 抬到屋檐下；hang 的 amp 是下摆横荡占自身宽度的比例
+lantern 1.95 9.61 0.42 hang amp=0.22 lift=1.15
+banner_blue 4.75 9.61 0.5 hang amp=0.14 lift=0.85
+lantern 14.75 9.87 0.38 hang amp=0.22 lift=0.80
+lantern 17.85 9.87 0.38 hang amp=0.22 lift=0.80
+lantern 14.85 9.87 0.34 hang amp=0.22 lift=1.95
+lantern 17.75 9.87 0.34 hang amp=0.22 lift=1.95
+# 桃园：石桌（从原画抠的）+ 一圈桃树
+stone_table 15.45 3.65 1.9
+tree_peach_1 14.60 2.05 2.4 plant amp=0.03
+tree_peach_2 17.10 2.15 2.4 plant amp=0.03
+tree_peach_0 12.90 3.45 2.4 plant amp=0.03
+tree_peach_0 18.30 4.40 2.3 plant amp=0.03
+tree_peach_2 12.70 5.25 1.9 plant amp=0.03
+# 花草
+bush_0 2.00 4.00 1.0 plant amp=0.02
+bush_1 7.20 2.60 0.9 plant amp=0.02
+bush_1 6.20 9.70 0.9 plant amp=0.02
+bush_0 13.20 9.90 1.0 plant amp=0.02
+grass_0 7.40 4.70 0.6 plant amp=0.05
+grass_0 11.30 9.60 0.6 plant amp=0.05
+grass_0 4.90 10.70 0.55 plant amp=0.05
+grass_0 17.60 10.80 0.6 plant amp=0.05
+grass_0 10.60 3.20 0.55 plant amp=0.05

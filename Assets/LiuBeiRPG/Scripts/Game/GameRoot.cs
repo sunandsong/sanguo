@@ -78,6 +78,7 @@ namespace LiuBeiRPG.Game
         {
             UpdateTouch();
             if (mode == Mode.Map) UpdateMap();
+            if (mode == Mode.Map && map != null) { UpdateCamera(); if (!UiBusy) UpdateWalkers(); }
             TickLeader();
             foreach (var p in portraits.Values) p.Tick(Time.deltaTime);
             if (mode == Mode.Battle) UpdateBattle();
@@ -363,6 +364,7 @@ namespace LiuBeiRPG.Game
                 case Mode.ChapterClear: DrawChapterClear(); break;
             }
 
+            DrawMapTitle();
             DrawTouchUi();
             DrawMenuPage();
             if (choice != null) DrawChoice();
@@ -371,6 +373,7 @@ namespace LiuBeiRPG.Game
             // 转场：切地图、进出战斗时从黑场淡入
             float fade = 1f - (Time.time - fadeStart) / FadeTime;
             if (fade > 0f) Gfx.Rect(new Rect(0, 0, Gfx.VW, Gfx.VH), new Color(0, 0, 0, fade * fade));
+            DrawIris();   // 切地图：圆形展开
         }
 
         const float FadeTime = 0.45f;

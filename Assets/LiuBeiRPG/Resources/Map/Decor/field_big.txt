@@ -1,0 +1,96 @@
+# 涿郡郊外（2×2 四屏，37×24 格）。左上是原来那块；树干、房子那格在 Chapter1.cs 的 Rows 里过不去
+# 树（树干那格在 Chapter1.cs 的 Rows 里是 T）
+tree_autumn_0 1.60 1.90 1.8 plant amp=0.03
+tree_green_2 6.60 1.60 1.5 plant amp=0.035
+tree_autumn_2 11.60 1.70 1.8 plant amp=0.03
+tree_autumn_1 12.60 4.40 1.7 plant amp=0.03
+tree_autumn_1 1.50 8.40 1.8 plant amp=0.03
+tree_green_0 2.60 9.90 1.9 plant amp=0.03
+tree_green_3 11.60 7.90 1.1 plant amp=0.04
+tree_autumn_2 5.40 11.40 1.7 plant amp=0.03
+tree_green_2 8.40 11.60 1.5 plant amp=0.035
+# 灌木、草丛（能穿过去）
+bush_2 7.00 4.50 0.9 plant amp=0.02
+bush_2 10.60 9.60 0.9 plant amp=0.02
+bush_0 3.20 7.30 0.9 plant amp=0.02
+bush_2 18.20 9.40 0.9 plant amp=0.02
+bush_2 16.80 6.00 0.8 plant amp=0.02
+grass_0 9.30 6.80 0.55 plant amp=0.05
+grass_0 4.10 10.70 0.55 plant amp=0.05
+grass_0 14.80 6.40 0.55 plant amp=0.05
+grass_0 1.20 3.80 0.55 plant amp=0.05
+# 水塘边的芦苇、菖蒲，水面上的荷叶（轻轻浮动）
+reed_0 13.30 2.50 0.9 plant amp=0.05
+reed_1 17.70 2.70 0.9 plant amp=0.05
+cattail_0 13.70 4.70 0.8 plant amp=0.05
+reed_0 17.40 4.80 0.8 plant amp=0.05
+reed_1 6.10 7.90 0.85 plant amp=0.05
+cattail_0 10.00 8.00 0.75 plant amp=0.05
+reed_0 6.40 9.70 0.8 plant amp=0.05
+lotus_0 15.00 3.55 0.6 plant amp=0.008 shadow=0
+lotus_0 16.40 3.20 0.5 plant amp=0.008 shadow=0
+lotus_0 8.20 8.65 0.55 plant amp=0.008 shadow=0
+# 扩出来的三块：秋树
+tree_autumn_0 26.60 2.90 1.8 plant amp=0.03
+tree_green_2 28.40 2.80 1.5 plant amp=0.03
+tree_autumn_1 33.60 5.40 1.8 plant amp=0.03
+tree_autumn_2 34.80 4.80 1.6 plant amp=0.03
+tree_green_0 22.60 7.20 1.9 plant amp=0.03
+tree_autumn_0 31.00 9.60 1.8 plant amp=0.03
+tree_autumn_1 33.80 12.40 1.8 plant amp=0.03
+tree_green_3 29.50 13.50 1.1 plant amp=0.03
+tree_autumn_2 22.00 15.20 1.7 plant amp=0.03
+tree_green_2 28.60 15.00 1.5 plant amp=0.03
+tree_autumn_1 6.30 11.40 1.7 plant amp=0.03
+tree_green_0 9.60 12.90 1.8 plant amp=0.03
+tree_autumn_0 7.50 21.80 1.8 plant amp=0.03
+tree_green_2 10.80 21.30 1.5 plant amp=0.03
+tree_autumn_2 3.60 21.00 1.6 plant amp=0.03
+tree_autumn_1 21.50 23.00 1.7 plant amp=0.03
+tree_green_3 24.40 10.90 1.1 plant amp=0.03
+tree_autumn_0 35.00 8.20 1.6 plant amp=0.03
+# 河边芦苇、菖蒲
+reed_0 2.80 15.30 0.85 plant amp=0.05
+cattail_0 6.90 17.00 0.75 plant amp=0.05
+reed_1 10.20 17.60 0.85 plant amp=0.05
+reed_0 12.80 17.40 0.8 plant amp=0.05
+cattail_0 17.50 18.20 0.75 plant amp=0.05
+reed_1 23.40 17.40 0.85 plant amp=0.05
+reed_0 27.80 16.80 0.8 plant amp=0.05
+cattail_0 33.20 16.20 0.75 plant amp=0.05
+reed_0 9.30 20.60 0.8 plant amp=0.05
+reed_1 19.60 21.00 0.85 plant amp=0.05
+cattail_0 26.40 21.20 0.75 plant amp=0.05
+# 灌木、草丛
+bush_2 23.80 4.20 0.9 plant amp=0.02
+bush_0 30.40 11.40 0.9 plant amp=0.02
+bush_2 27.20 9.90 0.9 plant amp=0.02
+grass_0 25.60 5.60 0.55 plant amp=0.05
+grass_0 34.20 14.60 0.55 plant amp=0.05
+grass_0 4.30 19.80 0.55 plant amp=0.05
+grass_0 12.40 21.70 0.55 plant amp=0.05
+grass_0 28.80 22.40 0.55 plant amp=0.05
+# 木桥：贴着地面画（ground），人走在桥上
+bridge 14.50 20.05 1.35 h=3.1 ground
+# 小村子：两座农舍、水井、草垛、路牌
+cottage_0 11.90 9.90 2.5
+cottage_1 18.40 8.95 3.0
+well 14.55 12.15 0.95
+haystack 9.80 11.00 1.2
+signpost 18.55 12.00 0.7
+# 黄巾营寨（右下角空地）：北边一排木栅栏、西边营门两座瞭望塔
+watchtower 30.55 19.60 1.0
+flag_small 30.55 19.61 0.8 flag amp=0.05 lift=1.45
+watchtower 30.55 23.55 1.0
+flag_small 30.55 23.56 0.8 flag amp=0.05 lift=1.45
+palisade 31.80 20.00 1.3
+palisade 33.05 19.98 1.3
+palisade 34.30 20.00 1.3
+palisade 35.55 19.98 1.3
+flag_big 34.00 20.01 1.4 flag amp=0.05 lift=0.6
+tent_small 32.30 22.30 1.6
+tent_big 35.00 22.70 2.2
+firepit 33.60 23.30 0.95
+fire 33.60 23.31 0.72 frames=6 fps=10 lift=0.21
+weapon_rack 35.90 21.10 0.9
+crates 31.70 23.60 1.1

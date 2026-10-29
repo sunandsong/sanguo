@@ -35,5 +35,6 @@ namespace LiuBeiRPG.World
         void Warp(MapData map, int x, int y);
         void ChapterClear(string title, string nextHint);
         void OpenShop(string[] goods);   // 商店：goods 是卖的物品 Id
+        void SetHour(float hour);        // 跳到某个时辰（住店睡一晚 → 清晨）
     }
 }

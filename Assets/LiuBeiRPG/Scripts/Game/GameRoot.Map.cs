@@ -24,13 +24,13 @@ namespace LiuBeiRPG.Game
         readonly Dictionary<string, PuppetActor> puppets = new Dictionary<string, PuppetActor>();
 
         /// <summary>按武将 Id 取骨骼动画角色；包里没有这个角色返回 null，照旧画字块。</summary>
-        PuppetActor Puppet(string id)
+        PuppetActor Puppet(string id, string skin = null)
         {
             PuppetActor a;
             if (puppets.TryGetValue(id, out a)) return a;
             try
             {
-                a = PuppetActor.Load(id);
+                a = PuppetActor.Load(skin ?? id);
                 a.Speed = 0.8f;   // walk 一循环两步 0.7 秒，一步 0.35 秒 ÷ 每格 0.44 秒
             }
             catch (System.Exception) { a = null; }
@@ -41,6 +41,7 @@ namespace LiuBeiRPG.Game
 
         public void Warp(MapData target, int x, int y)
         {
+            bool newMap = map != target;
             map = target;
             px = x; py = y;
             prevX = x; prevY = y;
@@ -48,7 +49,7 @@ namespace LiuBeiRPG.Game
             prevTrail.Clear();
             stepsSinceBattle = 0;
             mode = Mode.Map;
-            FadeIn();
+            OnEnterMap(newMap);
         }
 
         // ---------------- 输入 ----------------
@@ -142,9 +143,13 @@ namespace LiuBeiRPG.Game
         {
             int tx = px + faceX, ty = py + faceY;
             var npc = map.NpcAt(tx, ty);
+            // 路人刚迈步、身子还在前一格：对着他看上去站的那格也能搭上话
+            if (npc == null)
+                foreach (var n in map.Npcs)
+                    if (n.Route != null && n.Visible() && n.PrevX == tx && n.PrevY == ty && Time.time - n.StepTime < n.StepSeconds) { npc = n; break; }
             if (npc != null)
             {
-                var np = npc.Id == null ? null : Puppet(npc.Id);
+                var np = npc.Id == null ? null : Puppet(npc.Id, npc.Skin);
                 if (np != null) np.Facing = FacingOf(-faceX, -faceY);   // 转过来面朝刘备
                 if (npc.Talk != null) npc.Talk();
                 return;
@@ -191,13 +196,17 @@ namespace LiuBeiRPG.Game
             // 相机对准 LayoutMap 算出来的画面：屏幕高 VH 虚拟像素 = VH / tile 格
             cam.orthographicSize = Gfx.VH / tile * 0.5f;
             cam.transform.position = new Vector3((Gfx.VW * 0.5f - origin.x) / tile, -(Gfx.VH * 0.5f - origin.y) / tile, -100f);
-            postFx.Grade = Gfx.Hex(map.Grade);
+            postFx.Grade = Gfx.Hex(map.Grade) * CandleFlicker;
             World.Begin();
+            UpdateSky(Time.deltaTime);
+            UpdateWind();
+            UpdateCritters(mode == Mode.Map ? Time.deltaTime : 0);
 
-            // 整张原画：宽 = 格子宽 + 1 格（布局图左右各留半格边）
+            // 整张原画：宽 = 格子宽 + 1 格（布局图左右各留半格边）。有水面遮罩的，水那部分起波纹
             var art = Gfx.Tex(map.Art == null ? null : "Art/" + map.Art);
             var artRect = new Rect(-map.ArtMargin, 0, map.Width + map.ArtMargin * 2, map.Height);
-            if (art != null) World.Quad(art, artRect, Color.white);
+            var waterMask = map.WaterMask == null ? null : Gfx.Tex(map.WaterMask);
+            if (art != null) World.Quad(art, artRect, Color.white, null, waterMask == null ? Vector4.zero : new Vector4(0.0012f, 1, 0, World.Water), waterMask);
 
             // 地块：有贴图画贴图（透明的先垫地面），没有贴图退回色块
             var groundTex = Gfx.Tex(Tiles.Get(map.Ground).Sprite);
@@ -230,10 +239,28 @@ namespace LiuBeiRPG.Game
                 if (tex != null) World.Quad(tex, new Rect(p.X, p.Y, p.W, p.H), Color.white);
             }
 
-            // 人物先收集起来，按脚下所在行从上往下画，和前景遮挡层交错（见下）
-            var actors = new List<KeyValuePair<int, System.Action>>();
+            // 贴着地面的：物件投影、树下光斑、水下的鱼、水面涟漪，在人和物件下面
+            foreach (var d in map.Decor) if (d.Ground) DrawDecor(d);
+            DrawCastShadows();
+            DrawLeafFlecks();
+            DrawUnderwater();
+            DrawRipples();
+            DrawPuffs();
+
+            // 人物、物件、小动物先收集起来，按脚底的 y 从上往下画，和前景遮挡层交错（见下）
+            var actors = new List<KeyValuePair<float, System.Action>>();
+            bool battle = mode == Mode.Battle;   // 战斗时地图当战场背景：物件照画，人和小动物不画（战场上另有站位）
             System.Action<Vector2, System.Action> add = (cell, draw) =>
-                actors.Add(new KeyValuePair<int, System.Action>(Mathf.RoundToInt(cell.y) * 1000 + actors.Count, draw));
+            {
+                if (!battle) actors.Add(new KeyValuePair<float, System.Action>(cell.y + 0.92f + actors.Count * 1e-5f, draw));
+            };
+            foreach (var d in map.Decor)
+            {
+                var dd = d;
+                if (d.Ground) continue;   // 贴地的（桥）在上面已经画过
+                actors.Add(new KeyValuePair<float, System.Action>(d.Y + actors.Count * 1e-5f, () => DrawDecor(dd)));
+            }
+            if (!battle) AddCritterDraws(actors);
 
             // NPC（没有骨骼角色的退回字块，在 OnGUI 里画）
             foreach (var n in map.Npcs)
@@ -259,11 +286,12 @@ namespace LiuBeiRPG.Game
                     });
                     continue;
                 }
-                var np = n.Id == null ? null : Puppet(n.Id);
+                var np = n.Id == null ? null : Puppet(n.Id, n.Skin);
                 if (np == null) continue;
-                if (!UiBusy) np.Facing = "front";   // 对话时转向刘备，聊完转回正面
+                if (!UiBusy) np.Facing = n.Facing;   // 对话时转向刘备，聊完转回原来的朝向
                 np.Equip(n.Weapon);
-                var cell = new Vector2(n.X, n.Y);
+                var cell = WalkerCell(n);
+                if (n.Route != null) { np.Play(Time.time - n.StepTime < n.StepSeconds ? "walk" : "idle"); np.Speed = 0.8f * 0.6f / n.StepSeconds; }   // 步子跟着走速
                 add(cell, () => DrawPuppet(np, cell));
             }
 
@@ -281,7 +309,6 @@ namespace LiuBeiRPG.Game
             var lp = LeaderPos();
             if (lPuppet != null) add(lp, () => DrawPuppet(lPuppet, lp));
             actors.Sort((a, b) => a.Key.CompareTo(b.Key));
-            if (mode == Mode.Battle) actors.Clear();   // 战斗时地图上的人不画，战场上另有站位
 
             // 前景遮挡层（树冠、屋檐）按格子行切成横条：第 y 行的人画在第 y 行横条之上、y+1 行之下。
             // 站在树前面不被挡，走到树后面（树在下一行）才被挡。
@@ -293,11 +320,14 @@ namespace LiuBeiRPG.Game
                 if (fg != null)
                     World.Quad(fg, new Rect(artRect.x, y, artRect.width, 1), Color.white,
                         new Rect(0, 1f - (y + 1f) / map.Height, 1, 1f / map.Height));
-                for (; next < actors.Count && actors[next].Key < (y + 1) * 1000; next++) actors[next].Value();
+                for (; next < actors.Count && actors[next].Key < y + 1; next++) actors[next].Value();
             }
             for (; next < actors.Count; next++) actors[next].Value();
 
+            DrawEmitters();
+            if (!battle) DrawFlyers();
             DrawWeather();
+            DrawSkyAndLights(artRect);   // 最后整张乘天色，再加灯光
         }
 
         /// <summary>户外：飘落的花瓣 / 落叶，加几团慢慢飘过的云影。粒子按地图铺，跟着地面走，不跟镜头。</summary>
@@ -326,7 +356,7 @@ namespace LiuBeiRPG.Game
             {
                 float x = Mathf.Repeat(t * 0.25f + i * (w + 12) / 3f, w + 12) - 6;
                 float y = h * (0.2f + 0.3f * i);
-                World.Quad(ShadowTex(), new Rect(x - 4.5f, y - 3f, 9, 6), new Color(1, 1, 1, 0.35f));
+                World.Quad(ShadowTex(), new Rect(x - 4.5f, y - 3f, 9, 6), new Color(1, 1, 1, 0.35f * Sun));   // 阴天、夜里没有云影
             }
         }
 
@@ -354,7 +384,7 @@ namespace LiuBeiRPG.Game
             if (map == null) return;
             foreach (var n in map.Npcs)
             {
-                if (!n.Visible() || Gfx.Tex(n.Sprite) != null || (n.Id != null && Puppet(n.Id) != null)) continue;
+                if (!n.Visible() || Gfx.Tex(n.Sprite) != null || (n.Id != null && Puppet(n.Id, n.Skin) != null)) continue;
                 Gfx.Token(Inset(TileRect(n.X, n.Y), 3), n.Glyph, Gfx.Hex(n.Color));
             }
             for (int i = trail.Count - 1; i >= 0; i--)
@@ -385,7 +415,7 @@ namespace LiuBeiRPG.Game
             // 格子大小统一按 20×14 的大地图铺满屏幕算，室内等小地图人物不会跟着放大
             // ponytail: 写死 21×14，以后有更大的地图也照样是这个格子大小
             tile = Mathf.Max(Gfx.VW / 21f, Gfx.VH / 14f);
-            var lp = LeaderPos();
+            var lp = camFocus;   // 镜头缓动跟着主角，见 GameRoot.Camera
             float mg = map.ArtMargin, artW = (map.Width + mg * 2) * tile, artH = map.Height * tile;
             // 比屏幕大就跟着主角滚动（夹在边上），比屏幕小就居中，四周留黑
             float ox = artW <= Gfx.VW ? (Gfx.VW - artW) * 0.5f + tile * mg
@@ -409,17 +439,20 @@ namespace LiuBeiRPG.Game
         {
             var foot = new Vector2(cell.x + 0.5f, -(cell.y + 1f - 0.08f));
             float k = map.ActorScale, scale = 1.1f * k / 950f;
-            World.Quad(ShadowTex(), new Rect(foot.x - 0.28f * k, -foot.y - 0.07f * k, 0.56f * k, 0.14f * k), Color.white);
+            // 站在浅水里：水面以下染水色淡出、脚边冒涟漪，不画影子
+            float waterY = WadeWaterY(a, cell, foot, k, Time.time - lastStepTime < MoveInterval);
+            if (float.IsNaN(waterY))
+                World.Quad(ShadowTex(), new Rect(foot.x - 0.28f * k, -foot.y - 0.07f * k, 0.56f * k, 0.14f * k), Color.white);
             // 深色描边：剪影朝 8 个方向各偏一点先画，贴近地图像素画的粗描边（偏 1.2 虚拟像素）
             var outline = new Color(0.14f, 0.09f, 0.06f);
             float o = 1.2f / tile;
             for (int i = 0; i < 8; i++)
             {
                 float ang = i * Mathf.PI / 4f;
-                World.Puppet(a, foot + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * o, scale, outline);
+                World.Puppet(a, foot + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * o, scale, outline, waterY);
             }
             // 身上乘这张地图的环境光，室内压暗、户外略暖；阵亡压灰
-            World.Puppet(a, foot, scale, dead ? new Color(0.5f, 0.5f, 0.5f) : Gfx.Hex(map.Light));
+            World.Puppet(a, foot, scale, dead ? new Color(0.5f, 0.5f, 0.5f) : Gfx.Hex(map.Light), waterY);
         }
         static Texture2D shadowTex;
 

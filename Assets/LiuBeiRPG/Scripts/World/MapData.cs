@@ -33,7 +33,8 @@ namespace LiuBeiRPG.World
             { 'S', new TileInfo(false, "#9a9a8a", "桌") },               // 桃园石桌
             { 'H', new TileInfo(false, "#8a5a3c") },                    // 房屋（整栋贴图见 MapData.Props）
             { 'M', new TileInfo(false, "#6e5a44", "山") { Sprite = "mountain" } },  // 山
-            { '~', new TileInfo(false, "#3a6fb0") { Sprite = "water", Frames = 3 } },  // 水
+            { '~', new TileInfo(false, "#3a6fb0") { Sprite = "water", Frames = 3 } },  // 水（深，过不去）
+            { 'w', new TileInfo(true,  "#5a8fb8") },  // 浅水：能趟，水没到小腿
             { 'g', new TileInfo(true,  "#a07a4a", "门") { Sprite = "city_gate" } },  // 城门（出城）
             { 't', new TileInfo(true,  "#a07a4a", "城") { Sprite = "town_entrance" } },  // 野外 → 回城
             { 'C', new TileInfo(false, "#7a2e2e", "营") },               // 黄巾营寨（整张贴图见 MapData.Props）
@@ -58,6 +59,58 @@ namespace LiuBeiRPG.World
         public int X, Y;
         public Func<bool> Visible = () => true;
         public Action Talk;
+
+        public string Skin;       // 骨骼角色名，空 = 用 Id（几个路人共用一个角色时填）
+        public int[] Route;       // 路人的巡游路线：x0,y0, x1,y1, …，一格一格走过去，到头再从第一个点开始
+        public float StepSeconds = 0.6f;   // 路人走一格几秒：老人慢、小孩快
+        // 运行时（GameRoot.Walkers）
+        public int PrevX, PrevY, RouteIndex;
+        public float StepTime = -10f, WaitUntil, BlockedSince = -1f;
+        public string Facing = "front";
+    }
+
+    /// <summary>物件怎么动（对应 World.shader 的 _Fx.w）。</summary>
+    public enum Motion { None, Plant, Hang, Flag }
+
+    /// <summary>
+    /// 地图上单独一张图的物件：树、灌木、芦苇、房子、灯笼、旗子、篝火。和人物一起按脚底排前后，所以能绕到树后面。
+    /// </summary>
+    public class MapDecor
+    {
+        public string Sprite;            // Resources/Map 下的路径，例如 Art/life/tree_green_0
+        public float X, Y;               // 脚底中点（格子坐标，y 向下）
+        public float W, H;               // 画多大（格）；H = 0 按贴图比例
+        public Motion Motion;
+        public float Amp = 0.03f, Speed = 1.1f;   // 摆多大、多快
+        public float Shadow;             // 脚下影子宽（占 W 的比例），0 = 不画
+        public int Frames = 1;           // >1：横排序列帧循环（篝火）
+        public float Fps = 10;
+        public bool Ground;              // 贴着地面画（桥）：在所有人和物件下面，人能走在上面
+        public float Lift;               // 画的位置往上抬多少格，排前后仍按 Y：挂在屋檐下的灯笼 Y 跟房子一样，抬上去
+        // 运行时：草被人挤开的程度、树上下次还能惊起鸟的时刻
+        public float Push, NextBirds;
+
+        /// <summary>树、灌木、芦苇：根部钉住随风摆，脚下垫影子。</summary>
+        public static MapDecor Plant(string sprite, float x, float y, float w, float amp = 0.03f)
+        {
+            return new MapDecor { Sprite = sprite, X = x, Y = y, W = w, Motion = Motion.Plant, Amp = amp, Shadow = 0.7f };
+        }
+    }
+
+    /// <summary>这张地图上放几只什么小动物（种类见 GameRoot.Life）。</summary>
+    public class CritterSpawn
+    {
+        public string Kind;
+        public int Count;
+        public CritterSpawn(string kind, int count) { Kind = kind; Count = count; }
+    }
+
+    /// <summary>冒烟的地方（炊烟、篝火），fire 还带一圈一闪一闪的火光。</summary>
+    public class MapEmitter
+    {
+        public string Kind;   // smoke / fire
+        public float X, Y;
+        public MapEmitter(string kind, float x, float y) { Kind = kind; X = x; Y = y; }
     }
 
     /// <summary>占多格的整张贴图（房屋、营寨），画在地块之上。</summary>
@@ -80,6 +133,13 @@ namespace LiuBeiRPG.World
         public float ArtMargin = 0.5f;
         public readonly List<Npc> Npcs = new List<Npc>();
         public readonly List<MapProp> Props = new List<MapProp>();
+        public readonly List<MapDecor> Decor = new List<MapDecor>();
+        public readonly List<CritterSpawn> Critters = new List<CritterSpawn>();
+        public readonly List<MapEmitter> Emitters = new List<MapEmitter>();
+        /// <summary>水面遮罩 Resources/Map/{WaterMask}：白 = 水，原画上这部分会起波纹、闪光。</summary>
+        public string WaterMask;
+        /// <summary>物件清单 Resources/Map/Decor/{DecorFile}.txt（一行一件，格式见 GameRoot.Life.LoadDecor）。</summary>
+        public string DecorFile;
 
         /// <summary>整个画面乘的色调（后处理）：城里偏暖、野外偏冷、室内昏黄。</summary>
         public string Grade = "#ffffff";
@@ -117,6 +177,8 @@ namespace LiuBeiRPG.World
             foreach (var n in Npcs) if (n.X == x && n.Y == y && n.Visible()) return n;
             return null;
         }
+
+        public bool IsWater(int x, int y) { char c = At(x, y); return c == '~' || c == 'w'; }
 
         public bool IsWalkable(int x, int y)
         {
