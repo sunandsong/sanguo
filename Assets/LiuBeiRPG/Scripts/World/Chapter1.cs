@@ -27,6 +27,7 @@ namespace LiuBeiRPG.World
         const string F_Gift = "c1_gift";
         const string F_Boss = "c1_boss";
         const string F_Liutao = "c1_liutao";   // 母亲给了《六韬》
+        const string F_ChestHome = "c1_chest_home", F_ChestInn = "c1_chest_inn2f";   // 宝箱开过了
 
         // 涿县商店（设计文档 8.3）。ponytail: 狼烟要等战斗里能用物品再上架
         static readonly string[] ShopGoods = { "caoyao", "zhuojiu", "qimeigun", "tiejian", "huanshoudao", "changqiang", "shoufu", "pikui", "pijia", "buxue", "numa", "yupei" };
@@ -46,6 +47,22 @@ namespace LiuBeiRPG.World
         public int StartY { get { return 5; } }
 
         static DialogueLine L(string speaker, string text) { return new DialogueLine(speaker, text); }
+
+        /// <summary>宝箱（通用）：开一次给钱，开过换成打开的图。图见 ArtSrc/宝箱提示词.md，缺图时箱子看不见但照样能开。</summary>
+        Npc Chest(string flag, int x, int y, int gold)
+        {
+            var flags = host.Flags;
+            var n = new Npc { Id = flag, Name = "宝箱", Glyph = "箱", X = x, Y = y, Size = 1f, Sprite = flags.Has(flag) ? "Art/chest_open" : "Art/chest" };
+            n.Talk = () =>
+            {
+                if (flags.Has(flag)) { Say(L(null, "箱子是空的。")); return; }
+                flags.Set(flag);
+                host.Party.Gold += gold;
+                n.Sprite = "Art/chest_open";
+                Say(L(null, "打开宝箱，获得金钱 " + gold + "！"));
+            };
+            return n;
+        }
         void Say(params DialogueLine[] lines) { host.Say(new List<DialogueLine>(lines)); }
 
         public void Begin()
@@ -253,6 +270,8 @@ namespace LiuBeiRPG.World
                 }
             });
 
+            m.Npcs.Add(Chest(F_ChestHome, 10, 4, 80));   // 灶台和水缸之间
+
             m.OnTouch = (x, y) =>
             {
                 if (y >= m.Height) { host.Warp(Town, 5, 3); return true; }
@@ -393,6 +412,8 @@ namespace LiuBeiRPG.World
                     "HHHHHHHHH",
                 }
             };
+            m.Npcs.Add(Chest(F_ChestInn, 1, 3, 80));   // 左墙柜子旁边
+
             m.OnTouch = (x, y) =>
             {
                 if (x == 7 && y == 2) { host.Warp(Inn, 8, 4); return true; }   // 楼梯口 (7,3) 往上撞就下楼

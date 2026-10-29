@@ -242,10 +242,21 @@ namespace LiuBeiRPG.Game
                 var tex = Gfx.Tex(n.Sprite);
                 if (tex != null)
                 {
-                    // 手绘物件（告示牌）画 1.3 格大，底边踩在格子底边
-                    const float s = 1.3f;
+                    // 手绘物件（告示牌、宝箱）按 Size 格大画，底边踩在格子底边；和人物一样垫影子、描深色边，免得和地面糊成一片
                     var npc = n;
-                    add(new Vector2(n.X, n.Y), () => World.Quad(tex, new Rect(npc.X + 0.5f - s / 2, npc.Y + 0.95f - s, s, s), Color.white));
+                    float s = n.Size;
+                    add(new Vector2(n.X, n.Y), () =>
+                    {
+                        var rect = new Rect(npc.X + 0.5f - s / 2, npc.Y + 0.95f - s, s, s);
+                        World.Quad(ShadowTex(), new Rect(npc.X + 0.5f - s * 0.4f, npc.Y + 0.95f - s * 0.12f, s * 0.8f, s * 0.2f), Color.white);
+                        float o = 1.5f / tile;
+                        for (int i = 0; i < 8; i++)
+                        {
+                            float ang = i * Mathf.PI / 4f;
+                            World.Quad(tex, new Rect(rect.x + Mathf.Cos(ang) * o, rect.y + Mathf.Sin(ang) * o, s, s), new Color(0.14f, 0.09f, 0.06f));
+                        }
+                        World.Quad(tex, rect, Color.white);
+                    });
                     continue;
                 }
                 var np = n.Id == null ? null : Puppet(n.Id);
