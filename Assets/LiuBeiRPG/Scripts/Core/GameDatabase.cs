@@ -31,35 +31,40 @@ namespace LiuBeiRPG.Core
         public static readonly GeneralDef HuangJinBing = new GeneralDef
         {
             Id = "hjb", Name = "黄巾兵", Glyph = "兵", Color = "#e8c547",
-            Wu = 75, Zhi = 20, Tong = 40, Su = 50, BaseSoldiers = 160, ExpReward = 10, GoldReward = 8
+            Wu = 75, Zhi = 20, Tong = 40, Su = 50, BaseSoldiers = 160, ExpReward = 10, GoldReward = 8,
+            Drop = "caoyao", DropRate = 0.2
         };
         public static readonly GeneralDef HuangJinLiShi = new GeneralDef
         {
             Id = "hjls", Name = "黄巾力士", Glyph = "力", Color = "#e89a47",
-            Wu = 90, Zhi = 15, Tong = 110, Su = 40, BaseSoldiers = 230, ExpReward = 15, GoldReward = 12
+            Wu = 90, Zhi = 15, Tong = 110, Su = 40, BaseSoldiers = 230, ExpReward = 15, GoldReward = 12,
+            Drop = "zhuojiu", DropRate = 0.15
         };
         public static readonly GeneralDef HuangJinShuShi = new GeneralDef
         {
             Id = "hjss", Name = "黄巾术士", Glyph = "术", Color = "#c47be8",
             Wu = 35, Zhi = 110, Tong = 35, Su = 60, BaseSoldiers = 130, ExpReward = 14, GoldReward = 15,
-            Tactics = new[] { "yaoshu" }
+            Tactics = new[] { "yaoshu" }, Drop = "zhuojiu", DropRate = 0.25
         };
         public static readonly GeneralDef HuangJinTouMu = new GeneralDef
         {
             Id = "hjtm", Name = "黄巾头目", Glyph = "头", Color = "#ff7a5c",
-            Wu = 82, Zhi = 60, Tong = 70, Su = 55, BaseSoldiers = 380, ExpReward = 30, GoldReward = 30
+            Wu = 82, Zhi = 60, Tong = 70, Su = 55, BaseSoldiers = 380, ExpReward = 30, GoldReward = 30,
+            Drop = "caoyao", DropRate = 0.5
         };
 
         // ---------- 第一章 Boss（演义第一回：刘关张初战程远志） ----------
         public static readonly GeneralDef ChengYuanZhi = new GeneralDef
         {
             Id = "chengyuanzhi", Name = "程远志", Glyph = "程", Color = "#ff4d4d",
-            Wu = 118, Zhi = 40, Tong = 65, Su = 60, BaseSoldiers = 1200, ExpReward = 150, GoldReward = 300, IsBoss = true
+            Wu = 118, Zhi = 40, Tong = 65, Su = 60, BaseSoldiers = 1200, ExpReward = 150, GoldReward = 300, IsBoss = true,
+            Drop = "yupei", DropRate = 1
         };
         public static readonly GeneralDef DengMao = new GeneralDef
         {
             Id = "dengmao", Name = "邓茂", Glyph = "邓", Color = "#ff8a4d",
-            Wu = 108, Zhi = 30, Tong = 55, Su = 65, BaseSoldiers = 700, ExpReward = 80, GoldReward = 100, IsBoss = true
+            Wu = 108, Zhi = 30, Tong = 55, Su = 65, BaseSoldiers = 700, ExpReward = 80, GoldReward = 100, IsBoss = true,
+            Drop = "pikui", DropRate = 1
         };
 
         /// <summary>野外随机遇敌。等级越高越容易遇到头目。</summary>

@@ -23,6 +23,8 @@ namespace LiuBeiRPG.Core
 
         public int ExpReward;           // 击败后获得经验
         public int GoldReward;          // 击败后获得金钱
+        public string Drop;             // 掉落的物品 Id
+        public double DropRate;         // 掉落几率 0..1
         public string[] Tactics = new string[0]; // 敌方可用的策略
         public bool IsBoss;
     }

@@ -538,7 +538,7 @@ namespace LiuBeiRPG.World
                     "M,,T,,,,,,,,,,,=,ww~~~~~wM=====CCCCCM",
                     "M,,,,,,T,,T,,,,,==,,======,,,,=CCCCCM",
                     "MMM,,,,,,,,,,,,,,,==,T,,,,,,,,=CCCCCM",
-                    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+                    "MMMMMMMMMMMMMMMMMM=MMMMMMMMMMMMMMMMMM",
                 }
             };
             // 2×2 四屏的大郊外（底图由四块拼成，见 ArtSrc/郊外扩大提示词.md）；树、村子、桥、营寨在物件清单里（Resources/Map/Decor/field_big.txt）
@@ -576,11 +576,27 @@ namespace LiuBeiRPG.World
                 }
             });
 
+            // 南边官道（底边 (18,23)）通往青州：第一章打完之前官兵拦着
+            m.Npcs.Add(new Npc
+            {
+                Id = "qingzhou_guard", Name = "官兵", Glyph = "兵", Skin = "shouwei", Weapon = "qiang", X = 18, Y = 23, Facing = "back",
+                Visible = () => !flags.Has(F_Boss),
+                Talk = () => Say(L("官兵", "往南是去青州的官道。黄巾作乱，太守有令，闲人不得通行！"),
+                                 L("官兵", "你们若真有本事，先把东南边那伙黄巾贼收拾了再说。"))
+            });
+
             m.OnStep = (x, y) =>
             {
                 if (m.At(x, y) == 't')
                 {
                     host.Warp(Town, 8, 12);
+                    return true;
+                }
+                // ponytail: 第二章地图还没做，走到官道口先只给提示；做了青州就在这里 Warp 过去
+                if (x == 18 && y == 23)
+                {
+                    Say(L("关羽", "兄长，往南便是去青州的官道。"),
+                        L(null, "（第二章「青州解围」尚未开放）"));
                     return true;
                 }
                 return false;

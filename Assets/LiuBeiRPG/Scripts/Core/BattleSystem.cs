@@ -239,6 +239,7 @@ namespace LiuBeiRPG.Core
 
         /// <summary>胜利后发放经验和金钱。</summary>
         public int RewardExp, RewardGold;   // GrantRewards 之后可读，结算面板用
+        public readonly List<string> RewardItems = new List<string>();   // 掉落（已放进行囊的物品 Id，同种可重复）
 
         public List<BattleEvent> GrantRewards()
         {
@@ -247,6 +248,14 @@ namespace LiuBeiRPG.Core
             int gold = RewardGold = Enemies.Sum(e => e.Def.GoldReward);
             Party.Gold += gold;
             events.Add(new BattleEvent("胜利！获得经验 " + exp + "，金钱 " + gold));
+            // 掉落：每个敌人按几率掉一件，行囊放不下就算了
+            RewardItems.Clear();
+            foreach (var e in Enemies)
+                if (e.Def.Drop != null && rng.NextDouble() < e.Def.DropRate && Party.CanHold(e.Def.Drop))
+                {
+                    Party.Items.Add(e.Def.Drop);
+                    RewardItems.Add(e.Def.Drop);
+                }
             foreach (var m in Party.GainExp(exp)) events.Add(new BattleEvent(m));
             return events;
         }
