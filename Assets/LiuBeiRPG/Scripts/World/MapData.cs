@@ -65,6 +65,7 @@ namespace LiuBeiRPG.World
         public float StepSeconds = 0.6f;   // 路人走一格几秒：老人慢、小孩快
         public int[] Home;        // 路人的家门口 x,y：天黑走回这里进屋，天亮从这里出来；null = 不回家
         public bool Indoors;      // 进屋了（不画、不能搭话）
+        public Func<string> Mark;  // 头顶的任务记号：“！”有任务可接，“？”可以交差；null = 不画
         // 运行时（GameRoot.Walkers）
         public int PrevX, PrevY, RouteIndex;
         public float StepTime = -10f, WaitUntil, BlockedSince = -1f;

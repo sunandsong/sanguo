@@ -69,7 +69,8 @@ namespace LiuBeiRPG.Game
             n.WaitUntil = Mathf.Min(n.WaitUntil, Time.time + 0.4f);   // 赶着回家，不停下来张望
         }
 
-        /// <summary>从 (x,y) 往 (tx,ty) 的最短路上的下一步（只看地块能不能走，不管路上站着的人）。走不到返回 false。</summary>
+        /// <summary>从 (x,y) 往 (tx,ty) 的最短路上的下一步。地块走不了的、站着别的 NPC 的格子都绕开（不然会被站桩的人堵死）；
+        /// 主角、跟随的队友会走开，不算。走不到返回 false。</summary>
         bool StepToward(int x, int y, int tx, int ty, out int dx, out int dy)
         {
             dx = dy = 0;
@@ -88,6 +89,8 @@ namespace LiuBeiRPG.Game
                     int nx = cx + ox[k], ny = cy + oy[k];
                     if (nx < 0 || ny < 0 || nx >= w || ny >= h || dist[ny * w + nx] >= 0) continue;
                     if (!Tiles.Get(map.At(nx, ny)).Walkable) continue;
+                    var other = map.NpcAt(nx, ny);
+                    if (other != null && !(nx == x && ny == y)) continue;
                     dist[ny * w + nx] = dist[c] + 1;
                     q.Enqueue(ny * w + nx);
                 }

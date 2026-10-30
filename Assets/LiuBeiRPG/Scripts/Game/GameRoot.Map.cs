@@ -409,6 +409,22 @@ namespace LiuBeiRPG.Game
             var leader = party.Members[0];
             if (Puppet(leader.Def.Id) == null) Gfx.Token(Inset(TileRect(px, py), 2), leader.Def.Glyph, Gfx.Hex(leader.Def.Color));
 
+            // 任务记号：头顶一个金色“！”（有任务可接）或绿色“？”（可以交差），上下轻轻跳
+            foreach (var n in map.Npcs)
+            {
+                if (n.Mark == null || !n.Visible()) continue;
+                string mk = n.Mark();
+                if (mk == null) continue;
+                var cell = WalkerCell(n);
+                float headY = cell.y + 1f - 0.08f - 1.1f * map.ActorScale;
+                var c = origin + new Vector2((cell.x + 0.5f) * tile, (headY - 0.3f) * tile + Mathf.Abs(Mathf.Sin(Time.time * 4f)) * -6f);
+                var old = GUI.color;
+                GUI.color = new Color(1f, 0.85f, 0.4f, 0.5f);
+                Gfx.Image(new Rect(c.x - 26, c.y - 26, 52, 52), GlowTex());
+                GUI.color = old;
+                Gfx.FxText(new Rect(c.x - 30, c.y - 24, 60, 48), mk, 34, mk == "？" ? new Color(0.55f, 1f, 0.5f) : new Color(1f, 0.82f, 0.25f));
+            }
+
             // 格子线（G 键开关）：极淡的纯黑，只把底下压暗一点，草地上偏深绿、土路上偏深黄，自动随背景
             if (showGrid)
             {

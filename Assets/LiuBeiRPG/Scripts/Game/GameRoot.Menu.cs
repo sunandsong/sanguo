@@ -48,7 +48,7 @@ namespace LiuBeiRPG.Game
             if (key == InputKey.Left) pageMember = (pageMember + n - 1) % n;
             else if (key == InputKey.Right) pageMember = (pageMember + 1) % n;
             else if (d != 0 && bagTab == 0) itemSel = Mathf.Clamp(itemSel + d, 0, ItemSlots - 1);
-            else if (d != 0) tacticSel = Mathf.Clamp(tacticSel + d, 0, Mathf.Max(0, party.AvailableTactics().Count - 1));
+            else if (d != 0 && bagTab == 1) tacticSel = Mathf.Clamp(tacticSel + d, 0, Mathf.Max(0, party.AvailableTactics().Count - 1));
             else if (key == InputKey.Confirm && bagTab == 0 && itemSel < party.Slots().Count) UseItem();
             else if (key == InputKey.Confirm && bagTab == 1 && tacticSel < party.AvailableTactics().Count) UseTactic(party.AvailableTactics()[tacticSel]);
             else if (key == InputKey.Cancel) CloseMenuPage();
@@ -150,9 +150,9 @@ namespace LiuBeiRPG.Game
             else { who = new Rect(r.x, top, 540, r.yMax - top); bag = new Rect(r.x + 550, top, w - 550, r.yMax - top); }
             Gfx.Rect(portrait ? new Rect(r.x + 20, bag.y - 6, w - 40, 1) : new Rect(bag.x - 4, top, 1, bag.height - 16), new Color(1, 1, 1, 0.1f));
             DrawCharacter(party.Members[pageMember], who);
-            // 右边两个页签：物品 / 策略
-            string[] tabs = { "物品", "法术" };
-            for (int i = 0; i < 2; i++)
+            // 右边三个页签：物品 / 法术 / 任务
+            string[] tabs = { "物品", "法术", "任务" };
+            for (int i = 0; i < tabs.Length; i++)
             {
                 var tr = new Rect(bag.x + 16 + i * 104, bag.y, 96, 40);
                 bool sel = i == bagTab;
@@ -161,7 +161,9 @@ namespace LiuBeiRPG.Game
                 if (Gfx.Clicked(tr)) bagTab = i;
             }
             var content = new Rect(bag.x, bag.y + 52, bag.width, bag.height - 52);
-            if (bagTab == 0) DrawBag(content); else DrawTactics(content, party.Members[pageMember]);
+            if (bagTab == 0) DrawBag(content);
+            else if (bagTab == 1) DrawTactics(content, party.Members[pageMember]);
+            else DrawQuests(content);
         }
 
         void DrawCharacter(General m, Rect area)
@@ -319,7 +321,40 @@ namespace LiuBeiRPG.Game
 
         // ---------------- 策略：地图上只能用恢复类 ----------------
 
-        int bagTab;      // 人物页右边：0 = 物品，1 = 策略
+        int bagTab;      // 人物页右边：0 = 物品，1 = 策略，2 = 任务
+
+        /// <summary>
+        /// 任务页：接了的支线一张卡一个——名字、谁所托、现在该做什么、进度、奖励；做完的压暗写“已完成”，排在后面。
+        /// 一个没接时提示去找头顶“！”的人。
+        /// </summary>
+        void DrawQuests(Rect area)
+        {
+            float x0 = area.x + 16, w = area.width - 32, y = area.y;
+            var list = chapter.Quests.FindAll(q => q.Taken);
+            list.Sort((a, b) => a.Done.CompareTo(b.Done));
+            if (list.Count == 0)
+            {
+                Gfx.Text(new Rect(x0, y + 8, w, 60), "还没有接任务。\n城里、野外头顶有「！」的人，去问问。", 17, new Color(1, 1, 1, 0.6f), TextAnchor.UpperLeft, true);
+                return;
+            }
+            foreach (var q in list)
+            {
+                int stage = q.Stage();
+                var card = new Rect(x0, y, w, 108);
+                if (card.yMax > area.yMax) break;
+                Gfx.RoundRect(card, new Color(1, 1, 1, q.Done ? 0.04f : 0.08f));
+                Gfx.RoundRect(new Rect(card.x, card.y, 4, card.height), q.Done ? new Color(1, 1, 1, 0.25f) : Accent);
+                var dim = q.Done ? 0.45f : 1f;
+                Gfx.Text(new Rect(card.x + 16, card.y + 8, w - 120, 28), q.Name, 20, new Color(Accent.r, Accent.g, Accent.b, dim));
+                Gfx.Text(new Rect(card.x + 16, card.y + 8, w - 32, 28), q.Done ? "已完成" : q.Giver + "所托", 15, new Color(1, 1, 1, 0.5f * dim), TextAnchor.MiddleRight);
+                string step = q.Done ? "已交差。" : q.Steps[Mathf.Clamp(stage - 1, 0, q.Steps.Length - 1)];
+                Gfx.Text(new Rect(card.x + 16, card.y + 40, w - 32, 26), (q.Done ? "" : "当前：") + step, 16, new Color(1, 1, 1, 0.9f * dim));
+                if (!q.Done && q.Progress != null)
+                    Gfx.Text(new Rect(card.x + 16, card.y + 40, w - 32, 26), q.Progress(), 16, stage >= q.Steps.Length ? new Color(0.5f, 1f, 0.55f) : new Color(0.7f, 0.88f, 1f), TextAnchor.MiddleRight);
+                Gfx.Text(new Rect(card.x + 16, card.y + 72, w - 32, 24), "奖励：" + q.Reward, 15, new Color(1, 1, 1, 0.55f * dim));
+                y += card.height + 10;
+            }
+        }
         int tacticSel;
 
         /// <summary>法术：和物品一样一格一个图标，不写字；只列学会的。选中的在下面写名字和说明。

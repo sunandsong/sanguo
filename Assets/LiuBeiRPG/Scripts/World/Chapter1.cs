@@ -29,6 +29,12 @@ namespace LiuBeiRPG.World
         const string F_Liutao = "c1_liutao";   // 母亲给了《六韬》
         const string F_ChestHome = "c1_chest_home", F_ChestInn = "c1_chest_inn2f";   // 宝箱开过了
         const string F_ChestFieldNE = "c1_chest_field_ne", F_ChestFieldSW = "c1_chest_field_sw", F_ChestFieldE = "c1_chest_field_e";
+        // 支线：黄巾换赏（接了 / 交了）
+        const string Q_HuangJin = "c1_q_huangjin", Q_HuangJinDone = "c1_q_huangjin_done";
+        const int HuangJinNeed = 10;
+
+        /// <summary>这一章的支线任务，人物页“任务”页签列的就是这些。</summary>
+        public readonly List<Quest> Quests = new List<Quest>();
 
         // 涿县商店（设计文档 8.3）。ponytail: 狼烟要等战斗里能用物品再上架
         static readonly string[] ShopGoods = { "caoyao", "zhuojiu", "qimeigun", "tiejian", "huanshoudao", "changqiang", "shoufu", "pikui", "pijia", "buxue", "numa", "yupei" };
@@ -223,6 +229,53 @@ namespace LiuBeiRPG.World
                 Visible = () => !flags.Has(F_Oath),
                 Talk = () => Say(L("守卫", "城外黄巾贼出没，你一个人出去就是送死。"),
                                  L("守卫", "要出城，先招些人马再说吧。"))
+            });
+
+            // ---- 支线：黄巾换赏。客栈左边的空地上站着县衙差役（出城那条路一眼看得到，四周没有树挡着），收黄巾，十条换赏钱和一副皮甲 ----
+            var qHuangJin = new Quest
+            {
+                Id = "huangjin", Name = "黄巾换赏", Giver = "县衙差役",
+                Steps = new[] { "打黄巾贼，收集 " + HuangJinNeed + " 条「黄巾」", "回涿县客栈左边，把黄巾交给县衙差役" },
+                Reward = "金钱 150、皮甲",
+                Stage = () => flags.Has(Q_HuangJinDone) ? -1 : !flags.Has(Q_HuangJin) ? 0 : host.Party.Count("huangjinbu") >= HuangJinNeed ? 2 : 1,
+                Progress = () => "黄巾 " + System.Math.Min(host.Party.Count("huangjinbu"), HuangJinNeed) + "/" + HuangJinNeed,
+            };
+            Quests.Add(qHuangJin);
+            m.Npcs.Add(new Npc
+            {
+                Id = "yayi", Name = "县衙差役", Glyph = "差", Skin = "shouwei", X = 12, Y = 9,
+                Mark = () => qHuangJin.Stage() == 0 ? "！" : qHuangJin.Stage() == 2 ? "？" : null,
+                Talk = () =>
+                {
+                    int stage = qHuangJin.Stage(), have = host.Party.Count("huangjinbu");
+                    if (stage == 0)
+                    {
+                        host.Say(new List<DialogueLine>
+                        {
+                            L("县衙差役", "县令有赏格：黄巾作乱，凡斩贼者，扯下贼人头上的黄巾为证。"),
+                            L("县衙差役", "每凑够 " + HuangJinNeed + " 条，来这儿换赏钱，另有一副库里的皮甲。"),
+                        }, () => host.Choose("接下这桩差事？", new[] { "接下", "再说吧" }, i =>
+                        {
+                            if (i != 0) { Say(L("县衙差役", "想好了再来。")); return; }
+                            flags.Set(Q_HuangJin);
+                            Say(L("刘备", "此事交给我等。"), L(null, "接受支线「黄巾换赏」。（菜单 → 人物 → 任务 可查看）"));
+                        }));
+                    }
+                    else if (stage == 1)
+                        Say(L("县衙差役", "黄巾凑了 " + have + " 条，还差 " + (HuangJinNeed - have) + " 条。城外草地上黄巾贼多的是。"));
+                    else if (stage == 2)
+                    {
+                        var party = host.Party;   // 读档会换一个新 Party，每次现取
+                        for (int i = 0; i < HuangJinNeed; i++) party.Items.Remove("huangjinbu");
+                        party.Gold += 150;
+                        bool fit = party.CanHold("pijia");
+                        if (fit) party.Items.Add("pijia");
+                        flags.Set(Q_HuangJinDone);
+                        Say(L("县衙差役", "好！" + HuangJinNeed + " 条，一条不少。诸位真是为民除害。"),
+                            L(null, "完成支线「黄巾换赏」！获得金钱 150" + (fit ? "、皮甲" : "（行囊满了，皮甲没拿上）") + "。"));
+                    }
+                    else Say(L("县衙差役", "多亏诸位，城外太平多了。县里百姓都念着你们的好。"));
+                }
             });
 
             m.OnStep = (x, y) =>
