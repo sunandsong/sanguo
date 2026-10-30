@@ -173,7 +173,7 @@ namespace LiuBeiRPG.Game
             }
         }
 
-        /// <summary>一条战报生效：出字、改兵力条、伤害数字、策略特效；挨打的闪白 + 受击 + 击退，被砍的再喷血、顿帧、震屏；败走的倒地。</summary>
+        /// <summary>一条战报生效：出字、改兵力条、伤害数字、策略特效；挨打的闪白 + 受击 + 击退，被砍的再喷血、顿帧、震屏；敌人兵力打没当场打飞，我方败走倒地。</summary>
         void ApplyEvent(BattleEvent e)
         {
             log.Add(e.Text);
@@ -196,14 +196,15 @@ namespace LiuBeiRPG.Game
             PuppetActor a;
             if (battlePuppets.TryGetValue(e.Target, out a) && a != null) { a.Hit(); a.Play("hit", true); }
             float dir = battle.Enemies.Contains(e.Target) ? -1f : 1f;   // 默认往自己身后退
-            Vector2 ap;
-            if (e.Actor != null && hasAt && slots.TryGetValue(e.Actor, out ap))
-            {
-                dir = Mathf.Sign(at.x - ap.x);
-                SprayBlood(at + new Vector2(0, -HeightOf(e.Target) * 0.5f), dir, e.IsCrit);
-                Impact(e.Target, e.IsCrit);
-            }
+            Vector2 ap = Vector2.zero;
+            bool melee = e.Actor != null && hasAt && slots.TryGetValue(e.Actor, out ap);
+            if (melee) dir = Mathf.Sign(at.x - ap.x);
+            // 不管敌我、刀砍还是法术，挨打掉兵力就溅血（法术没有出手位置，往自己身后喷）
+            if (hasAt) SprayBlood(at + new Vector2(0, -HeightOf(e.Target) * 0.5f), at.y, dir, e.IsCrit, e.SoldiersAfter == 0);
+            if (melee) Impact(e.Target, e.IsCrit);
             Knock(e.Target, dir);
+            // 敌人这一下兵力打没了：当场打飞，不等后面那条“败走”战报（到时 FallDown 发现已经在飞就不管了）
+            if (e.SoldiersAfter == 0 && battle.Enemies.Contains(e.Target)) FallDown(e.Target);
         }
 
         // ---------------- 砍一刀：蓄力往后一缩 → 冲过去 → 挥刀（落刀时结算）→ 退回 ----------------
@@ -469,7 +470,7 @@ namespace LiuBeiRPG.Game
 
         // 战斗界面内容区：横屏 960×540 居中；竖屏铺满宽度、高 770。整屏都是战场，底下一条指令栏（播战报时显示战报）
         float bx, by, bw, bh;
-        const float BarH = 40f;     // 底部指令按钮高（最多两排）
+        const float BarH = 62f;     // 底部指令按钮高（最多两排）；手机上手指点得准，不能再小
         const float MenuH = 2 * BarH + 8 + 12 + 26;   // 两排按钮 + 排间距 + 底边距 + 上方小字，战场人物要让开这么高
 
         void DrawBattle()
@@ -554,6 +555,7 @@ namespace LiuBeiRPG.Game
                 Gfx.Image(new Rect(cx - dw * 0.5f, cy - dh * 0.5f, dw, dh), disc);
                 GUI.color = old;
             }
+            DrawBloodStains();   // 地上的血渍压在人底下
 
             foreach (var u in units)
             {
@@ -561,12 +563,17 @@ namespace LiuBeiRPG.Game
                 bool enemy = es.Contains(g);
                 int shown = shownSoldiers.ContainsKey(g) ? shownSoldiers[g] : g.Soldiers;
                 bool dead = shown <= 0;
-                float alpha = enemy && dead ? DownAlpha(g) : 1f;   // 败走的敌人倒下后淡出
-                if (alpha <= 0f) continue;
-
+                float alpha = 1f;
                 var foot = u.Value;
                 float h = HeightOf(g);
                 foot.x += KnockX(g);
+                // 败走的敌人被打飞：往斜上方转着飞出画面（GameRoot.BattleFx.FlyOut）
+                Vector2 fly = Vector2.zero;
+                float spin = 0f, flyScale = 1f;
+                if (enemy && dead && !FlyOut(g, foot, out fly, out spin, out flyScale)) continue;
+                bool flying = fly != Vector2.zero;
+                foot += fly;
+                h *= flyScale;
                 float off = OffstageK();   // 入场 / 出场：沿水平方向推到画面外
                 if (off > 0f) foot.x += enemy ? -(foot.x + 80f) * off : (Gfx.VW - foot.x + 80f) * off;
                 float fl;
@@ -575,15 +582,25 @@ namespace LiuBeiRPG.Game
 
                 if (g == cur) DrawRing(foot, false, h);
                 if (g == target) DrawRing(foot, true, h);
-                // 脚下软阴影，人像踩在圆盘上
-                if (Event.current.type == EventType.Repaint)
+                // 脚下软阴影，人像踩在圆盘上（飞起来就没有了）
+                if (!flying && Event.current.type == EventType.Repaint)
                 {
                     var oldC = GUI.color;
-                    GUI.color = new Color(0, 0, 0, 0.5f * alpha);
-                    Gfx.Image(new Rect(foot.x - h * 0.4f, foot.y - h * 0.09f, h * 0.8f, h * 0.2f), PetalTex());
+                    // 两层：外圈大而淡，脚底一小团实的
+                    GUI.color = new Color(0, 0, 0, 0.45f * alpha);
+                    Gfx.Image(new Rect(foot.x - h * 0.58f, foot.y - h * 0.14f, h * 1.16f, h * 0.3f), PetalTex());
+                    GUI.color = new Color(0, 0, 0, 0.4f * alpha);
+                    Gfx.Image(new Rect(foot.x - h * 0.3f, foot.y - h * 0.065f, h * 0.6f, h * 0.13f), PetalTex());
                     GUI.color = oldC;
                 }
                 var p = BattlePuppet(g, enemy);
+                var oldM = GUI.matrix;
+                if (spin != 0f)
+                {
+                    // 绕身体中间转（GUI.matrix 有缩放，不能用 RotateAroundPivot）
+                    var ctr = (Vector3)(foot - new Vector2(0, h * 0.5f));
+                    GUI.matrix = oldM * Matrix4x4.TRS(ctr, Quaternion.Euler(0, 0, spin), Vector3.one) * Matrix4x4.TRS(-ctr, Quaternion.identity, Vector3.one);
+                }
                 if (p != null)
                 {
                     float flash = p.Flash;
@@ -603,10 +620,12 @@ namespace LiuBeiRPG.Game
                         p.DrawGUI(foot + new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * OutlinePx, h / 950f);
                     }
                     p.Flash = g == target ? Mathf.Max(flash, 0.22f + 0.12f * Mathf.Sin(Time.time * 9f)) : flash;   // 选中的目标一闪一闪发白
-                    p.Tint = dead ? new Color(0.45f, 0.45f, 0.45f, alpha) : Color.white;
+                    if (enemy && dead && downAt.ContainsKey(g)) p.Flash = Mathf.Max(p.Flash, flying ? 0.3f : 1f);   // 打飞前顿住那一下全白，飞着也带点白
+                    p.Tint = dead && !enemy ? new Color(0.45f, 0.45f, 0.45f, alpha) : Color.white;
                     p.DrawGUI(foot, h / 950f);
                 }
                 else Gfx.Token(new Rect(foot.x - 28, foot.y - 60, 56, 56), g.Def.Glyph, c, dead);
+                GUI.matrix = oldM;
 
                 if (enemy && dead) continue;   // 倒下的敌人不再画兵力条、名字
                 // 头顶兵力条、脚下名字
@@ -625,6 +644,7 @@ namespace LiuBeiRPG.Game
                 }
             }
             DrawSlash();
+            DrawBlood();
             DrawSparks();
             DrawFlips();
             DrawPopups();
@@ -647,11 +667,11 @@ namespace LiuBeiRPG.Game
                 case BState.TargetAlly:
                 {
                     // 选目标：在战场上点人；底下一行提示 + 返回（手机上没有取消键）
-                    var back = new Rect(bx + bw * 0.5f - 60, by + bh - 12 - 52, 120, 52);
+                    var back = new Rect(bx + bw * 0.5f - 90, by + bh - 12 - BarH, 180, BarH);
                     string what = pending.Type == CommandType.Tactic ? pending.Tactic.Name : "攻击";
-                    Gfx.Text(new Rect(bx, back.y - 30, bw, 24), CurrentCommander.Name + "：" + what + "　点选" + (bstate == BState.TargetEnemy ? "敌人" : "队友"), 16, Accent, TextAnchor.MiddleCenter);
+                    Gfx.Text(new Rect(bx, back.y - 32, bw, 26), CurrentCommander.Name + "：" + what + "　点选" + (bstate == BState.TargetEnemy ? "敌人" : "队友"), 19, Accent, TextAnchor.MiddleCenter);
                     Gfx.Modern(back, 0.94f);
-                    Gfx.Text(back, "返回", 20, Color.white, TextAnchor.MiddleCenter);
+                    Gfx.Text(back, "返回", 25, Color.white, TextAnchor.MiddleCenter);
                     if (Gfx.Clicked(back)) MenuCancel();
                     return;
                 }
@@ -667,7 +687,8 @@ namespace LiuBeiRPG.Game
             // 现代风：独立的圆角按钮，和对话框同一套。选中的填金色、字变深、往上浮一点
             // 每排最多 PerRow 个，从上往下排，最后一排贴底
             const int PerRow = 3;
-            const float itemW = 104f, gap = 10f;
+            const float gap = 10f;
+            float itemW = Mathf.Min(170f, (bw - 48f - (PerRow - 1) * gap) / PerRow);   // 竖屏铺满一排三个
             int rows = (items.Count + PerRow - 1) / PerRow;
             float yBottom = by + bh - BarH - 12;
             System.Func<int, Rect> cell = i =>
@@ -681,7 +702,7 @@ namespace LiuBeiRPG.Game
             string caption = bstate == BState.ConfirmTarget
                 ? CurrentCommander.Name + "：" + (pending.Type == CommandType.Tactic ? pending.Tactic.Name : "攻击") + " " + pending.Target.Name + "？"
                 : CurrentCommander.Name + (bstate == BState.TacticMenu ? "　法力 " + (party.TP - reservedTP) : "");
-            Gfx.Text(new Rect(first.x + 4, first.y - 26, 400, 22), caption, 15, Accent);
+            Gfx.Text(new Rect(first.x + 4, first.y - 30, 480, 26), caption, 19, Accent);
             for (int i = 0; i < items.Count; i++)
             {
                 bool sel = i == menuIndex;
@@ -691,26 +712,32 @@ namespace LiuBeiRPG.Game
                 if (sel) Gfx.RoundRect(ir, en ? Accent : new Color(0.5f, 0.45f, 0.35f));
                 else Gfx.Modern(ir, 0.92f);
                 var col = sel ? new Color(0.12f, 0.09f, 0.04f) : en ? Color.white : new Color(1, 1, 1, 0.35f);
-                Gfx.Text(ir, items[i], 18, col, TextAnchor.MiddleCenter, false, !sel);
+                Gfx.Text(ir, items[i], 25, col, TextAnchor.MiddleCenter, false, !sel);
                 if (Gfx.Clicked(ir)) { menuIndex = i; MenuConfirm(i); return; }
             }
         }
 
-        /// <summary>选法术：底部一排大图标卡片（右上角法力消耗），选中的抬起发金光；上方一行写名字和效果。法力不够的压暗。</summary>
+        /// <summary>选法术：底部一排大图标卡片（底下法力消耗），选中的抬起发金光；卡片上方左边写名字和效果、剩余法力，右边“返回”。法力不够的压暗。
+        /// 卡片按屏宽铺满一排，竖屏四张也放得下。</summary>
         void DrawTacticCards()
         {
             var list = party.AvailableTactics();
             int tp = party.TP - reservedTP;
-            const float cw = 100f, ch = 118f, gap = 12f, backW = 72f;
-            float total = list.Count * cw + (list.Count - 1) * gap + gap + backW;
+            const float gap = 10f;
+            int n = Mathf.Max(1, list.Count);
+            float cw = Mathf.Min(115f, (bw - 48f - (n - 1) * gap) / n), ch = cw * 1.18f;
+            float total = list.Count * cw + (list.Count - 1) * gap;
             float x0 = bx + (bw - total) * 0.5f, y0 = by + bh - 12 - ch;
             menuIndex = Mathf.Clamp(menuIndex, 0, Mathf.Max(0, list.Count - 1));
 
+            // 返回（手机上没有取消键）：卡片右上方
+            var back = new Rect(bx + bw - 16 - 110, y0 - 14 - 52, 110, 52);
             if (list.Count > 0)
             {
                 var cur = list[menuIndex];
-                Gfx.Text(new Rect(x0, y0 - 34, total, 24), CurrentCommander.Name + "：" + cur.Name + " · " + cur.Desc, 16, Accent);
-                Gfx.Text(new Rect(x0, y0 - 34, total, 24), "法力 " + tp, 16, Color.white, TextAnchor.UpperRight);
+                var info = new Rect(bx + 12, back.y, back.x - bx - 24, back.height);
+                Gfx.Text(new Rect(info.x, info.y, info.width, 26), CurrentCommander.Name + "：" + cur.Name + " · " + cur.Desc, 17, Accent);
+                Gfx.Text(new Rect(info.x, info.y + 28, info.width, 24), "剩余法力 " + tp, 16, Color.white);
             }
             for (int i = 0; i < list.Count; i++)
             {
@@ -725,19 +752,17 @@ namespace LiuBeiRPG.Game
                 {
                     var old = GUI.color;
                     GUI.color = en ? Color.white : new Color(0.35f, 0.35f, 0.35f, 0.9f);
-                    Gfx.Image(new Rect(r.x + 8, r.y + 10, cw - 16, cw - 16), icon);
+                    Gfx.Image(new Rect(r.x + 8, r.y + 8, cw - 16, cw - 16), icon);
                     GUI.color = old;
                 }
                 // 法力消耗小圆牌
-                var badge = new Rect(r.center.x - 22, r.yMax - 26, 44, 20);
+                var badge = new Rect(r.center.x - 26, r.yMax - 29, 52, 23);
                 Gfx.RoundRect(badge, new Color(0, 0, 0, 0.55f));
-                Gfx.Text(badge, t.Cost.ToString(), 15, en ? new Color(0.55f, 0.8f, 1f) : new Color(1, 0.4f, 0.35f), TextAnchor.MiddleCenter);
+                Gfx.Text(badge, t.Cost.ToString(), 18, en ? new Color(0.55f, 0.8f, 1f) : new Color(1, 0.4f, 0.35f), TextAnchor.MiddleCenter);
                 if (Gfx.Clicked(r)) { menuIndex = i; MenuConfirm(i); return; }
             }
-            // 返回（手机上没有取消键）
-            var back = new Rect(x0 + list.Count * (cw + gap), y0 + ch - 48, backW, 48);
             Gfx.Modern(back, 0.92f);
-            Gfx.Text(back, "返回", 18, Color.white, TextAnchor.MiddleCenter);
+            Gfx.Text(back, "返回", 24, Color.white, TextAnchor.MiddleCenter);
             if (Gfx.Clicked(back)) MenuCancel();
         }
     }

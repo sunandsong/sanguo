@@ -63,6 +63,8 @@ namespace LiuBeiRPG.World
         public string Skin;       // 骨骼角色名，空 = 用 Id（几个路人共用一个角色时填）
         public int[] Route;       // 路人的巡游路线：x0,y0, x1,y1, …，一格一格走过去，到头再从第一个点开始
         public float StepSeconds = 0.6f;   // 路人走一格几秒：老人慢、小孩快
+        public int[] Home;        // 路人的家门口 x,y：天黑走回这里进屋，天亮从这里出来；null = 不回家
+        public bool Indoors;      // 进屋了（不画、不能搭话）
         // 运行时（GameRoot.Walkers）
         public int PrevX, PrevY, RouteIndex;
         public float StepTime = -10f, WaitUntil, BlockedSince = -1f;

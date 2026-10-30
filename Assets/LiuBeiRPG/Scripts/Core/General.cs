@@ -25,6 +25,7 @@ namespace LiuBeiRPG.Core
         public int GoldReward;          // 击败后获得金钱
         public string Drop;             // 掉落的物品 Id
         public double DropRate;         // 掉落几率 0..1
+        public string Junk;             // 必掉的材料杂物 Id（每个敌人掉一件），null = 不掉
         public string[] Tactics = new string[0]; // 敌方可用的策略
         public bool IsBoss;
     }

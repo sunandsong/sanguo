@@ -16,8 +16,9 @@ namespace LiuBeiRPG.Game
         int faceX, faceY = 1;
         readonly List<Vector2Int> trail = new List<Vector2Int>();   // 跟随武将的位置（吞食天地式一字长蛇）
         int stepsSinceBattle;
-        bool showGrid = true;   // ponytail: 调试用，对齐完可改回 false
+        bool showGrid;   // 格子线，调试对齐用（G 键开关）
         float nextMoveTime;
+        InputKey? queuedMove;   // 上一格还没滑完时按下的方向，滑完再走（轻点一下不会丢）
         int prevX, prevY;              // 上一格，画的时候从这里滑到 px/py
         float lastStepTime = -10f;
         readonly List<Vector2Int> prevTrail = new List<Vector2Int>();   // 跟随武将上一步的位置，同样滑过来
@@ -45,6 +46,7 @@ namespace LiuBeiRPG.Game
             map = target;
             px = x; py = y;
             prevX = x; prevY = y;
+            queuedMove = null;
             trail.Clear();
             prevTrail.Clear();
             stepsSinceBattle = 0;
@@ -59,6 +61,8 @@ namespace LiuBeiRPG.Game
             int dx, dy;
             if (DirOf(key, out dx, out dy))
             {
+                // 上一格还没滑完不许插队：摇杆斜着推时轴会来回跳，每跳一次都立刻走一格，斜着走就比直着走快
+                if (Time.time < nextMoveTime) { queuedMove = key; return; }
                 TryMove(dx, dy);
                 nextMoveTime = Time.time + MoveInterval;   // 平滑移动：滑完这一格紧接着走下一格，不再停顿
                 return;
@@ -69,12 +73,21 @@ namespace LiuBeiRPG.Game
 
         void UpdateMap()
         {
-            if (UiBusy || map == null || Time.time < nextMoveTime) return;
+            if (UiBusy || map == null) { queuedMove = null; return; }   // 踩出对话、战斗时排着的那一步作废
+            if (Time.time < nextMoveTime) return;
+            int dx, dy;
+            if (queuedMove != null)
+            {
+                DirOf(queuedMove.Value, out dx, out dy);
+                queuedMove = null;
+                TryMove(dx, dy);
+                nextMoveTime = Time.time + MoveInterval;
+                return;
+            }
             // 按住方向键连续移动
             foreach (var k in new[] { InputKey.Up, InputKey.Down, InputKey.Left, InputKey.Right })
             {
                 if (!held.Contains(k)) continue;
-                int dx, dy;
                 DirOf(k, out dx, out dy);
                 TryMove(dx, dy);
                 nextMoveTime = Time.time + MoveInterval;
@@ -442,7 +455,11 @@ namespace LiuBeiRPG.Game
             // 站在浅水里：水面以下染水色淡出、脚边冒涟漪，不画影子
             float waterY = WadeWaterY(a, cell, foot, k, Time.time - lastStepTime < MoveInterval);
             if (float.IsNaN(waterY))
-                World.Quad(ShadowTex(), new Rect(foot.x - 0.28f * k, -foot.y - 0.07f * k, 0.56f * k, 0.14f * k), Color.white);
+            {
+                // 影子两层：外面一大圈淡的软影，脚底下再压一小团实的（踩实了地）
+                World.Quad(ShadowTex(), new Rect(foot.x - 0.46f * k, -foot.y - 0.13f * k, 0.92f * k, 0.26f * k), Color.white);
+                World.Quad(ShadowTex(), new Rect(foot.x - 0.26f * k, -foot.y - 0.07f * k, 0.52f * k, 0.14f * k), Color.white);
+            }
             // 深色描边：剪影朝 8 个方向各偏一点先画，贴近地图像素画的粗描边（偏 1.2 虚拟像素）
             var outline = new Color(0.14f, 0.09f, 0.06f);
             float o = 1.2f / tile;

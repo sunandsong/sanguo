@@ -30,6 +30,7 @@ namespace LiuBeiRPG.Game
         void OnEnterMap(bool newMap)
         {
             camSnap = true;
+            walkersPlaced = false;   // 路人按钟点重新摆：夜里在屋里，白天在外面
             irisStart = Time.time;
             if (newMap) { titleText = map.Name; titleStart = Time.time + 0.25f; }
         }

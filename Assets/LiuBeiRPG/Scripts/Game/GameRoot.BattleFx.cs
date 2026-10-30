@@ -6,7 +6,7 @@ using Puppet;
 namespace LiuBeiRPG.Game
 {
     /// <summary>
-    /// 战斗表现：粒子（血、火星、落石、妖雾、回复光点、尘土）、伤害数字、刀光、震屏、白闪、顿帧、击退、倒地、下令光圈、开战标题。
+    /// 战斗表现：溅血（血滴、血雾、血花、地上血渍）、粒子（火星、落石、妖雾、回复光点、尘土）、伤害数字、刀光、震屏、白闪、顿帧、击退、倒地、下令光圈、开战标题。
     /// 都是“记下出生时间，画的时候按经过的时间直接算”的写法，不用逐帧更新。
     /// </summary>
     public partial class GameRoot
@@ -14,6 +14,7 @@ namespace LiuBeiRPG.Game
         void ResetBattleFx()
         {
             sparks.Clear();
+            blood.Clear();
             popups.Clear();
             knock.Clear();
             downAt.Clear();
@@ -35,15 +36,162 @@ namespace LiuBeiRPG.Game
             sparks.Add(new Spark { p = p, v = v, born = Time.time, life = life, size = size, grav = grav, c = c });
         }
 
-        /// <summary>从 at 往 dir（+1 右 / -1 左，背离出手的人）喷一蓬血，中间先爆一团大的。</summary>
-        void SprayBlood(Vector2 at, float dir, bool crit)
+        // ---------------- 溅血 ----------------
+
+        // Kind：0 = 血滴（顺着速度拉长成泪滴，落地变成地上的血渍），1 = 血雾（软团慢慢胀开），2 = 伤口那一下炸开的血花
+        struct Blood { public Vector2 p, v; public float born, size, ground, rot; public int kind; public Color c; }
+        readonly List<Blood> blood = new List<Blood>();
+        const float BloodGrav = 1500f, StainLife = 1.4f;
+
+        /// <summary>
+        /// 从 at（胸口）炸一蓬血：伤口先爆一朵血花 + 一团血雾，血滴一大半顺着 dir（+1 右 / -1 左，背离出手的人）喷，
+        /// 剩下的往四周溅；血滴飞的时候顺着速度拉长，落到 footY 附近的地上摊成血渍再慢慢淡掉。会心更多更远，致命一击（kill）最猛。
+        /// </summary>
+        void SprayBlood(Vector2 at, float footY, float dir, bool crit, bool kill)
         {
-            var red = new Color(0.72f, 0.03f, 0.03f);
-            int n = crit ? 70 : 40;
+            float power = kill ? 1.6f : crit ? 1.3f : 1f;
+            int n = Mathf.RoundToInt(70 * power * power);
             for (int i = 0; i < n; i++)
-                AddSpark(at + new Vector2(Rnd(-8f, 8f), Rnd(-14f, 14f)), new Vector2(dir * Rnd(80f, crit ? 600f : 460f), Rnd(-420f, -60f)),
-                    0.8f, Rnd(5f, 15f), 900f, red);
-            AddSpark(at, new Vector2(dir * 60f, -40f), 0.25f, crit ? 70f : 46f, 0f, red);
+            {
+                Vector2 v;
+                if (i % 5 < 3)
+                {
+                    // 顺着挨打方向的一个扇面，往上偏
+                    float a = Rnd(-55f, 40f) * Mathf.Deg2Rad;
+                    v = new Vector2(dir * Mathf.Cos(a), -Mathf.Sin(a) - 0.35f) * Rnd(250f, 820f) * power;
+                }
+                else
+                {
+                    // 四周乱溅
+                    float a = Rnd(0f, Mathf.PI * 2f);
+                    v = new Vector2(Mathf.Cos(a), Mathf.Sin(a) * 0.8f - 0.45f) * Rnd(120f, 480f) * power;
+                }
+                float dark = Rnd(0f, 1f);
+                blood.Add(new Blood
+                {
+                    kind = 0, p = at + new Vector2(Rnd(-10f, 10f), Rnd(-16f, 16f)), v = v, born = Time.time,
+                    size = Rnd(4f, i % 7 == 0 ? 17f : 11f) * Mathf.Sqrt(power), ground = footY + Rnd(-26f, 22f), rot = Rnd(0f, 360f),
+                    c = new Color(Mathf.Lerp(0.78f, 0.42f, dark), Mathf.Lerp(0.05f, 0.01f, dark), Mathf.Lerp(0.05f, 0.03f, dark)),
+                });
+            }
+            for (int i = 0; i < (kill ? 7 : 4); i++)
+                blood.Add(new Blood
+                {
+                    kind = 1, p = at + new Vector2(Rnd(-14f, 14f), Rnd(-14f, 14f)), v = new Vector2(dir * Rnd(30f, 120f), Rnd(-60f, 10f)), born = Time.time,
+                    size = Rnd(40f, 70f) * power, c = new Color(0.6f, 0.03f, 0.03f, 0.35f),
+                });
+            blood.Add(new Blood { kind = 2, p = at + new Vector2(dir * 10f, 0), born = Time.time, size = 70f * power, rot = Rnd(0f, 360f), c = new Color(0.62f, 0.02f, 0.02f) });
+        }
+
+        /// <summary>血滴哪一刻落地（解 p.y + v.y t + g t²/2 = ground）。</summary>
+        static float LandTime(Blood b)
+        {
+            float d = b.ground - b.p.y;
+            if (d <= 0) d = 4f;
+            return (-b.v.y + Mathf.Sqrt(b.v.y * b.v.y + 2f * BloodGrav * d)) / BloodGrav;
+        }
+
+        /// <summary>地上的血渍：压扁的不规则血斑，画在人底下。</summary>
+        void DrawBloodStains()
+        {
+            if (Event.current.type != EventType.Repaint) return;
+            var old = GUI.color;
+            foreach (var b in blood)
+            {
+                if (b.kind != 0) continue;
+                float tl = LandTime(b), t = Time.time - b.born;
+                if (t < tl) continue;
+                float k = (t - tl) / StainLife;
+                var p = new Vector2(b.p.x + b.v.x * tl, b.ground);
+                float spread = Mathf.Min(1f, (t - tl) / 0.08f);   // 落地一下摊开
+                float w = b.size * 2.2f * (0.6f + 0.4f * spread), h = w * 0.38f;
+                GUI.color = new Color(b.c.r * 0.8f, b.c.g, b.c.b, 0.85f * (1f - k * k));
+                Gfx.Image(new Rect(p.x - w * 0.5f, p.y - h * 0.5f, w, h), SplatTex());
+            }
+            GUI.color = old;
+        }
+
+        /// <summary>空中的血：血花、血雾、拉长的血滴（带一点高光）。</summary>
+        void DrawBlood()
+        {
+            blood.RemoveAll(b => Time.time - b.born > (b.kind == 0 ? LandTime(b) + StainLife : b.kind == 1 ? 0.7f : 0.3f));
+            if (Event.current.type != EventType.Repaint) return;
+            var old = GUI.color;
+            foreach (var b in blood)
+            {
+                float t = Time.time - b.born;
+                if (b.kind == 2)
+                {
+                    // 血花：一下胀开、转一点，再淡掉
+                    float k = t / 0.3f, s = b.size * (0.5f + 0.7f * Mathf.Min(1f, t / 0.06f));
+                    RotatedImage(new Rect(b.p.x - s * 0.5f, b.p.y - s * 0.5f, s, s), SplatTex(), b.rot + k * 20f, new Color(b.c.r, b.c.g, b.c.b, 1f - k * k));
+                }
+                else if (b.kind == 1)
+                {
+                    float k = t / 0.7f, s = b.size * (0.6f + 0.9f * k);
+                    var p = b.p + b.v * t;
+                    GUI.color = new Color(b.c.r, b.c.g, b.c.b, b.c.a * (1f - k));
+                    Gfx.Image(new Rect(p.x - s * 0.5f, p.y - s * 0.5f, s, s), GlowTex());
+                }
+                else if (t < LandTime(b))
+                {
+                    var p = b.p + b.v * t + new Vector2(0, 0.5f * BloodGrav * t * t);
+                    var v = b.v + new Vector2(0, BloodGrav * t);
+                    float len = b.size * (1.2f + v.magnitude / 260f), wid = b.size;
+                    float ang = Mathf.Atan2(v.y, v.x) * Mathf.Rad2Deg;
+                    RotatedImage(new Rect(p.x - len * 0.5f, p.y - wid * 0.5f, len, wid), DropTex(), ang, b.c);
+                    if (b.size > 8f)
+                        RotatedImage(new Rect(p.x - len * 0.15f, p.y - wid * 0.3f, len * 0.35f, wid * 0.3f), GlowTex(), ang, new Color(1f, 0.45f, 0.4f, 0.55f));
+                }
+            }
+            GUI.color = old;
+        }
+
+        static Texture2D dropTex, splatTex;
+
+        /// <summary>泪滴：右边是圆头，往左拖一条渐细的尾巴（画的时候转到速度方向，头朝前）。</summary>
+        static Texture2D DropTex()
+        {
+            if (dropTex != null) return dropTex;
+            const int w = 64, h = 32;
+            dropTex = new Texture2D(w, h) { hideFlags = HideFlags.HideAndDontSave, wrapMode = TextureWrapMode.Clamp };
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    float u = (x + 0.5f) / w, v = Mathf.Abs((y + 0.5f) / h * 2f - 1f);
+                    float r = u > 0.7f ? Mathf.Sqrt(Mathf.Max(0, 1 - Mathf.Pow((u - 0.7f) / 0.3f, 2))) : Mathf.Pow(u / 0.7f, 1.6f);   // 这一列的半宽
+                    float a = Mathf.Clamp01((r - v) * 8f);
+                    dropTex.SetPixel(x, y, new Color(1, 1, 1, a));
+                }
+            dropTex.Apply();
+            return dropTex;
+        }
+
+        /// <summary>血斑：一团边缘不规则的血，四周甩出几颗小血点。</summary>
+        static Texture2D SplatTex()
+        {
+            if (splatTex != null) return splatTex;
+            const int n = 128;
+            splatTex = new Texture2D(n, n) { hideFlags = HideFlags.HideAndDontSave, wrapMode = TextureWrapMode.Clamp };
+            var dots = new Vector3[10];
+            var rng = new System.Random(7);
+            for (int i = 0; i < dots.Length; i++)
+            {
+                float a = (float)rng.NextDouble() * Mathf.PI * 2f, d = 0.55f + 0.35f * (float)rng.NextDouble();
+                dots[i] = new Vector3(Mathf.Cos(a) * d, Mathf.Sin(a) * d, 0.04f + 0.07f * (float)rng.NextDouble());
+            }
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                {
+                    var q = new Vector2((x + 0.5f) / n * 2f - 1f, (y + 0.5f) / n * 2f - 1f);
+                    float ang = Mathf.Atan2(q.y, q.x);
+                    float edge = 0.42f + 0.045f * Mathf.Sin(ang * 3f + 1f) + 0.04f * Mathf.Sin(ang * 7f + 2f) + 0.025f * Mathf.Sin(ang * 13f + 0.5f);
+                    float a = Mathf.Clamp01((edge - q.magnitude) * 30f);
+                    foreach (var dt in dots) a = Mathf.Max(a, Mathf.Clamp01((dt.z - (q - new Vector2(dt.x, dt.y)).magnitude) * 30f));
+                    splatTex.SetPixel(x, y, new Color(1, 1, 1, a));
+                }
+            splatTex.Apply();
+            return splatTex;
         }
 
         /// <summary>脚下扬尘：起步、急停时，往 dir 的反方向扬。</summary>
@@ -193,25 +341,56 @@ namespace LiuBeiRPG.Game
             return k.y * 15f * m;
         }
 
-        // ---------------- 倒地：败走先倒下，敌人再淡出 ----------------
+        // ---------------- 败走：我方倒地；敌人被打飞出画面 ----------------
 
         readonly Dictionary<General, float> downAt = new Dictionary<General, float>();
+        const float FlyHold = 0.05f, FlyTime = 0.7f;   // 打中那一下顿几帧再飞；飞出画面要多久
 
         void FallDown(General g)
         {
             if (downAt.ContainsKey(g)) return;
             downAt[g] = Time.time;
-            PuppetActorOf(g, a => a.Play("down", true));
+            bool enemy = battle.Enemies.Contains(g);
+            PuppetActorOf(g, a => { if (enemy) { a.Hit(); a.Play("hit", true); } else a.Play("down", true); });
         }
 
-        /// <summary>倒地的敌人还剩多少不透明度：倒下 0.5 秒后用 0.5 秒淡出，≤ 0 就不画了。
-        /// 兵力已经归零、“败走”战报还没到（还没倒）的，照常画。</summary>
-        float DownAlpha(General g)
+        /// <summary>
+        /// 敌人被打飞：先顿 FlyHold 秒（闪白），再朝挨打的方向往斜上方抛出去，边飞边转边缩小，飞出画面；
+        /// 飞没了在出画面的地方闪一颗星。返回 false = 已经飞没了，不用再画人。
+        /// 兵力已经归零、“败走”战报还没到（还没飞）的，off = 0 照常画。
+        /// </summary>
+        bool FlyOut(General g, Vector2 foot, out Vector2 off, out float spin, out float scale)
         {
+            off = Vector2.zero; spin = 0; scale = 1;
             float t0;
-            if (!downAt.TryGetValue(g, out t0)) return 1f;
-            return 1f - Mathf.Clamp01((Time.time - t0 - 0.5f) / 0.5f);
+            if (!downAt.TryGetValue(g, out t0)) return true;
+            float t = Time.time - t0 - FlyHold;
+            if (t <= 0) return true;
+            Vector2 k;
+            float dir = knock.TryGetValue(g, out k) ? k.y : -1f;
+            float u = t / FlyTime;
+            off = FlyPath(dir, t);
+            spin = dir * 900f * t;
+            scale = 1f - 0.45f * Mathf.Clamp01(u);
+            if (u >= 1)
+            {
+                // 飞出去的地方（夹回画面边上）闪一颗星
+                float s = u - 1;
+                if (s < 0.45f)
+                {
+                    var p = foot + FlyPath(dir, FlyTime * 0.8f);
+                    p.x = Mathf.Clamp(p.x, 40, Gfx.VW - 40);
+                    p.y = Mathf.Clamp(p.y, 40, Gfx.VH - 40);
+                    float f = s / 0.45f, ss = 46 * Mathf.Sin(f * Mathf.PI);
+                    RotatedImage(new Rect(p.x - ss, p.y - ss, ss * 2, ss * 2), StarTex(), f * 90f, new Color(1, 1, 0.85f, 1 - f * f));
+                }
+                return false;
+            }
+            return true;
         }
+
+        /// <summary>打飞的轨迹：往 dir 那边猛冲，先往上抛再略往下坠（这么快基本是一条往斜上的弧）。</summary>
+        static Vector2 FlyPath(float dir, float t) { return new Vector2(dir * 1300f * t, -900f * t + 600f * t * t); }
 
         void PuppetActorOf(General g, System.Action<PuppetActor> f)
         {

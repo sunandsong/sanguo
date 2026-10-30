@@ -32,25 +32,25 @@ namespace LiuBeiRPG.Core
         {
             Id = "hjb", Name = "黄巾兵", Glyph = "兵", Color = "#e8c547",
             Wu = 75, Zhi = 20, Tong = 40, Su = 50, BaseSoldiers = 160, ExpReward = 10, GoldReward = 8,
-            Drop = "caoyao", DropRate = 0.2
+            Drop = "caoyao", DropRate = 0.2, Junk = "huangjinbu"
         };
         public static readonly GeneralDef HuangJinLiShi = new GeneralDef
         {
             Id = "hjls", Name = "黄巾力士", Glyph = "力", Color = "#e89a47",
             Wu = 90, Zhi = 15, Tong = 110, Su = 40, BaseSoldiers = 230, ExpReward = 15, GoldReward = 12,
-            Drop = "zhuojiu", DropRate = 0.15
+            Drop = "zhuojiu", DropRate = 0.15, Junk = "huangjinbu"
         };
         public static readonly GeneralDef HuangJinShuShi = new GeneralDef
         {
             Id = "hjss", Name = "黄巾术士", Glyph = "术", Color = "#c47be8",
             Wu = 35, Zhi = 110, Tong = 35, Su = 60, BaseSoldiers = 130, ExpReward = 14, GoldReward = 15,
-            Tactics = new[] { "yaoshu" }, Drop = "zhuojiu", DropRate = 0.25
+            Tactics = new[] { "yaoshu" }, Drop = "zhuojiu", DropRate = 0.25, Junk = "huangjinbu"
         };
         public static readonly GeneralDef HuangJinTouMu = new GeneralDef
         {
             Id = "hjtm", Name = "黄巾头目", Glyph = "头", Color = "#ff7a5c",
             Wu = 82, Zhi = 60, Tong = 70, Su = 55, BaseSoldiers = 380, ExpReward = 30, GoldReward = 30,
-            Drop = "caoyao", DropRate = 0.5
+            Drop = "caoyao", DropRate = 0.5, Junk = "huangjinbu"
         };
 
         // ---------- 第一章 Boss（演义第一回：刘关张初战程远志） ----------

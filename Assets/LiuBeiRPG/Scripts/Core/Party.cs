@@ -157,6 +157,8 @@ namespace LiuBeiRPG.Core
                     TP = Math.Min(MaxTP, TP + item.Power);
                     Items.Remove(id);
                     return "喝了" + item.Name + "，法力恢复 " + (TP - before) + "。";
+                case ItemKind.Material:
+                    return item.Name + "没什么用，拿去商店卖了吧。";
                 default:
                     if (item.Owner != null && item.Owner != who.Def.Id) return item.Name + "是专属兵器，" + who.Name + "用不了。";
                     Items.Remove(id);

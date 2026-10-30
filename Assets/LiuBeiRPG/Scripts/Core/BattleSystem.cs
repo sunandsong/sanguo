@@ -248,13 +248,19 @@ namespace LiuBeiRPG.Core
             int gold = RewardGold = Enemies.Sum(e => e.Def.GoldReward);
             Party.Gold += gold;
             events.Add(new BattleEvent("胜利！获得经验 " + exp + "，金钱 " + gold));
-            // 掉落：每个敌人按几率掉一件，行囊放不下就算了
+            // 掉落：每个敌人按几率掉一件；另外每个敌人必掉一件材料杂物。行囊放不下就算了
             RewardItems.Clear();
             foreach (var e in Enemies)
                 if (e.Def.Drop != null && rng.NextDouble() < e.Def.DropRate && Party.CanHold(e.Def.Drop))
                 {
                     Party.Items.Add(e.Def.Drop);
                     RewardItems.Add(e.Def.Drop);
+                }
+            foreach (var e in Enemies)
+                if (e.Def.Junk != null && Party.CanHold(e.Def.Junk))
+                {
+                    Party.Items.Add(e.Def.Junk);
+                    RewardItems.Add(e.Def.Junk);
                 }
             foreach (var m in Party.GainExp(exp)) events.Add(new BattleEvent(m));
             return events;

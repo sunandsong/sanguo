@@ -311,6 +311,7 @@ namespace LiuBeiRPG.Game
             var use = new Rect(area.x + area.width - 16 - 96, y + 16, 96, 48);
             Gfx.Text(new Rect(x0, y, use.x - x0 - 10, 24), item.Kind == ItemKind.Book ? "《" + item.Name + "》" : item.Name, 18, Accent);
             Gfx.Text(new Rect(x0, y + 26, use.x - x0 - 10, 60), item.Desc, 15, new Color(1, 1, 1, 0.8f), TextAnchor.UpperLeft, true);
+            if (item.Kind == ItemKind.Material) return;   // 材料只能卖，没有使用按钮
             Gfx.RoundRect(use, Accent);
             Gfx.Text(use, UseLabel(item), 20, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
             if (Gfx.Clicked(use)) UseItem();

@@ -2,8 +2,9 @@ using System.Collections.Generic;
 
 namespace LiuBeiRPG.Core
 {
-    // 装备六格的顺序就是人物页上的顺序：武器 头盔 防具 / 鞋子 坐骑 饰品
-    public enum ItemKind { Book, Heal, Wine, Weapon, Helmet, Armor, Boots, Horse, Trinket }
+    // 装备六格的顺序就是人物页上的顺序：武器 头盔 防具 / 鞋子 坐骑 饰品（Weapon 往后都是装备）
+    // Material = 材料杂物：打怪必掉，不能用，只能卖钱
+    public enum ItemKind { Book, Heal, Wine, Material, Weapon, Helmet, Armor, Boots, Horse, Trinket }
 
     public class ItemDef
     {
@@ -31,6 +32,8 @@ namespace LiuBeiRPG.Core
 
             new ItemDef { Id = "caoyao",  Name = "草药", Kind = ItemKind.Heal, Power = 150, Price = 10, Desc = "山野常见的止血草。一人兵力 +150。" },
             new ItemDef { Id = "zhuojiu", Name = "浊酒", Kind = ItemKind.Wine, Power = 10,  Price = 30, Desc = "乡间自酿的浊酒，饮之提神。法力 +10。" },
+
+            new ItemDef { Id = "huangjinbu", Name = "黄巾", Kind = ItemKind.Material, Price = 4, Desc = "从黄巾贼头上扯下的黄布巾。没什么用，商店收。" },
 
             new ItemDef { Id = "qimeigun",    Name = "齐眉棍", Kind = ItemKind.Weapon, Sprite = "gun",    Power = 2, Price = 40,  Desc = "齐眉高的硬木棍。武力 +2。" },
             new ItemDef { Id = "tiejian",     Name = "铁剑",   Kind = ItemKind.Weapon, Sprite = "jian",   Power = 4, Price = 100, Desc = "寻常铁剑。武力 +4。" },
