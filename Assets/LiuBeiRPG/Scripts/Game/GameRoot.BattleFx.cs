@@ -267,13 +267,13 @@ namespace LiuBeiRPG.Game
             foreach (var q in popups)
             {
                 float t = Time.time - q.born;
-                float baseSize = q.crit ? 44f : 30f;
+                float baseSize = q.crit ? 54f : 38f;
                 int size = Mathf.RoundToInt(baseSize + baseSize * 0.5f * Mathf.Max(0f, 1f - t / 0.12f));
                 var c = q.heal ? new Color(0.45f, 1f, 0.45f) : q.crit ? new Color(1f, 0.82f, 0.25f) : new Color(1f, 0.3f, 0.2f);
                 c.a = Mathf.Clamp01((0.9f - t) / 0.3f);
                 var r = new Rect(q.at.x - 100, q.at.y - 40f * t - 24, 200, 48);
-                if (q.crit) Gfx.Text(new Rect(r.x, r.y - 26, r.width, 24), "会心", 18, c, TextAnchor.MiddleCenter);
-                Gfx.Text(r, q.text, size, c, TextAnchor.MiddleCenter);
+                if (q.crit) Gfx.FxText(new Rect(r.x, r.y - 34, r.width, 32), "会心", 25, c, TextAnchor.MiddleCenter);
+                Gfx.FxText(r, q.text, size, c, TextAnchor.MiddleCenter);
             }
         }
 
@@ -433,23 +433,84 @@ namespace LiuBeiRPG.Game
 
         // ---------------- 开战标题 ----------------
 
-        /// <summary>入场时屏幕中间一条暗带 + 金色大字，先放大砸下来，停一下再淡出（共 1.5 秒）。</summary>
+        /// <summary>
+        /// 开战标题（共 1.6 秒）：一笔浓墨从左往右扫过屏幕中间，毛笔大字（和结算“胜利”同一个字体）从大砸下来回弹，
+        /// 砸下那一下屏幕抖一抖；再晚一拍右边盖一方红印“战”；最后整体淡出。首领战字是朱红色。
+        /// </summary>
         void DrawBattleTitle()
         {
             float t = Time.time - battleEnter;
-            if (t > 1.5f || battleExit >= 0f) return;
-            float a = t < 1.1f ? 1f : 1f - (t - 1.1f) / 0.4f;
-            float pop = Mathf.Max(0f, 1f - t / 0.22f);
+            if (t > 1.6f || battleExit >= 0f) return;
+            float a = t < 1.2f ? 1f : 1f - (t - 1.2f) / 0.4f;
             float y = by + bh * 0.38f;
-            Gfx.Rect(new Rect(0, y - 36, Gfx.VW, 72), new Color(0, 0, 0, 0.5f * a));
-            var line = Accent;
-            line.a = 0.8f * a;
-            Gfx.Rect(new Rect(0, y - 37, Gfx.VW, 2), line);
-            Gfx.Rect(new Rect(0, y + 35, Gfx.VW, 2), line);
-            var c = Accent;
-            c.a = a * (1f - pop * 0.6f);
-            Gfx.Text(new Rect(bx, y - 50, bw, 100), battle.IsBoss ? "黄巾军主力来袭" : "遭遇黄巾军",
-                Mathf.RoundToInt(50f + 34f * pop), c, TextAnchor.MiddleCenter);
+            var old = GUI.color;
+
+            // 墨迹：从左往右刷开
+            float sweep = Mathf.Clamp01(t / 0.2f);
+            sweep = 1 - (1 - sweep) * (1 - sweep);
+            float bandW = Gfx.VW * 1.1f, bandH = 120f;
+            GUI.BeginGroup(new Rect(0, y - bandH * 0.5f, Gfx.VW * sweep * 1.05f, bandH));
+            GUI.color = new Color(0.06f, 0.04f, 0.03f, 0.82f * a);
+            Gfx.Image(new Rect(-Gfx.VW * 0.05f, 0, bandW, bandH), InkBandTex());
+            GUI.EndGroup();
+
+            // 毛笔大字：0.12 秒后从 2.2 倍砸下来回弹
+            float k = t - 0.12f;
+            if (k > 0)
+            {
+                float s = 1f + Mathf.Max(0f, 1.2f * (1 - BackEase(Mathf.Clamp01(k / 0.28f))));
+                var shake = k > 0.2f && k < 0.4f ? new Vector2(Mathf.Sin(t * 90f), Mathf.Cos(t * 70f)) * 5f * (1 - (k - 0.2f) / 0.2f) : Vector2.zero;
+                GUI.color = new Color(1, 1, 1, a * Mathf.Clamp01(k / 0.08f));
+                string title = battle.IsBoss ? "黄巾军主力来袭" : "遭遇黄巾军";
+                var tr = new Rect(bx + shake.x, y - 50 + shake.y, bw, 100);
+                BrushTitle(tr, title, Mathf.RoundToInt((Gfx.Portrait ? 62 : 72) * s), battle.IsBoss ? new Color(1f, 0.38f, 0.22f) : Accent);
+
+                // 红印“战”：字落定后盖上去，先大后小砸一下
+                float sk = k - 0.42f;
+                if (sk > 0)
+                {
+                    float ss = 1f + Mathf.Max(0f, 0.8f * (1 - Mathf.Clamp01(sk / 0.12f)));
+                    float tw = title.Length * (Gfx.Portrait ? 62 : 72) * 0.5f;
+                    var seal = new Rect(bx + bw * 0.5f + tw + 14, y - 4 - 26 * ss, 52 * ss, 52 * ss);
+                    seal.x = Mathf.Min(seal.x - (ss - 1) * 26, bx + bw - 8 - seal.width);   // 竖屏标题长，印别出屏
+                    GUI.color = new Color(1, 1, 1, a * Mathf.Clamp01(sk / 0.06f));
+                    RotatedImage(seal, Texture2D.whiteTexture, -8f, new Color(0.72f, 0.1f, 0.08f, 0.92f * a));
+                    if (brushFont == null) brushFont = Resources.Load<Font>("Fonts/BrushFont");
+                    var st = new GUIStyle(GUI.skin.label) { font = brushFont, fontSize = Mathf.RoundToInt(38 * ss), alignment = TextAnchor.MiddleCenter, clipping = TextClipping.Overflow };
+                    st.normal.textColor = new Color(1f, 0.92f, 0.8f, a);
+                    GUI.Label(seal, "战", st);
+                }
+            }
+            GUI.color = old;
+        }
+
+        static Texture2D inkBandTex;
+
+        /// <summary>一笔浓墨：横长条，上下边参差不齐，左头圆钝、右尾飞白散开，中间几道干笔的浅丝。</summary>
+        static Texture2D InkBandTex()
+        {
+            if (inkBandTex != null) return inkBandTex;
+            const int w = 512, h = 96;
+            inkBandTex = new Texture2D(w, h) { hideFlags = HideFlags.HideAndDontSave, wrapMode = TextureWrapMode.Clamp };
+            for (int x = 0; x < w; x++)
+            {
+                float u = (float)x / w;
+                // 上下边各自起伏；越往右笔越干越细
+                float top = 0.12f + 0.06f * Mathf.PerlinNoise(u * 9f, 0.3f) + 0.05f * Mathf.PerlinNoise(u * 40f, 1.7f) + 0.12f * Mathf.Pow(u, 3);
+                float bot = 0.88f - 0.06f * Mathf.PerlinNoise(u * 8f, 3.1f) - 0.05f * Mathf.PerlinNoise(u * 37f, 5.3f) - 0.1f * Mathf.Pow(u, 3);
+                float head = Mathf.Clamp01(u / 0.04f), tail = Mathf.Clamp01((1 - u) / 0.12f);
+                for (int y = 0; y < h; y++)
+                {
+                    float v = (float)y / h;
+                    float edge = Mathf.Clamp01(Mathf.Min(v - top, bot - v) * 40f);
+                    float dry = Mathf.PerlinNoise(u * 3f, v * 30f);   // 顺着笔走向的丝
+                    float streak = u > 0.55f ? Mathf.Lerp(1f, Mathf.Clamp01(dry * 2.2f - 0.4f), (u - 0.55f) / 0.45f) : 0.85f + 0.15f * dry;
+                    float a = edge * head * tail * streak;
+                    inkBandTex.SetPixel(x, h - 1 - y, new Color(1, 1, 1, a));
+                }
+            }
+            inkBandTex.Apply();
+            return inkBandTex;
         }
     }
 }

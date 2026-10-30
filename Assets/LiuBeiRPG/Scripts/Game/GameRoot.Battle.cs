@@ -631,7 +631,7 @@ namespace LiuBeiRPG.Game
                 // 头顶兵力条、脚下名字
                 Gfx.Bar(new Rect(foot.x - 30, foot.y - h - 12, 60, 6), (float)shown / g.MaxSoldiers, c);
                 var nameCol = g == cur ? Color.yellow : enemy ? new Color(0.55f, 1f, 0.55f) : Color.white;
-                Gfx.Text(new Rect(foot.x - 60, foot.y + 2, 120, 20), g.Name + (g.Def.IsBoss ? " ★" : ""), 15, nameCol, TextAnchor.UpperCenter);
+                Gfx.FxText(new Rect(foot.x - 80, foot.y + 2, 160, 26), (g.Def.IsBoss ? "首领 " : "") + g.Name, 19, nameCol, TextAnchor.UpperCenter);
 
                 if (g == target)   // 头顶上下跳的大箭头
                     Gfx.Text(new Rect(foot.x - 30, foot.y - h - 52 + Mathf.Abs(Mathf.Sin(Time.time * 6f)) * -8f, 60, 34), "▼", 30, new Color(1f, 0.35f, 0.25f), TextAnchor.MiddleCenter);
@@ -669,7 +669,7 @@ namespace LiuBeiRPG.Game
                     // 选目标：在战场上点人；底下一行提示 + 返回（手机上没有取消键）
                     var back = new Rect(bx + bw * 0.5f - 90, by + bh - 12 - BarH, 180, BarH);
                     string what = pending.Type == CommandType.Tactic ? pending.Tactic.Name : "攻击";
-                    Gfx.Text(new Rect(bx, back.y - 32, bw, 26), CurrentCommander.Name + "：" + what + "　点选" + (bstate == BState.TargetEnemy ? "敌人" : "队友"), 19, Accent, TextAnchor.MiddleCenter);
+                    Gfx.FxText(new Rect(bx, back.y - 40, bw, 34), CurrentCommander.Name + "：" + what + "　点选" + (bstate == BState.TargetEnemy ? "敌人" : "队友"), 25, Accent, TextAnchor.MiddleCenter);
                     Gfx.Modern(back, 0.94f);
                     Gfx.Text(back, "返回", 25, Color.white, TextAnchor.MiddleCenter);
                     if (Gfx.Clicked(back)) MenuCancel();
@@ -678,9 +678,9 @@ namespace LiuBeiRPG.Game
                 default:
                     // 播战报时这条栏显示最新一句战报
                     if (log.Count == 0 || battleExit >= 0f) return;
-                    var lr = new Rect(bx + 20, by + bh - 48 - 12, bw - 40, 48);
+                    var lr = new Rect(bx + 16, by + bh - 58 - 12, bw - 32, 58);
                     Gfx.Modern(lr, 0.92f);
-                    Gfx.Text(lr, log[log.Count - 1], 17, Color.white, TextAnchor.MiddleCenter);
+                    Gfx.FxText(lr, log[log.Count - 1], 23, new Color(1f, 0.96f, 0.86f), TextAnchor.MiddleCenter);
                     return;
             }
 
@@ -702,7 +702,7 @@ namespace LiuBeiRPG.Game
             string caption = bstate == BState.ConfirmTarget
                 ? CurrentCommander.Name + "：" + (pending.Type == CommandType.Tactic ? pending.Tactic.Name : "攻击") + " " + pending.Target.Name + "？"
                 : CurrentCommander.Name + (bstate == BState.TacticMenu ? "　法力 " + (party.TP - reservedTP) : "");
-            Gfx.Text(new Rect(first.x + 4, first.y - 30, 480, 26), caption, 19, Accent);
+            Gfx.FxText(new Rect(first.x + 4, first.y - 38, 520, 34), caption, 25, Accent, TextAnchor.UpperLeft);
             for (int i = 0; i < items.Count; i++)
             {
                 bool sel = i == menuIndex;
@@ -736,8 +736,8 @@ namespace LiuBeiRPG.Game
             {
                 var cur = list[menuIndex];
                 var info = new Rect(bx + 12, back.y, back.x - bx - 24, back.height);
-                Gfx.Text(new Rect(info.x, info.y, info.width, 26), CurrentCommander.Name + "：" + cur.Name + " · " + cur.Desc, 17, Accent);
-                Gfx.Text(new Rect(info.x, info.y + 28, info.width, 24), "剩余法力 " + tp, 16, Color.white);
+                Gfx.FxText(new Rect(info.x, info.y - 6, info.width, 30), CurrentCommander.Name + "：" + cur.Name + "　" + cur.Desc, 21, Accent, TextAnchor.UpperLeft);
+                Gfx.FxText(new Rect(info.x, info.y + 26, info.width, 28), "剩余法力 " + tp, 20, new Color(0.7f, 0.88f, 1f), TextAnchor.UpperLeft);
             }
             for (int i = 0; i < list.Count; i++)
             {
@@ -756,9 +756,9 @@ namespace LiuBeiRPG.Game
                     GUI.color = old;
                 }
                 // 法力消耗小圆牌
-                var badge = new Rect(r.center.x - 26, r.yMax - 29, 52, 23);
+                var badge = new Rect(r.center.x - 28, r.yMax - 32, 56, 27);
                 Gfx.RoundRect(badge, new Color(0, 0, 0, 0.55f));
-                Gfx.Text(badge, t.Cost.ToString(), 18, en ? new Color(0.55f, 0.8f, 1f) : new Color(1, 0.4f, 0.35f), TextAnchor.MiddleCenter);
+                Gfx.FxText(badge, t.Cost.ToString(), 22, en ? new Color(0.55f, 0.8f, 1f) : new Color(1, 0.4f, 0.35f), TextAnchor.MiddleCenter);
                 if (Gfx.Clicked(r)) { menuIndex = i; MenuConfirm(i); return; }
             }
             Gfx.Modern(back, 0.92f);

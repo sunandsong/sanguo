@@ -456,7 +456,10 @@ namespace LiuBeiRPG.Game
         }
 
         /// <summary>毛笔大字：深色描边 + 金色字。</summary>
-        void BrushTitle(Rect r, string text, int size)
+        void BrushTitle(Rect r, string text, int size) { BrushTitle(r, text, size, Accent); }
+
+        /// <summary>毛笔大字：深色描边 + color 色的字。</summary>
+        void BrushTitle(Rect r, string text, int size, Color color)
         {
             if (brushFont == null) brushFont = Resources.Load<Font>("Fonts/BrushFont");
             var st = new GUIStyle(GUI.skin.label) { font = brushFont, fontSize = size, alignment = TextAnchor.MiddleCenter, clipping = TextClipping.Overflow };
@@ -466,7 +469,7 @@ namespace LiuBeiRPG.Game
                 float ang = i * Mathf.PI / 4f;
                 GUI.Label(new Rect(r.x + Mathf.Cos(ang) * 3, r.y + Mathf.Sin(ang) * 3, r.width, r.height), text, st);
             }
-            st.normal.textColor = Accent;
+            st.normal.textColor = color;
             GUI.Label(r, text, st);
         }
 

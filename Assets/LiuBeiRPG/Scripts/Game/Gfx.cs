@@ -215,6 +215,63 @@ namespace LiuBeiRPG.Game
             GUI.Label(r, text, st);
         }
 
+        static Font brushFont;
+        static readonly Dictionary<int, GUIStyle> brushStyles = new Dictionary<int, GUIStyle>();
+
+        /// <summary>毛笔字（Resources/Fonts/BrushFont，马善政）的样式，按字号、对齐缓存。</summary>
+        static GUIStyle BrushStyle(int size, TextAnchor anchor)
+        {
+            int key = size * 100 + (int)anchor;
+            GUIStyle st;
+            if (brushStyles.TryGetValue(key, out st)) return st;
+            if (brushFont == null) brushFont = Resources.Load<Font>("Fonts/BrushFont");
+            st = new GUIStyle(GUI.skin.label)
+            {
+                font = brushFont, fontSize = size, alignment = anchor, wordWrap = false, richText = false,
+                clipping = TextClipping.Overflow, padding = new RectOffset(0, 0, 0, 0), margin = new RectOffset(0, 0, 0, 0),
+            };
+            return brushStyles[key] = st;
+        }
+
+        /// <summary>
+        /// 有质感的字（只用于单行，战斗里的提示、战报、伤害数字、名字）：毛笔字体，底下一层柔和投影，一圈深褐描边，
+        /// 字身上半截提亮、下半截压暗成渐变，像漆字。上下两截靠裁切画两遍：先整字画暗色，再只露上半截画亮色。
+        /// 毛笔字同字号看着比黑体小，字号自动放大 15%。
+        /// </summary>
+        public static void FxText(Rect r, string text, int size, Color c, TextAnchor anchor = TextAnchor.MiddleCenter)
+        {
+            if (string.IsNullOrEmpty(text) || Event.current.type != EventType.Repaint) return;
+            size = Mathf.RoundToInt(size * 1.15f);
+            var st = BrushStyle(size, anchor);
+            float d = Mathf.Max(1.5f, size * 0.09f);
+            // 投影：往下错开，叠两层越外越淡
+            st.normal.textColor = new Color(0, 0, 0, 0.35f * c.a);
+            GUI.Label(new Rect(r.x + d * 0.6f, r.y + d * 2.2f, r.width, r.height), text, st);
+            GUI.Label(new Rect(r.x, r.y + d * 1.6f, r.width, r.height), text, st);
+            // 描边
+            st.normal.textColor = new Color(0.14f, 0.08f, 0.03f, 0.95f * c.a);
+            for (int i = 0; i < 8; i++)
+            {
+                float ang = i * Mathf.PI / 4f;
+                GUI.Label(new Rect(r.x + Mathf.Cos(ang) * d, r.y + Mathf.Sin(ang) * d, r.width, r.height), text, st);
+            }
+            // 字身：整字压暗，再只露上半截画提亮的
+            st.normal.textColor = new Color(c.r * 0.72f, c.g * 0.66f, c.b * 0.6f, c.a);
+            GUI.Label(r, text, st);
+            float mid;   // 这一行字的中线
+            switch (anchor)
+            {
+                case TextAnchor.UpperLeft: case TextAnchor.UpperCenter: case TextAnchor.UpperRight: mid = r.y + size * 0.62f; break;
+                case TextAnchor.LowerLeft: case TextAnchor.LowerCenter: case TextAnchor.LowerRight: mid = r.yMax - size * 0.62f; break;
+                default: mid = r.center.y; break;
+            }
+            float top = Mathf.Min(r.y, mid - size);
+            GUI.BeginGroup(new Rect(r.x - size, top, r.width + size * 2, mid - top));
+            st.normal.textColor = new Color(Mathf.Lerp(c.r, 1, 0.3f), Mathf.Lerp(c.g, 1, 0.3f), Mathf.Lerp(c.b, 1, 0.3f), c.a);
+            GUI.Label(new Rect(size, r.y - top, r.width, r.height), text, st);
+            GUI.EndGroup();
+        }
+
         /// <summary>兵力条。</summary>
         public static void Bar(Rect r, float ratio, Color fill)
         {
