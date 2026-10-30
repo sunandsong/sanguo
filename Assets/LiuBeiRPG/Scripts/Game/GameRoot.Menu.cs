@@ -282,7 +282,7 @@ namespace LiuBeiRPG.Game
         {
             if (item.Kind == ItemKind.Book) return "研读";
             if (item.Equip) return "装备";
-            return item.Kind == ItemKind.Heal ? "给" + party.Members[pageMember].Name : "使用";
+            return item.Kind == ItemKind.Heal || item.Kind == ItemKind.Revive ? "给" + party.Members[pageMember].Name : "使用";
         }
 
         /// <summary>行囊：6 列格子，同种叠一格，下面是选中物品的说明和使用按钮。</summary>

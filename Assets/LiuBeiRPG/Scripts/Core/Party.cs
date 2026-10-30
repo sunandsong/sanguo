@@ -151,6 +151,11 @@ namespace LiuBeiRPG.Core
                     if (who.Soldiers >= who.MaxSoldiers) return who.Name + "兵力是满的。";
                     Items.Remove(id);
                     return who.Name + "用了" + item.Name + "，兵力恢复 " + who.Heal(item.Power) + "。";
+                case ItemKind.Revive:
+                    if (who.Alive) return who.Name + "好好的，用不着还魂丹。";
+                    who.Soldiers = Math.Max(1, who.MaxSoldiers / 2);
+                    Items.Remove(id);
+                    return who.Name + "服下" + item.Name + "，重新整军，兵力恢复 " + who.Soldiers + "。";
                 case ItemKind.Wine:
                     if (TP >= MaxTP) return "法力是满的。";
                     int before = TP;

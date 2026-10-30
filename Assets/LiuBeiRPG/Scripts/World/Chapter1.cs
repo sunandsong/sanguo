@@ -148,7 +148,7 @@ namespace LiuBeiRPG.World
             // 活气：刘备家烟囱冒炊烟，院子里有鸡，草地上有麻雀和蝴蝶
             m.Emitters.Add(new MapEmitter("smoke", 4.3f, 0.95f));
             // 路人：城里地方小，只放三个——扛锄头的农夫、挎篮的村妇、挑担的货郎（引擎里还有巡街兵 shouwei、老人 laoren、小孩 xiaohai 可换）
-            m.Npcs.Add(Walker("farmer", "农夫", "cunmin_nan", "chutou", 1.0f, new[] { 11, 7, 13, 7, 13, 10, 11, 10 }, new[] { 9, 13 },   // 家在城外，天黑出城
+            m.Npcs.Add(Walker("farmer", "农夫", "cunmin_nan", "chutou", 1.0f, new[] { 10, 7, 12, 7, 12, 9, 10, 9 }, new[] { 9, 13 },   // 家在城外，天黑出城。客栈门口只有第 10 行一条窄道，(13,10) 是唯一拐进去的口子，别在那儿逛
                 "听说东边村子被黄巾烧了，造孽啊。", "今年收成不好，地里的苗都旱蔫了。", "我那块地就在城外，如今都不敢去了。"));
             m.Npcs.Add(Walker("villager_f", "村妇", "cunmin_nv", null, 1.0f, new[] { 7, 2, 11, 2, 11, 4, 7, 4 }, new[] { 3, 10 },   // 住酒馆后头
                 "桃园的花开得正好，城东北那片。", "我家那口子也想去投军，我拦不住啊。", "米价又涨了，这日子……"));

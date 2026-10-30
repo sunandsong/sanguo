@@ -4,7 +4,7 @@ namespace LiuBeiRPG.Core
 {
     // 装备六格的顺序就是人物页上的顺序：武器 头盔 防具 / 鞋子 坐骑 饰品（Weapon 往后都是装备）
     // Material = 材料杂物：打怪必掉，不能用，只能卖钱
-    public enum ItemKind { Book, Heal, Wine, Material, Weapon, Helmet, Armor, Boots, Horse, Trinket }
+    public enum ItemKind { Book, Heal, Revive, Wine, Material, Weapon, Helmet, Armor, Boots, Horse, Trinket }
 
     public class ItemDef
     {
@@ -31,6 +31,7 @@ namespace LiuBeiRPG.Core
             new ItemDef { Id = "wuzi",   Name = "吴子", Kind = ItemKind.Book, Desc = "吴起兵法，重在励士。研读后全军习得「鼓舞」。", Teaches = "guwu" },
 
             new ItemDef { Id = "caoyao",  Name = "草药", Kind = ItemKind.Heal, Power = 150, Price = 10, Desc = "山野常见的止血草。一人兵力 +150。" },
+            new ItemDef { Id = "huanhundan", Name = "还魂丹", Kind = ItemKind.Revive, Price = 1500, Desc = "起死回生的灵丹。救回败走的一人，兵力回到一半。" },
             new ItemDef { Id = "zhuojiu", Name = "浊酒", Kind = ItemKind.Wine, Power = 10,  Price = 30, Desc = "乡间自酿的浊酒，饮之提神。法力 +10。" },
 
             new ItemDef { Id = "huangjinbu", Name = "黄巾", Kind = ItemKind.Material, Price = 4, Desc = "从黄巾贼头上扯下的黄布巾。县里差役按条收，十条换赏；商店也收。" },
