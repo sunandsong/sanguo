@@ -148,7 +148,7 @@ namespace LiuBeiRPG.Game
             if (tile.Encounter && stepsSinceBattle >= 4 && rng.NextDouble() < map.EncounterRate)
             {
                 stepsSinceBattle = 0;
-                StartBattle(GameDatabase.RandomEncounter(rng, party.Level), false, null);
+                StartBattle(GameDatabase.RandomEncounter(rng, party.Level, map.EnemyLevel), false, null);
             }
         }
 

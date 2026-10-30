@@ -3,23 +3,30 @@ using System;
 namespace LiuBeiRPG.Core
 {
     /// <summary>
-    /// 伤害公式。核心思路来自吞食天地：兵力既是血量也影响输出，
-    /// 兵力越少打得越疼不起来（按对数衰减，100/1000/10000 是明显的台阶）。
-    /// 调平衡只改这个文件。
+    /// 成长和伤害公式，见 Docs/设计文档.md 第 1、2 节。核心思路来自吞食天地：兵力既是血量也影响输出，残兵打不疼。
+    /// 攻防都按等级同比例放大，用「攻防比」算伤害，同级之间几刀砍死一个人不随等级变。调平衡只改这个文件。
     /// </summary>
     public static class Formula
     {
         public const double CritRate = 0.08;
 
-        public static double TroopScale(int soldiers)
+        /// <summary>成长倍率 G(L)：兵力、攻、防、谋都乘它。1 级 1.00，5 级 1.35，10 级 1.88，99 级 28。</summary>
+        public static double Growth(int level)
         {
-            if (soldiers <= 0) return 0;
-            return 0.6 + 0.3 * Math.Log10(soldiers + 1);   // 100兵≈1.2  1000兵≈1.5  10000兵≈1.8
+            int l = Math.Max(0, level - 1);
+            return 1 + 0.08 * l + 0.002 * l * l;
+        }
+
+        /// <summary>兵力系数：满兵 1.0，残兵 0.6。</summary>
+        public static double TroopScale(General g)
+        {
+            return g.MaxSoldiers <= 0 ? 0 : 0.6 + 0.4 * g.Soldiers / g.MaxSoldiers;
         }
 
         public static int Attack(General atk, General def, Random rng, out bool crit)
         {
-            double dmg = atk.Wu * 1.2 * TroopScale(atk.Soldiers) * 100.0 / (100 + def.Tong);
+            double a = atk.Atk, d = def.Defense;
+            double dmg = 1.5 * a * a / (a + d) * TroopScale(atk);
             dmg *= 0.85 + rng.NextDouble() * 0.3;
             crit = rng.NextDouble() < CritRate;
             if (crit) dmg *= 1.5;
@@ -37,7 +44,8 @@ namespace LiuBeiRPG.Core
 
         public static int TacticDamage(General caster, General target, TacticDef t, Random rng)
         {
-            double dmg = caster.Zhi * 1.6 * t.Power * 120.0 / (100 + target.Zhi);
+            double m = caster.Mou, mt = target.Mou;
+            double dmg = 1.5 * m * m / (m + mt) * t.Power;
             dmg *= 0.9 + rng.NextDouble() * 0.2;
             if (target.Defending) dmg *= 0.75;
             return Math.Max(1, (int)Math.Round(dmg));
@@ -45,7 +53,7 @@ namespace LiuBeiRPG.Core
 
         public static int TacticHeal(General caster, TacticDef t, Random rng)
         {
-            double heal = caster.Zhi * 3.0 * t.Power * (0.9 + rng.NextDouble() * 0.2);
+            double heal = caster.Mou * 3.0 * t.Power * (0.9 + rng.NextDouble() * 0.2);
             return Math.Max(1, (int)Math.Round(heal));
         }
 

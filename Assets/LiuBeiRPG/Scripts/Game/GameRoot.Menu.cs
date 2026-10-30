@@ -47,7 +47,7 @@ namespace LiuBeiRPG.Game
             int n = party.Members.Count, d = key == InputKey.Up ? -1 : key == InputKey.Down ? 1 : 0;
             if (key == InputKey.Left) pageMember = (pageMember + n - 1) % n;
             else if (key == InputKey.Right) pageMember = (pageMember + 1) % n;
-            else if (d != 0 && bagTab == 0) itemSel = Mathf.Clamp(itemSel + d, 0, ItemSlots - 1);
+            else if (d != 0 && bagTab == 0) itemSel = Mathf.Clamp(itemSel + d, 0, Mathf.Max(0, party.Slots().Count - 1));
             else if (d != 0 && bagTab == 1) tacticSel = Mathf.Clamp(tacticSel + d, 0, Mathf.Max(0, party.AvailableTactics().Count - 1));
             else if (key == InputKey.Confirm && bagTab == 0 && itemSel < party.Slots().Count) UseItem();
             else if (key == InputKey.Confirm && bagTab == 1 && tacticSel < party.AvailableTactics().Count) UseTactic(party.AvailableTactics()[tacticSel]);
@@ -189,8 +189,8 @@ namespace LiuBeiRPG.Game
             Gfx.Bar(new Rect(x, y + 28, rw, 14), m.MaxSoldiers > 0 ? (float)m.Soldiers / m.MaxSoldiers : 0, new Color(0.4f, 0.8f, 0.45f));
             y += 58;
 
-            string[] labels = { "武力", "智力", "防御力", "速度" };
-            int[] values = { m.Wu, m.Zhi, m.Tong, m.Su };
+            string[] labels = { "攻击", "谋略", "防御", "速度" };
+            int[] values = { m.Atk, m.Mou, m.Defense, m.Su };   // 含装备、乘过等级成长的实际值
             float cw = (rw - 30) / 4;
             for (int i = 0; i < 4; i++)
             {
@@ -288,18 +288,36 @@ namespace LiuBeiRPG.Game
         /// <summary>行囊：6 列格子，同种叠一格，下面是选中物品的说明和使用按钮。</summary>
         void DrawBag(Rect area)
         {
-            const int cols = 6;
-            int rows = (ItemSlots + cols - 1) / cols;
             float x0 = area.x + 16, gw = area.width - 32;
-            // 格子按宽、高都放得下来算：上面 32 标题，下面留 84 给说明和“研读”
-            float cell = Mathf.Min(72, Mathf.Min((gw - (cols - 1) * 8) / cols, (area.height - 32 - 84) / rows - 8));
-            float gx = (gw - cols * cell) / (cols - 1);   // 格子变小时横向间距撑开，左右都贴齐，右边不留空
             var slotsList = party.Slots();
+            // 格子固定 80，每排能放几个放几个，一页放得下几排就几排（上面 32 标题，下面留 84 给说明和“研读”），24 格放不下就翻页。
+            // 当前页跟着选中的格子走，方向键选到下一页的物品就自动翻过去
+            const float cell = 80;
+            int cols = Mathf.Max(1, Mathf.FloorToInt((gw + 8) / (cell + 8)));
+            int rows = Mathf.Max(1, Mathf.FloorToInt((area.height - 32 - 84 + 8) / (cell + 8)));
+            int perPage = cols * rows, pages = (ItemSlots + perPage - 1) / perPage;
+            int page = Mathf.Clamp(itemSel / perPage, 0, pages - 1);
+            float gx = cols > 1 ? (gw - cols * cell) / (cols - 1) : 0;   // 横向间距撑开，左右都贴齐，右边不留空
             Gfx.Text(new Rect(x0, area.y, gw, 26), "物品　" + slotsList.Count + "/" + ItemSlots, 18, new Color(1, 1, 1, 0.6f));
-            float gy = area.y + 32;
-            for (int i = 0; i < ItemSlots; i++)
+            if (pages > 1)
             {
-                var cr = new Rect(x0 + (i % cols) * (cell + gx), gy + (i / cols) * (cell + 8), cell, cell);
+                // 右上角翻页：‹ 1/2 ›
+                var prev = new Rect(x0 + gw - 120, area.y - 4, 34, 30);
+                var next = new Rect(x0 + gw - 34, area.y - 4, 34, 30);
+                Gfx.RoundRect(prev, new Color(1, 1, 1, page > 0 ? 0.12f : 0.04f));
+                Gfx.RoundRect(next, new Color(1, 1, 1, page < pages - 1 ? 0.12f : 0.04f));
+                Gfx.Text(prev, "‹", 22, new Color(1, 1, 1, page > 0 ? 1f : 0.3f), TextAnchor.MiddleCenter);
+                Gfx.Text(next, "›", 22, new Color(1, 1, 1, page < pages - 1 ? 1f : 0.3f), TextAnchor.MiddleCenter);
+                Gfx.Text(new Rect(prev.xMax, area.y - 4, next.x - prev.xMax, 30), (page + 1) + "/" + pages, 16, new Color(1, 1, 1, 0.7f), TextAnchor.MiddleCenter);
+                if (page > 0 && Gfx.Clicked(prev)) itemSel = (page - 1) * perPage;
+                if (page < pages - 1 && Gfx.Clicked(next)) itemSel = (page + 1) * perPage;
+            }
+            float gy = area.y + 32;
+            for (int k = 0; k < perPage; k++)
+            {
+                int i = page * perPage + k;
+                if (i >= ItemSlots) break;
+                var cr = new Rect(x0 + (k % cols) * (cell + gx), gy + (k / cols) * (cell + 8), cell, cell);
                 bool has = i < slotsList.Count;
                 Gfx.RoundRect(cr, has ? new Color(0.55f, 0.42f, 0.25f, 0.5f) : new Color(1, 1, 1, 0.06f));
                 Gfx.Frame(cr, i == itemSel ? Accent : new Color(1, 1, 1, 0.1f), i == itemSel ? 2 : 1);
@@ -424,7 +442,7 @@ namespace LiuBeiRPG.Game
 
         const string SaveKey = "save1";
 
-        [Serializable] class SavedMember { public string Id; public string[] Gear; public int Soldiers, MaxSoldiers, WeaponBonus; }   // WeaponBonus：旧档用
+        [Serializable] class SavedMember { public string Id; public string[] Gear; public int Soldiers, WeaponBonus; }   // WeaponBonus：旧档用
         [Serializable] class SaveData
         {
             public int Level, Exp, Gold, TP;
@@ -442,7 +460,7 @@ namespace LiuBeiRPG.Game
         {
             var s = new SaveData { Level = party.Level, Exp = party.Exp, Gold = party.Gold, TP = party.TP, Map = map.Name, X = px, Y = py };
             foreach (var m in party.Members)
-                s.Members.Add(new SavedMember { Id = m.Def.Id, Soldiers = m.Soldiers, MaxSoldiers = m.MaxSoldiers, Gear = m.Gear });
+                s.Members.Add(new SavedMember { Id = m.Def.Id, Soldiers = m.Soldiers, Gear = m.Gear });
             s.Flags.AddRange(flags.All);
             s.Items.AddRange(party.Items);
             s.Learned.AddRange(party.Learned);
@@ -469,7 +487,8 @@ namespace LiuBeiRPG.Game
             {
                 var def = Array.Find(defs, d => d.Id == sm.Id);
                 if (def == null) continue;
-                var g = new General(def) { Soldiers = sm.Soldiers, MaxSoldiers = sm.MaxSoldiers };
+                var g = new General(def, s.Level);   // 兵力上限按等级算，不读存档（旧档是按老公式存的）
+                g.Soldiers = Math.Min(sm.Soldiers, g.MaxSoldiers);
                 for (int i = 0; sm.Gear != null && i < sm.Gear.Length && i < General.GearSlots; i++) g.Gear[i] = Nul(sm.Gear[i]);
                 if (g.Weapon == null && sm.WeaponBonus > 0) g.Weapon = ItemDb.Signature(def.Id).Id;   // 旧档：受赠过就是专属兵器
                 party.Members.Add(g);

@@ -490,12 +490,12 @@ namespace LiuBeiRPG.World
                     "HHHHHHHHH",
                     "HHHHHHHHH",
                     "HH.H.HHHH",
-                    "H........",
+                    "HH.......",   // (1,3) 是矮桌，走不上去
                     ".H......H",
                     "HHHHHHHHH",
                 }
             };
-            m.Npcs.Add(Chest(F_ChestInn, 1, 3, 80));   // 左墙柜子旁边
+            m.Npcs.Add(Chest(F_ChestInn, 3, 4, 80));   // 矮桌右边、靠栏杆的地板上，不挡第 3 行的走道
 
             m.OnTouch = (x, y) =>
             {
@@ -566,6 +566,7 @@ namespace LiuBeiRPG.World
                 Art = "field_big",
                 Grade = "#f0f5ff", Light = "#f4f0ea", Weather = "leaf",
                 EncounterRate = 0.09,
+                EnemyLevel = 2,   // 第一章等级段 1～4：郊外遇 1～3 级的黄巾
                 ActorScale = 0.8f,
                 Ground = ',',
                 Rows = new[]

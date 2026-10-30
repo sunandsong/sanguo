@@ -13,7 +13,7 @@ namespace LiuBeiRPG.Game
     /// </summary>
     public partial class GameRoot
     {
-        enum BState { Playing, GeneralMenu, TacticMenu, TargetEnemy, TargetAlly, ConfirmTarget, Result }
+        enum BState { Playing, GeneralMenu, TacticMenu, ItemMenu, TargetEnemy, TargetAlly, ConfirmTarget, Result }
 
         const float EventDelay = 0.75f;
 
@@ -190,6 +190,11 @@ namespace LiuBeiRPG.Game
             if (hasAt && (e.IsDamage || e.IsHeal) && before != e.SoldiersAfter)
                 popups.Add(new Popup { text = Mathf.Abs(before - e.SoldiersAfter).ToString(), at = at + new Vector2(0, -HeightOf(e.Target) - 20f), born = Time.time, heal = e.IsHeal, crit = e.IsCrit });
             if (hasAt && e.Fx != null) TacticFx(e.Fx, at, HeightOf(e.Target));
+            if (e.IsHeal && before <= 0 && e.SoldiersAfter > 0)   // 还魂丹：倒下的爬起来
+            {
+                downAt.Remove(e.Target);
+                PuppetActorOf(e.Target, a => a.Play("idle", true));
+            }
             if (e.IsDefeat) { FallDown(e.Target); return; }
             if (!e.IsDamage) return;
             flashUntil[e.Target] = Time.time + 0.3f;
@@ -308,7 +313,7 @@ namespace LiuBeiRPG.Game
 
         // ---------------- 菜单 ----------------
 
-        // 每个武将轮流下令。物品还没有，按钮先灰着；MenuCancel 从策略退回时 menuIndex = 1 对应“策略”
+        // 每个武将轮流下令。MenuCancel 从策略 / 物品退回时 menuIndex = 1 / 3 对应“策略” / “物品”
         static readonly string[] GeneralItems = { "攻击", "法术", "防御", "物品", "逃跑", "自动" };
 
         // 自动战斗：开了以后每回合全员自动攻击兵力最少的敌人，直到按取消键或点右上角的牌子关掉；每场战斗开始时关
@@ -334,6 +339,33 @@ namespace LiuBeiRPG.Game
 
         /// <summary>法术只有军师能放（吞食天地）。</summary>
         bool CanCast { get { return CurrentCommander != null && CurrentCommander == party.Strategist && party.AvailableTactics().Count > 0; } }
+
+        /// <summary>战斗里能用的物品：药、还魂丹、酒，扣掉这一回合前面的人已经点了要用的，用完的不列。</summary>
+        List<string> BattleItems()
+        {
+            return party.Slots().Where(id =>
+            {
+                var k = ItemDb.Get(id).Kind;
+                return (k == ItemKind.Heal || k == ItemKind.Revive || k == ItemKind.Wine) && ItemLeft(id) > 0;
+            }).ToList();
+        }
+
+        int ItemLeft(string id) { return party.Count(id) - commands.Count(c => c.ItemId == id); }
+
+        /// <summary>选队友当目标：还魂丹选倒下的，其余选活着的。</summary>
+        List<General> AllyTargets()
+        {
+            bool revive = pending != null && pending.Type == CommandType.Item && ItemDb.Get(pending.ItemId).Kind == ItemKind.Revive;
+            return revive ? battle.Players.Where(g => !g.Alive).ToList() : battle.AlivePlayers;
+        }
+
+        /// <summary>正在下的这条令叫什么：法术名、物品名，或“攻击”。</summary>
+        string PendingName()
+        {
+            if (pending.Type == CommandType.Tactic) return pending.Tactic.Name;
+            if (pending.Type == CommandType.Item) return ItemDb.Get(pending.ItemId).Name;
+            return "攻击";
+        }
 
         General CurrentCommander { get { return commandOrder != null && commandIdx < commandOrder.Count ? commandOrder[commandIdx] : null; } }
 
@@ -371,8 +403,9 @@ namespace LiuBeiRPG.Game
             {
                 case BState.GeneralMenu: return GeneralItems.Length;
                 case BState.TacticMenu: return party.AvailableTactics().Count;
+                case BState.ItemMenu: return BattleItems().Count;
                 case BState.TargetEnemy: return battle.AliveEnemies.Count;
-                case BState.TargetAlly: return battle.AlivePlayers.Count;
+                case BState.TargetAlly: return AllyTargets().Count;
                 case BState.ConfirmTarget: return ConfirmItems.Length;
             }
             return 0;
@@ -415,9 +448,9 @@ namespace LiuBeiRPG.Game
                     if (index == 0) { pending.Type = CommandType.Attack; bstate = BState.TargetEnemy; menuIndex = 0; }
                     else if (index == 1 && CanCast) { bstate = BState.TacticMenu; menuIndex = 0; }
                     else if (index == 2) { pending.Type = CommandType.Defend; CommitCommand(pending); }
+                    else if (index == 3 && BattleItems().Count > 0) { bstate = BState.ItemMenu; menuIndex = 0; }
                     else if (index == 4) { commands.Clear(); reservedTP = 0; Play(battle.TryRetreat(), AfterTurn); }   // 任何一人选逃跑，全军撤退
                     else if (index == 5) { autoBattle = true; AutoCommands(); }   // 这一位和后面的人都自动攻击
-                    // index 3 物品：还没有物品系统，不响应
                     break;
 
                 case BState.TacticMenu:
@@ -431,9 +464,20 @@ namespace LiuBeiRPG.Game
                     break;
                 }
 
+                case BState.ItemMenu:
+                {
+                    pending.Type = CommandType.Item;
+                    pending.ItemId = BattleItems()[index];
+                    if (ItemDb.Get(pending.ItemId).Kind == ItemKind.Wine) { CommitCommand(pending); break; }   // 酒是全军的法力，不用选人
+                    if (AllyTargets().Count == 0) { log.Add("没有败走的人。"); return; }
+                    bstate = BState.TargetAlly;
+                    menuIndex = 0;
+                    break;
+                }
+
                 case BState.TargetEnemy:
                 case BState.TargetAlly:
-                    pending.Target = (bstate == BState.TargetEnemy ? battle.AliveEnemies : battle.AlivePlayers)[index];
+                    pending.Target = (bstate == BState.TargetEnemy ? battle.AliveEnemies : AllyTargets())[index];
                     bstate = BState.ConfirmTarget;
                     menuIndex = 0;
                     break;
@@ -451,16 +495,19 @@ namespace LiuBeiRPG.Game
             {
                 case BState.GeneralMenu: UndoCommand(); break;
                 case BState.TacticMenu: bstate = BState.GeneralMenu; menuIndex = 1; break;
+                case BState.ItemMenu: bstate = BState.GeneralMenu; menuIndex = 3; break;
                 case BState.TargetEnemy:
                 case BState.TargetAlly:
-                    bstate = pending != null && pending.Type == CommandType.Tactic ? BState.TacticMenu : BState.GeneralMenu;
+                    bstate = pending == null ? BState.GeneralMenu
+                           : pending.Type == CommandType.Tactic ? BState.TacticMenu
+                           : pending.Type == CommandType.Item ? BState.ItemMenu : BState.GeneralMenu;
                     menuIndex = 0;
                     break;
                 case BState.ConfirmTarget:   // 回到选目标，光标停在刚才选的人身上
                 {
-                    bool foe = pending.Type != CommandType.Tactic || pending.Tactic.TargetsFoe;
+                    bool foe = pending.Type == CommandType.Attack || pending.Type == CommandType.Tactic && pending.Tactic.TargetsFoe;
                     bstate = foe ? BState.TargetEnemy : BState.TargetAlly;
-                    menuIndex = Mathf.Max(0, (foe ? battle.AliveEnemies : battle.AlivePlayers).IndexOf(pending.Target));
+                    menuIndex = Mathf.Max(0, (foe ? battle.AliveEnemies : AllyTargets()).IndexOf(pending.Target));
                     break;
                 }
             }
@@ -514,7 +561,7 @@ namespace LiuBeiRPG.Game
             float top = by + 40, bottom = by + bh;
 
             var aliveE = battle.AliveEnemies;
-            var aliveP = battle.AlivePlayers;
+            var aliveP = AllyTargets();
             General target = bstate == BState.TargetEnemy && menuIndex < aliveE.Count ? aliveE[menuIndex]
                            : bstate == BState.TargetAlly && menuIndex < aliveP.Count ? aliveP[menuIndex]
                            : bstate == BState.ConfirmTarget ? pending.Target : null;
@@ -637,7 +684,7 @@ namespace LiuBeiRPG.Game
                     Gfx.Text(new Rect(foot.x - 30, foot.y - h - 52 + Mathf.Abs(Mathf.Sin(Time.time * 6f)) * -8f, 60, 34), "▼", 30, new Color(1f, 0.35f, 0.25f), TextAnchor.MiddleCenter);
 
                 var hit = new Rect(foot.x - 36, foot.y - h, 72, h + 20);
-                if (!dead && Gfx.Clicked(hit))
+                if ((!dead || !enemy) && Gfx.Clicked(hit))   // 倒下的队友：选还魂丹的目标时能点
                 {
                     var list = enemy ? aliveE : aliveP;
                     if (bstate == (enemy ? BState.TargetEnemy : BState.TargetAlly) && list.IndexOf(g) >= 0) { menuIndex = list.IndexOf(g); MenuConfirm(menuIndex); }
@@ -659,17 +706,17 @@ namespace LiuBeiRPG.Game
             var enabled = new List<bool>();
             switch (bstate)
             {
-                case BState.GeneralMenu: items.AddRange(GeneralItems); enabled.AddRange(new[] { true, CanCast, true, false, true, true }); break;
+                case BState.GeneralMenu: items.AddRange(GeneralItems); enabled.AddRange(new[] { true, CanCast, true, BattleItems().Count > 0, true, true }); break;
                 case BState.ConfirmTarget: items.AddRange(ConfirmItems); break;
                 case BState.TacticMenu: DrawTacticCards(); return;
+                case BState.ItemMenu: DrawItemCards(); return;
                 case BState.Result: return;
                 case BState.TargetEnemy:
                 case BState.TargetAlly:
                 {
                     // 选目标：在战场上点人；底下一行提示 + 返回（手机上没有取消键）
                     var back = new Rect(bx + bw * 0.5f - 90, by + bh - 12 - BarH, 180, BarH);
-                    string what = pending.Type == CommandType.Tactic ? pending.Tactic.Name : "攻击";
-                    Gfx.FxText(new Rect(bx, back.y - 40, bw, 34), CurrentCommander.Name + "：" + what + "　点选" + (bstate == BState.TargetEnemy ? "敌人" : "队友"), 25, Accent, TextAnchor.MiddleCenter);
+                    Gfx.FxText(new Rect(bx, back.y - 40, bw, 34), CurrentCommander.Name + "：" + PendingName() + "　点选" + (bstate == BState.TargetEnemy ? "敌人" : "队友"), 25, Accent, TextAnchor.MiddleCenter);
                     Gfx.Modern(back, 0.94f);
                     Gfx.Text(back, "返回", 25, Color.white, TextAnchor.MiddleCenter);
                     if (Gfx.Clicked(back)) MenuCancel();
@@ -700,7 +747,7 @@ namespace LiuBeiRPG.Game
             var first = cell(0);
             // 按钮上方小字：轮到谁下令（选策略时带上剩余策略点）
             string caption = bstate == BState.ConfirmTarget
-                ? CurrentCommander.Name + "：" + (pending.Type == CommandType.Tactic ? pending.Tactic.Name : "攻击") + " " + pending.Target.Name + "？"
+                ? CurrentCommander.Name + "：" + PendingName() + " " + pending.Target.Name + "？"
                 : CurrentCommander.Name + (bstate == BState.TacticMenu ? "　法力 " + (party.TP - reservedTP) : "");
             Gfx.FxText(new Rect(first.x + 4, first.y - 38, 520, 34), caption, 25, Accent, TextAnchor.UpperLeft);
             for (int i = 0; i < items.Count; i++)
@@ -759,6 +806,42 @@ namespace LiuBeiRPG.Game
                 var badge = new Rect(r.center.x - 28, r.yMax - 32, 56, 27);
                 Gfx.RoundRect(badge, new Color(0, 0, 0, 0.55f));
                 Gfx.FxText(badge, t.Cost.ToString(), 22, en ? new Color(0.55f, 0.8f, 1f) : new Color(1, 0.4f, 0.35f), TextAnchor.MiddleCenter);
+                if (Gfx.Clicked(r)) { menuIndex = i; MenuConfirm(i); return; }
+            }
+            Gfx.Modern(back, 0.92f);
+            Gfx.Text(back, "返回", 24, Color.white, TextAnchor.MiddleCenter);
+            if (Gfx.Clicked(back)) MenuCancel();
+        }
+
+        /// <summary>选物品：和选法术一样一排卡片，卡片上是物品图标，底下小圆牌写还剩几件（扣掉这回合别人已经点了的）。</summary>
+        void DrawItemCards()
+        {
+            var list = BattleItems();
+            const float gap = 10f;
+            int n = Mathf.Max(1, list.Count);
+            float cw = Mathf.Min(115f, (bw - 48f - (n - 1) * gap) / n), ch = cw * 1.18f;
+            float total = list.Count * cw + (list.Count - 1) * gap;
+            float x0 = bx + (bw - total) * 0.5f, y0 = by + bh - 12 - ch;
+            menuIndex = Mathf.Clamp(menuIndex, 0, Mathf.Max(0, list.Count - 1));
+
+            var back = new Rect(bx + bw - 16 - 110, y0 - 14 - 52, 110, 52);
+            if (list.Count > 0)
+            {
+                var cur = ItemDb.Get(list[menuIndex]);
+                Gfx.FxText(new Rect(bx + 12, back.y - 6, back.x - bx - 24, 30), CurrentCommander.Name + "：" + cur.Name, 21, Accent, TextAnchor.UpperLeft);
+                Gfx.FxText(new Rect(bx + 12, back.y + 26, back.x - bx - 24, 28), cur.Desc, 18, new Color(1f, 0.96f, 0.86f), TextAnchor.UpperLeft);
+            }
+            for (int i = 0; i < list.Count; i++)
+            {
+                bool sel = i == menuIndex;
+                var r = new Rect(x0 + i * (cw + gap), y0 - (sel ? 10f : 0f), cw, ch);
+                if (sel) Gfx.RoundRect(new Rect(r.x - 5, r.y - 5, r.width + 10, r.height + 10), new Color(Accent.r, Accent.g, Accent.b, 0.25f + 0.1f * Mathf.Sin(Time.time * 5f)));
+                Gfx.Modern(r, 0.94f);
+                if (sel) Gfx.Frame(r, Accent, 2);
+                ItemIcon(new Rect(r.x + 4, r.y + 4, cw - 8, cw - 8), ItemDb.Get(list[i]));
+                var badge = new Rect(r.center.x - 28, r.yMax - 32, 56, 27);
+                Gfx.RoundRect(badge, new Color(0, 0, 0, 0.55f));
+                Gfx.FxText(badge, "×" + ItemLeft(list[i]), 22, Color.white, TextAnchor.MiddleCenter);
                 if (Gfx.Clicked(r)) { menuIndex = i; MenuConfirm(i); return; }
             }
             Gfx.Modern(back, 0.92f);

@@ -35,12 +35,9 @@ namespace LiuBeiRPG.Core
 
         public void Add(General g)
         {
-            // 新入队的成长型武将按当前等级补足兵力
-            if (g.Def.SoldiersPerLevel > 0)
-            {
-                g.MaxSoldiers = g.Def.BaseSoldiers + g.Def.SoldiersPerLevel * (Level - 1);
-                g.Soldiers = g.MaxSoldiers;
-            }
+            // 新入队的按全队等级补足兵力
+            g.SetLevel(Level);
+            g.Soldiers = g.MaxSoldiers;
             if (Members.Count >= MaxMembers) Stored.Add(g);
             else Members.Add(g);
         }
@@ -95,11 +92,11 @@ namespace LiuBeiRPG.Core
                 msgs.Add("全军升至 " + Level + " 级！");
                 foreach (var m in Members)
                 {
-                    if (m.Def.SoldiersPerLevel <= 0) continue;
-                    m.MaxSoldiers += m.Def.SoldiersPerLevel;
-                    if (m.Alive) m.Soldiers += m.Def.SoldiersPerLevel;
-                    msgs.Add(m.Name + " 兵力上限 +" + m.Def.SoldiersPerLevel);
+                    int max = m.MaxSoldiers, atk = m.Atk;
+                    m.SetLevel(Level);
+                    msgs.Add(m.Name + " 兵力上限 +" + (m.MaxSoldiers - max) + "，攻击 +" + (m.Atk - atk));
                 }
+                foreach (var m in Stored) m.SetLevel(Level);
                 foreach (var t in TacticDb.All)
                     if (t.PlayerUsable && !t.Book && t.MinLevel == Level)
                         msgs.Add("习得法术「" + t.Name + "」！");

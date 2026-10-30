@@ -13,17 +13,17 @@ namespace LiuBeiRPG.Core
         public static readonly GeneralDef LiuBei = new GeneralDef
         {
             Id = "liubei", Name = "刘备", Glyph = "刘", Color = "#ffd75e",
-            Wu = 75, Zhi = 78, Tong = 80, Su = 70, BaseSoldiers = 300, SoldiersPerLevel = 60
+            Wu = 75, Zhi = 78, Tong = 80, Su = 70, BaseSoldiers = 300
         };
         public static readonly GeneralDef GuanYu = new GeneralDef
         {
             Id = "guanyu", Name = "关羽", Glyph = "关", Color = "#6bd47a",
-            Wu = 97, Zhi = 75, Tong = 88, Su = 72, BaseSoldiers = 400, SoldiersPerLevel = 80
+            Wu = 97, Zhi = 75, Tong = 88, Su = 72, BaseSoldiers = 400
         };
         public static readonly GeneralDef ZhangFei = new GeneralDef
         {
             Id = "zhangfei", Name = "张飞", Glyph = "张", Color = "#9aa8ff",
-            Wu = 98, Zhi = 30, Tong = 60, Su = 80, BaseSoldiers = 400, SoldiersPerLevel = 80
+            Wu = 98, Zhi = 30, Tong = 60, Su = 80, BaseSoldiers = 400
         };
 
         // ---------- 黄巾军 ----------
@@ -57,18 +57,18 @@ namespace LiuBeiRPG.Core
         public static readonly GeneralDef ChengYuanZhi = new GeneralDef
         {
             Id = "chengyuanzhi", Name = "程远志", Glyph = "程", Color = "#ff4d4d",
-            Wu = 118, Zhi = 40, Tong = 65, Su = 60, BaseSoldiers = 1200, ExpReward = 150, GoldReward = 300, IsBoss = true,
+            Wu = 118, Zhi = 40, Tong = 65, Su = 60, BaseSoldiers = 950, ExpReward = 150, GoldReward = 300, IsBoss = true,
             Drop = "yupei", DropRate = 1
         };
         public static readonly GeneralDef DengMao = new GeneralDef
         {
             Id = "dengmao", Name = "邓茂", Glyph = "邓", Color = "#ff8a4d",
-            Wu = 108, Zhi = 30, Tong = 55, Su = 65, BaseSoldiers = 700, ExpReward = 80, GoldReward = 100, IsBoss = true,
+            Wu = 108, Zhi = 30, Tong = 55, Su = 65, BaseSoldiers = 600, ExpReward = 80, GoldReward = 100, IsBoss = true,
             Drop = "pikui", DropRate = 1
         };
 
-        /// <summary>野外随机遇敌。等级越高越容易遇到头目。</summary>
-        public static List<General> RandomEncounter(Random rng, int partyLevel)
+        /// <summary>野外随机遇敌。等级越高越容易遇到头目。敌人等级 = 地图等级随机 ±1。</summary>
+        public static List<General> RandomEncounter(Random rng, int partyLevel, int mapLevel)
         {
             var pool = new List<GeneralDef> { HuangJinBing, HuangJinBing, HuangJinBing, HuangJinLiShi, HuangJinShuShi };
             if (partyLevel >= 2) pool.Add(HuangJinLiShi);
@@ -76,7 +76,7 @@ namespace LiuBeiRPG.Core
 
             int count = 1 + rng.Next(partyLevel >= 2 ? 5 : 3);   // 和吞食天地一样最多 5 队：1级 1~3 队，2级起 1~5 队
             var list = new List<General>();
-            for (int i = 0; i < count; i++) list.Add(new General(pool[rng.Next(pool.Count)]));
+            for (int i = 0; i < count; i++) list.Add(new General(pool[rng.Next(pool.Count)], Math.Max(1, mapLevel + rng.Next(-1, 2))));
             return list;
         }
 
@@ -84,11 +84,11 @@ namespace LiuBeiRPG.Core
         {
             return new List<General>
             {
-                new General(HuangJinBing),
-                new General(DengMao),
-                new General(ChengYuanZhi),
-                new General(HuangJinShuShi),
-                new General(HuangJinLiShi),
+                new General(HuangJinBing, 3),
+                new General(DengMao, 3),
+                new General(ChengYuanZhi, 4),
+                new General(HuangJinShuShi, 3),
+                new General(HuangJinLiShi, 3),
             };
         }
     }

@@ -20,7 +20,7 @@ namespace LiuBeiRPG.Game
         float resultAt;
         int resultFromLevel, resultFromMaxTP;
         float resultFromExp;                                                       // 打之前经验条走到几成
-        readonly List<KeyValuePair<General, int>> resultMaxBefore = new List<KeyValuePair<General, int>>();
+        readonly List<KeyValuePair<General, int[]>> resultMaxBefore = new List<KeyValuePair<General, int[]>>();   // 打之前每人的 兵力上限 / 攻 / 防 / 谋
         float resultLevelAt, resultLevelEnd, resultDoneAt;                         // 升级爆开的时刻；升级数值滚完的时刻；奖励全部飞完的时刻
         const float LevelCharge = 0.45f;                                           // 经验条涨满到爆开之间蓄力多久
         const float AutoClose = 1.2f;                                              // 演完再停多久自动出场
@@ -54,7 +54,7 @@ namespace LiuBeiRPG.Game
             resultFromMaxTP = party.MaxTP;
             resultFromExp = (float)party.Exp / party.ExpToNext;
             resultMaxBefore.Clear();
-            foreach (var m in party.Members) resultMaxBefore.Add(new KeyValuePair<General, int>(m, m.MaxSoldiers));
+            foreach (var m in party.Members) resultMaxBefore.Add(new KeyValuePair<General, int[]>(m, MemberStats(m)));
             resultLearned.Clear();
             foreach (var e in battle.GrantRewards())
                 foreach (var tc in TacticDb.All)
@@ -265,10 +265,14 @@ namespace LiuBeiRPG.Game
                     new KeyValuePair<string, int[]>("等级", new[] { resultFromLevel, party.Level }),
                     new KeyValuePair<string, int[]>("法力上限", new[] { resultFromMaxTP, party.MaxTP }),
                 };
-                foreach (var kv in resultMaxBefore) stats.Add(new KeyValuePair<string, int[]>(kv.Key.Name + "　兵力上限", new[] { kv.Value, kv.Key.MaxSoldiers }));
                 for (int i = 0; i < stats.Count; i++)
                     StatRow(new Rect(r.x + 40, y + i * 30, w - 80, 28), stats[i].Key, stats[i].Value[0], stats[i].Value[1], lu - 0.3f - i * 0.15f);
-                y += stats.Count * 30 + 8;
+                for (int i = 0; i < resultMaxBefore.Count; i++)
+                {
+                    var kv = resultMaxBefore[i];
+                    MemberStatRow(new Rect(r.x + 40, y + (stats.Count + i) * 30, w - 80, 28), kv.Key.Name, kv.Value, MemberStats(kv.Key), lu - 0.3f - (stats.Count + i) * 0.15f);
+                }
+                y += (stats.Count + resultMaxBefore.Count) * 30 + 8;
             }
 
             // ---- 战利品、新法术：先是空格子，飞进来才亮出图标和名字 ----
@@ -474,6 +478,36 @@ namespace LiuBeiRPG.Game
         }
 
         /// <summary>一行属性：名字　旧值 → 新值（从旧值滚上去，到头弹大一下）　+n 往上飘。k = 这一行出场过去了多久。</summary>
+        static readonly string[] MemberStatNames = { "兵力", "攻", "防", "谋" };
+        static int[] MemberStats(General m) { return new[] { m.MaxSoldiers, m.Atk, m.Defense, m.Mou }; }
+
+        /// <summary>升级时一个武将一行：名字，后面兵力上限 / 攻 / 防 / 谋四格，每格新值从旧值滚上去，滚完右上角飘绿色 +n。</summary>
+        void MemberStatRow(Rect r, string name, int[] from, int[] to, float k)
+        {
+            if (k <= 0) return;
+            float a = Mathf.Clamp01(k / 0.15f);
+            float slide = (1 - a) * 30;
+            var old = GUI.color;
+            GUI.color = new Color(1, 1, 1, a);
+            Gfx.RoundRect(new Rect(r.x + slide, r.y, r.width, r.height), new Color(1, 1, 1, 0.06f));
+            Gfx.Text(new Rect(r.x + 14 + slide, r.y, 70, r.height), name, 17, new Color(1, 1, 1, 0.75f), TextAnchor.MiddleLeft);
+            float rollK = Mathf.Clamp01((k - 0.1f) / 0.4f);
+            float x0 = r.x + 80 + slide, cw = (r.xMax - 8 - x0) / from.Length;
+            for (int i = 0; i < from.Length; i++)
+            {
+                float cx = x0 + i * cw;
+                Gfx.Text(new Rect(cx, r.y, 34, r.height), MemberStatNames[i], 14, new Color(1, 1, 1, 0.5f), TextAnchor.MiddleLeft);
+                int shown = Mathf.RoundToInt(Mathf.Lerp(from[i], to[i], rollK));
+                Gfx.Text(new Rect(cx + 32, r.y, 60, r.height), shown.ToString(), 18, rollK >= 1 ? Accent : Color.white, TextAnchor.MiddleLeft);
+                if (to[i] > from[i] && k > 0.5f)
+                {
+                    float f = Mathf.Clamp01((k - 0.5f) / 0.8f);
+                    Gfx.Text(new Rect(cx + 32, r.y - 13 - f * 6, cw - 32, 16), "+" + (to[i] - from[i]), 13, new Color(0.5f, 1f, 0.55f, 1 - f * 0.5f), TextAnchor.MiddleRight);
+                }
+            }
+            GUI.color = old;
+        }
+
         void StatRow(Rect r, string label, int from, int to, float k)
         {
             if (k <= 0) return;

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace LiuBeiRPG.Core
 {
-    public enum CommandType { Attack, Tactic, Defend }
+    public enum CommandType { Attack, Tactic, Defend, Item }
     public enum BattleResult { None, Victory, Defeat, Fled }
 
     public class BattleCommand
@@ -13,6 +13,7 @@ namespace LiuBeiRPG.Core
         public CommandType Type;
         public General Target;      // 可为空：自动选目标
         public TacticDef Tactic;
+        public string ItemId;       // 物品：用哪一件
     }
 
     /// <summary>战斗里发生的一件事，界面按顺序播放。</summary>
@@ -121,6 +122,7 @@ namespace LiuBeiRPG.Core
                 if (Result != BattleResult.None) break;
                 if (!cmd.Actor.Alive) continue;
                 if (cmd.Type == CommandType.Attack) DoAttack(cmd, events);
+                else if (cmd.Type == CommandType.Item) DoItem(cmd, events);
                 else DoTactic(cmd, events);
                 CheckEnd();
             }
@@ -169,6 +171,17 @@ namespace LiuBeiRPG.Core
             if (IsPlayer(target)) text = cmd.Actor.Name + " 攻击 " + target.Name + (crit ? "，会心一击！" : "，") + "我军损失 " + dealt;
             events.Add(new BattleEvent(text) { Target = target, Actor = cmd.Actor, SoldiersAfter = target.Soldiers, IsDamage = true, IsCrit = crit });
             if (!target.Alive) events.Add(new BattleEvent(target.Name + " 败走了！") { Target = target, SoldiersAfter = 0, IsDefeat = true });
+        }
+
+        /// <summary>用物品：和地图上一样走 Party.UseItem（药救不了败走的、还魂丹救不了活着的，这些情况不扣东西）。</summary>
+        void DoItem(BattleCommand cmd, List<BattleEvent> events)
+        {
+            if (Party.Count(cmd.ItemId) == 0) { events.Add(new BattleEvent(ItemDb.Get(cmd.ItemId).Name + "用完了，" + cmd.Actor.Name + " 按兵不动。")); return; }
+            var who = cmd.Target ?? cmd.Actor;
+            int before = who.Soldiers;
+            string msg = Party.UseItem(cmd.ItemId, who);
+            if (cmd.Target == null || who.Soldiers == before) events.Add(new BattleEvent(msg));
+            else events.Add(new BattleEvent(msg) { Target = who, SoldiersAfter = who.Soldiers, IsHeal = true });
         }
 
         void DoTactic(BattleCommand cmd, List<BattleEvent> events)

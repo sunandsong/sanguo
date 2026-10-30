@@ -160,6 +160,9 @@ namespace LiuBeiRPG.World
         /// <summary>每走一步在遇敌地块上触发战斗的概率。</summary>
         public double EncounterRate;
 
+        /// <summary>这张图遇到的敌人等级（每场随机 ±1），见 Docs/设计文档.md 第 3 节各章等级段。</summary>
+        public int EnemyLevel = 1;
+
         /// <summary>走到某格之后触发（返回 true 表示已处理，比如切换地图）。</summary>
         public Func<int, int, bool> OnStep;
 
