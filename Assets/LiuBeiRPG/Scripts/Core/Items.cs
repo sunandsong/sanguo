@@ -36,11 +36,11 @@ namespace LiuBeiRPG.Core
 
             new ItemDef { Id = "huangjinbu", Name = "黄巾", Kind = ItemKind.Material, Price = 4, Desc = "从黄巾贼头上扯下的黄布巾。县里差役按条收，十条换赏；商店也收。" },
 
-            new ItemDef { Id = "qimeigun",    Name = "齐眉棍", Kind = ItemKind.Weapon, Sprite = "gun",    Power = 2, Price = 40,  Desc = "齐眉高的硬木棍。武力 +2。" },
-            new ItemDef { Id = "tiejian",     Name = "铁剑",   Kind = ItemKind.Weapon, Sprite = "jian",   Power = 4, Price = 100, Desc = "寻常铁剑。武力 +4。" },
-            new ItemDef { Id = "huanshoudao", Name = "环首刀", Kind = ItemKind.Weapon, Sprite = "dao",    Power = 5, Price = 120, Desc = "汉军制式长刀。武力 +5。" },
-            new ItemDef { Id = "changqiang",  Name = "长枪",   Kind = ItemKind.Weapon, Sprite = "qiang",  Power = 5, Price = 120, Desc = "白蜡杆长枪。武力 +5。" },
-            new ItemDef { Id = "shoufu",      Name = "手斧",   Kind = ItemKind.Weapon, Sprite = "shoufu", Power = 6, Price = 150, Desc = "短柄阔刃斧。武力 +6。" },
+            new ItemDef { Id = "qimeigun",    Name = "齐眉棍", Kind = ItemKind.Weapon, Sprite = "gun",    Power = 6, Price = 40,  Desc = "齐眉高的硬木棍。武力 +6。" },
+            new ItemDef { Id = "tiejian",     Name = "铁剑",   Kind = ItemKind.Weapon, Sprite = "jian",   Power = 8, Price = 100, Desc = "寻常铁剑。武力 +8。" },
+            new ItemDef { Id = "huanshoudao", Name = "环首刀", Kind = ItemKind.Weapon, Sprite = "dao",    Power = 10, Price = 120, Desc = "汉军制式长刀。武力 +10。" },
+            new ItemDef { Id = "changqiang",  Name = "长枪",   Kind = ItemKind.Weapon, Sprite = "qiang",  Power = 10, Price = 120, Desc = "白蜡杆长枪。武力 +10。" },
+            new ItemDef { Id = "shoufu",      Name = "手斧",   Kind = ItemKind.Weapon, Sprite = "shoufu", Power = 12, Price = 150, Desc = "短柄阔刃斧。武力 +12。" },
             // ponytail: 名器先固定 +5，设计文档里的随等级成长（5 + 0.5×(Lv−1)）等第 2 章再做
             new ItemDef { Id = "shuanggu", Name = "双股剑",     Kind = ItemKind.Weapon, Sprite = "shuanggu", Power = 5, Owner = "liubei",   Desc = "张世平所赠镔铁打造。刘备专属。武力 +5。" },
             new ItemDef { Id = "yanyue",   Name = "青龙偃月刀", Kind = ItemKind.Weapon, Sprite = "yanyue",   Power = 5, Owner = "guanyu",   Desc = "张世平所赠镔铁打造。关羽专属。武力 +5。" },

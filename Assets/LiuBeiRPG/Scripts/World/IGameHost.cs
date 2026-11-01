@@ -35,6 +35,8 @@ namespace LiuBeiRPG.World
         void Warp(MapData map, int x, int y);
         void ChapterClear(string title, string nextHint);
         void OpenShop(string[] goods);   // 商店：goods 是卖的物品 Id
+        void PlaceFollowers(string facing, params int[] cells);   // 剧情站位：队友（第 2、3… 人）站到 x0,y0, x1,y1…，朝 facing（front/back/left/side）
         void SetHour(float hour);        // 跳到某个时辰（住店睡一晚 → 清晨）
+        void OpenChest(Npc chest, string item, int count, int gold, string message);   // 开箱演出（抖、开盖换图、东西飞进袋子），演完在下方弹 message，自己消失
     }
 }

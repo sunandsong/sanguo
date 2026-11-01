@@ -217,8 +217,9 @@ namespace LiuBeiRPG.Game
             }
             y += 30;
             // 六格装备，两排三格（顺序见 ItemKind）；点有东西的格子卸回行囊（行囊里点装备按“装备”换上）
-            string[] slots = { "武器", "头盔", "防具", "鞋子", "坐骑", "饰品" }, stats = { "武力", "防御力", "防御力", "速度", "速度", "智力" };
-            const float under = 52;   // 格子下面两行字：名字、加成
+            // 格子下面不写名字、加成：图标看得出是什么，加成已经算进上面的数值里
+            string[] slots = { "武器", "头盔", "防具", "鞋子", "坐骑", "饰品" };
+            const float under = 12;   // 两排格子之间的空
             float sw = Mathf.Min(110, Mathf.Min((rw - 20) / 3, (area.yMax - y - 2 * under) / 2));
             float sgx = (rw - 3 * sw) / 2;   // 格子变小时横向撑开，左右贴齐
             for (int i = 0; i < General.GearSlots; i++)
@@ -229,9 +230,7 @@ namespace LiuBeiRPG.Game
                 var item = ItemDb.Get(m.Gear[i]);
                 if (item != null) ItemIcon(sr, item);
                 else Gfx.Text(sr, slots[i], 16, new Color(1, 1, 1, 0.25f), TextAnchor.MiddleCenter);
-                Gfx.Text(new Rect(sr.x - 10, sr.yMax + 6, sr.width + 20, 22), item != null ? item.Name : "空", 15, item != null ? Color.white : new Color(1, 1, 1, 0.35f), TextAnchor.MiddleCenter);
                 if (item == null) continue;
-                Gfx.Text(new Rect(sr.x - 10, sr.yMax + 28, sr.width + 20, 20), stats[i] + " +" + item.Power, 14, Accent, TextAnchor.MiddleCenter);
                 if (Gfx.Clicked(sr))
                 {
                     if (!party.CanHold(item.Id)) Note("行囊满了，卸不下来。", null);
@@ -273,8 +272,14 @@ namespace LiuBeiRPG.Game
 
         void UseItem()
         {
-            string msg = party.UseItem(party.Slots()[itemSel], party.Members[pageMember]);
-            if (msg != null) Note(msg, null);   // 对话框叠在人物页上，看完还停在这页
+            string id = party.Slots()[itemSel];
+            int had = party.Count(id);
+            string msg = party.UseItem(id, party.Members[pageMember]);
+            if (msg != null) Note(msg, null);
+            var item = ItemDb.Get(id);
+            if (item.Equip) Sfx.Play("equip");
+            else if (party.Count(id) >= had) Sfx.Play("ui_error");   // 没用掉：满了 / 救不回来
+            else Sfx.Play(item.Kind == ItemKind.Book ? "learn" : item.Kind == ItemKind.Wine ? "drink" : "heal");
         }
 
         /// <summary>行囊按钮上的字：兵书研读、药酒使用、装备给左边这个人换上。</summary>
@@ -416,6 +421,7 @@ namespace LiuBeiRPG.Game
 
         void UseTactic(TacticDef t)
         {
+            if (t.Kind != TacticKind.Heal || party.TP < t.Cost || !party.Strategist.Alive || !t.TargetsAll && !party.Members[pageMember].Alive) Sfx.Play("ui_error");
             if (t.Kind != TacticKind.Heal) { Note(t.Name + "只能在战斗中使用。", null); return; }
             if (party.TP < t.Cost) { Note("法力不足。", null); return; }
             if (!party.Strategist.Alive) { Note("军师" + party.Strategist.Name + "已经败走，放不了法术。", null); return; }
@@ -429,13 +435,36 @@ namespace LiuBeiRPG.Game
         {
             var caster = party.Strategist;
             party.TP -= t.Cost;
+            Sfx.Play("heal_magic");
             var lines = new List<DialogueLine> { new DialogueLine(null, caster.Name + "使用了" + t.Name + "。") };
             foreach (var g in targets)
                 if (g.Alive) lines.Add(new DialogueLine(null, g.Name + " 兵力恢复 " + g.Heal(Formula.TacticHeal(caster, t, rng))));
             Say(lines);   // 对话框叠在人物页上，看完还停在这页
         }
 
-        void Note(string text, Action then) { Say(new List<DialogueLine> { new DialogueLine(null, text) }, then); }
+        /// <summary>菜单里的小提示：屏幕下方淡入一条字，停一会儿自己淡出，不用点；新的直接顶掉旧的。then 立刻接着走。</summary>
+        void Note(string text, Action then)
+        {
+            noteText = text;
+            noteAt = Time.time;
+            if (then != null) then();
+        }
+
+        string noteText;
+        float noteAt;
+        const float NoteHold = 1.8f, NoteFade = 0.3f;
+
+        void DrawNote()
+        {
+            if (noteText == null) return;
+            float t = Time.time - noteAt;
+            if (t > NoteHold + NoteFade) { noteText = null; return; }
+            float a = Mathf.Clamp01(t / 0.15f) * (1 - Mathf.Clamp01((t - NoteHold) / NoteFade));
+            float w = Mathf.Min(Gfx.VW - 32, 40 + noteText.Length * 20), h = 52;
+            var r = new Rect((Gfx.VW - w) / 2, Gfx.SafeArea.yMax - h - 40 + (1 - Mathf.Clamp01(t / 0.15f)) * 12, w, h);   // 淡入时从下面升一点
+            Gfx.RoundRect(r, new Color(0.08f, 0.06f, 0.04f, 0.85f * a));
+            Gfx.Text(r, noteText, 19, new Color(1, 1, 1, a), TextAnchor.MiddleCenter, false, false);
+        }
 
         // ---------------- 存档：一个档位，JSON 放 PlayerPrefs ----------------
         // 剧情进度全在 flags 里，地图上的人和东西都由 flags 推出来，所以只存队伍（含物品、兵书学的策略）+ flags + 位置
@@ -468,6 +497,7 @@ namespace LiuBeiRPG.Game
             PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(s));
             PlayerPrefs.Save();
             Note("已存档。", null);
+            Sfx.Play("save");
         }
 
         static string Nul(string s) { return string.IsNullOrEmpty(s) ? null : s; }   // JsonUtility 把 null 存成 ""

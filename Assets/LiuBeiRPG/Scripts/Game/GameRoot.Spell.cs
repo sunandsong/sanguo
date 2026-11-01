@@ -56,6 +56,12 @@ namespace LiuBeiRPG.Game
             { "heal_light", 0.86f }, { "rally_wave", 0.77f }, { "hex_storm", 0.84f },
         };
 
+        // 放出那一下的声：火箭离手、石头往下掉、葫芦冒出来、符纸飞出去
+        static readonly Dictionary<string, string> ReleaseSfx = new Dictionary<string, string>
+        {
+            { "huoji", "fire_arrow" }, { "luoshi", "rock_fall" }, { "liaobing", "gourd" }, { "yaoshu", "talisman" },
+        };
+
         void ResetSpellFx()
         {
             spell = null;
@@ -75,6 +81,7 @@ namespace LiuBeiRPG.Game
                 s.Hits[e.Target].Add(e);
             }
             ApplyEvent(head);   // 战报出字
+            Sfx.Play("cast");
             spell = s;
             nextEventTime = float.MaxValue;
 
@@ -129,6 +136,7 @@ namespace LiuBeiRPG.Game
         void Beat()
         {
             drumBeat = Time.time;
+            Sfx.Play("drum", 1f, 0.05f);
             foreach (var g in battle.Players)
                 if (slots.ContainsKey(g) && g.Alive)
                     flips.Add(new Flip { Sheet = "rally_wave", From = slots[g], To = slots[g], Start = Time.time, Dur = 0.5f, Width = HeightOf(g) * 1.8f, PivotY = FxPivot["rally_wave"] });
@@ -141,6 +149,8 @@ namespace LiuBeiRPG.Game
             float now = Time.time;
             var hand = HandOf(spell.Actor);
             spell.End = now + 0.4f;
+            string launch;
+            if (ReleaseSfx.TryGetValue(spell.Id, out launch)) Sfx.Play(launch);
             for (int i = 0; i < spell.Targets.Count; i++)
             {
                 var tg = spell.Targets[i];
@@ -152,7 +162,7 @@ namespace LiuBeiRPG.Game
                 {
                     case "huoji":   // 火箭飞过去，炸开一团火
                         flips.Add(new Flip { Sheet = "fire_arrow", From = hand, To = chest, Start = now, Dur = 0.35f, Width = h * 1.1f, PivotY = FxPivot["fire_arrow"], Loop = true, Aim = true });
-                        At(now + 0.35f, () => { AddFx("fire_burst", foot, 0.6f, h * 1.6f); Hit(tg); });
+                        At(now + 0.35f, () => { AddFx("fire_burst", foot, 0.6f, h * 1.6f); Sfx.Play("fire_burst", 1f, 0.1f); Hit(tg); });
                         break;
                     case "luoshi":  // 石头从天上翻滚着砸下来，一个接一个
                     {
@@ -160,19 +170,19 @@ namespace LiuBeiRPG.Game
                         var from = foot + new Vector2(Rnd(-20f, 20f), -h - 260f);
                         flips.Add(new Flip { Prop = Gfx.Tex(i % 2 == 0 ? "Art/fx/prop_rock_big" : "Art/fx/prop_rock_small"), From = from, To = foot + new Vector2(0f, -h * 0.35f),
                             Start = now + d, Dur = 0.38f, Width = h * 0.7f, Spin = 540f, Fall = true });
-                        At(now + d + 0.38f, () => { AddFx("rock_dust", foot, 0.7f, h * 1.9f); shakeUntil = Time.time + 0.25f; shakeAmp = 6f; Hit(tg); });
+                        At(now + d + 0.38f, () => { AddFx("rock_dust", foot, 0.7f, h * 1.9f); Sfx.Play("rock_hit", 1f, 0.12f); shakeUntil = Time.time + 0.25f; shakeAmp = 6f; Hit(tg); });
                         break;
                     }
                     case "liaobing":   // 头顶浮出药葫芦，倒下来一道治疗光
                         flips.Add(new Flip { Prop = Gfx.Tex("Art/fx/prop_gourd"), From = foot + new Vector2(0f, -h - 30f), To = foot + new Vector2(0f, -h - 40f), Start = now, Dur = 0.8f, Width = h * 0.55f, Fade = true });
-                        At(now + 0.35f, () => { AddFx("heal_light", foot, 0.8f, h * 1.3f); Hit(tg); });
+                        At(now + 0.35f, () => { AddFx("heal_light", foot, 0.8f, h * 1.3f); Sfx.Play("heal_magic", 0.8f, 0.05f); Hit(tg); });
                         break;
                     case "guwu":
-                        At(now + i * 0.06f, () => { AddFx("heal_light", foot, 0.8f, h * 1.3f); Hit(tg); });
+                        At(now + i * 0.06f, () => { AddFx("heal_light", foot, 0.8f, h * 1.3f); Sfx.Play("rally", 0.8f); Hit(tg); });
                         break;
                     case "yaoshu":  // 符纸飞过去，紫雾里劈下闪电
                         flips.Add(new Flip { Prop = Gfx.Tex("Art/fx/prop_talisman"), From = hand, To = chest, Start = now, Dur = 0.4f, Width = h * 0.45f, Spin = 360f });
-                        At(now + 0.4f, () => { AddFx("hex_storm", foot, 0.8f, h * 1.8f); Hit(tg); });
+                        At(now + 0.4f, () => { AddFx("hex_storm", foot, 0.8f, h * 1.8f); Sfx.Play("hex_thunder", 1f, 0.1f); Hit(tg); });
                         break;
                     default:
                         Hit(tg);

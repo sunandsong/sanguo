@@ -19,6 +19,8 @@ namespace LiuBeiRPG.Game
             shopGoods = goods;
             shopTab = 0;
             shopSel = 0;
+            shopFlies.Clear();
+            shopOpenedAt = Time.time;
             menuPage = PageShop;
         }
 
@@ -36,9 +38,48 @@ namespace LiuBeiRPG.Game
             shopSel = Mathf.Clamp(shopSel, 0, Mathf.Max(0, n - 1));
         }
 
+        // 买下的东西从格子飞进右上角的袋子：一件一个
+        struct ShopFly { public string Id; public Vector2 From; public float T0; }
+        readonly System.Collections.Generic.List<ShopFly> shopFlies = new System.Collections.Generic.List<ShopFly>();
+        float shopLanded = -9, shopOpenedAt;   // 上次落进袋子的时刻；开店时刻（袋子滑下来）
+        Rect shopCellRect;                      // 选中那一格在哪（飞的起点）
+        const float ShopFlyTime = 0.5f;
+
         void ShopDeal(string id)
         {
-            Note(shopTab == 0 ? party.Buy(id) : party.Sell(id), null);   // 提示框叠在商店上，看完接着买
+            if (shopTab == 0)
+            {
+                int had = party.Count(id);
+                string msg = party.Buy(id);
+                if (party.Count(id) > had) { shopFlies.Add(new ShopFly { Id = id, From = shopCellRect.center, T0 = Time.time }); Sfx.Play("buy"); }   // 买成了就飞，不弹字
+                else { Note(msg, null); Sfx.Play("ui_error"); }
+                return;
+            }
+            int gold = party.Gold;
+            Note(party.Sell(id), null);
+            Sfx.Play(party.Gold > gold ? "sell" : "ui_error");
+        }
+
+        void DrawShopFlies()
+        {
+            DrawPouch(1 - BackEase(Mathf.Clamp01((Time.time - shopOpenedAt) / 0.3f)), Time.time - shopLanded);
+            var to = BagRect().center;
+            var old = GUI.color;
+            for (int i = shopFlies.Count - 1; i >= 0; i--)
+            {
+                var f = shopFlies[i];
+                float u = (Time.time - f.T0) / ShopFlyTime;
+                if (u >= 1) { shopFlies.RemoveAt(i); shopLanded = Time.time; Sfx.Play("item_get"); continue; }
+                u *= u;   // 加速冲进去
+                var dir = to - f.From;
+                var ctrl = (f.From + to) * 0.5f + new Vector2(-dir.y, dir.x).normalized * 80f;   // 往外拱一道弧
+                var p = (1 - u) * (1 - u) * f.From + 2 * (1 - u) * u * ctrl + u * u * to;
+                float s = Mathf.Lerp(shopCellRect.width * 0.5f, BagRect().width * 0.3f, u);
+                GUI.color = new Color(1f, 0.85f, 0.45f, 0.6f);
+                Gfx.Image(new Rect(p.x - s * 1.6f, p.y - s * 1.6f, s * 3.2f, s * 3.2f), GlowTex());
+                GUI.color = old;
+                ItemIcon(new Rect(p.x - s, p.y - s, s * 2, s * 2), ItemDb.Get(f.Id));
+            }
         }
 
         void DrawShop()
@@ -78,6 +119,7 @@ namespace LiuBeiRPG.Game
                 GUI.color = old;
                 if (shopTab == 1) StackCount(cr, list[i]);
                 if (Gfx.Clicked(cr)) shopSel = i;
+                if (i == shopSel) shopCellRect = cr;
             }
             if (list.Length == 0) return;
 
@@ -95,6 +137,7 @@ namespace LiuBeiRPG.Game
             Gfx.RoundRect(btn, ok ? Accent : new Color(1, 1, 1, 0.1f));
             Gfx.Text(btn, shopTab == 0 ? "买" : "卖", 26, ok ? new Color(0.12f, 0.09f, 0.04f) : new Color(1, 1, 1, 0.4f), TextAnchor.MiddleCenter, false, false);
             if (Gfx.Clicked(btn)) ShopDeal(cur.Id);
+            if (shopTab == 0) DrawShopFlies();
         }
     }
 }

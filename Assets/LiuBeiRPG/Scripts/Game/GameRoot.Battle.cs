@@ -85,6 +85,7 @@ namespace LiuBeiRPG.Game
             strike = null;
             ResetBattleFx();
             rewardsGiven = false;
+            Sfx.Play(isBoss ? "battle_boss" : "battle_start");
             foreach (var g in battle.Players.Concat(enemies)) shownSoldiers[g] = g.Soldiers;
 
             var intro = new List<BattleEvent>
@@ -119,6 +120,7 @@ namespace LiuBeiRPG.Game
         void UpdateBattle()
         {
             if (battleExit >= 0f && Time.time - battleExit >= ExitTime) { FinishBattle(); return; }
+            if (bstate == BState.Result) ResultSfx();
             bool walking = OffstageK() > 0f;
             bool frozen = Frozen;
             if (strike != null)
@@ -180,7 +182,10 @@ namespace LiuBeiRPG.Game
             if (log.Count > 50) log.RemoveAt(0);
             Vector2 mp;
             if (e.Target != null && e.SoldiersAfter < 0 && slots.TryGetValue(e.Target, out mp))   // 法术被识破
+            {
                 popups.Add(new Popup { text = "识破", at = mp + new Vector2(0, -HeightOf(e.Target) - 20f), born = Time.time });
+                Sfx.Play("resist");
+            }
             if (e.Target == null || e.SoldiersAfter < 0) return;
             int before;
             if (!shownSoldiers.TryGetValue(e.Target, out before)) before = e.SoldiersAfter;
@@ -190,6 +195,7 @@ namespace LiuBeiRPG.Game
             if (hasAt && (e.IsDamage || e.IsHeal) && before != e.SoldiersAfter)
                 popups.Add(new Popup { text = Mathf.Abs(before - e.SoldiersAfter).ToString(), at = at + new Vector2(0, -HeightOf(e.Target) - 20f), born = Time.time, heal = e.IsHeal, crit = e.IsCrit });
             if (hasAt && e.Fx != null) TacticFx(e.Fx, at, HeightOf(e.Target));
+            if (e.IsHeal && e.Fx == null) Sfx.Play("heal");   // 药 / 还魂丹（法术回复的声在 GameRoot.Spell.cs）
             if (e.IsHeal && before <= 0 && e.SoldiersAfter > 0)   // 还魂丹：倒下的爬起来
             {
                 downAt.Remove(e.Target);
@@ -206,7 +212,7 @@ namespace LiuBeiRPG.Game
             if (melee) dir = Mathf.Sign(at.x - ap.x);
             // 不管敌我、刀砍还是法术，挨打掉兵力就溅血（法术没有出手位置，往自己身后喷）
             if (hasAt) SprayBlood(at + new Vector2(0, -HeightOf(e.Target) * 0.5f), at.y, dir, e.IsCrit, e.SoldiersAfter == 0);
-            if (melee) Impact(e.Target, e.IsCrit);
+            if (melee) { Impact(e.Target, e.IsCrit); Sfx.Play("hit", e.IsCrit ? 1f : 0.8f, 0.08f); }   // 暴击同一个声，响一点
             Knock(e.Target, dir);
             // 敌人这一下兵力打没了：当场打飞，不等后面那条“败走”战报（到时 FallDown 发现已经在飞就不管了）
             if (e.SoldiersAfter == 0 && battle.Enemies.Contains(e.Target)) FallDown(e.Target);
@@ -227,12 +233,13 @@ namespace LiuBeiRPG.Game
             battlePuppets.TryGetValue(strike.Actor, out a);
             var slot = slots[strike.Actor];
             float dir = Mathf.Sign(slots[strike.Target].x - slot.x);
-            if (t >= WindTime && !strikeDashed) { strikeDashed = true; Dust(slot, dir); }   // 起步扬尘
+            if (t >= WindTime && !strikeDashed) { strikeDashed = true; Dust(slot, dir); Sfx.Play("dash", 0.7f, 0.1f); }   // 起步扬尘
             if (t >= WindTime && t < WindTime + DashTime) { if (a != null) a.Play("walk"); }
             else if (t >= WindTime + DashTime && !strikeSwung)
             {
                 strikeSwung = true;
                 if (a != null) a.Play("attack", true);   // 拿枪的自动换成 stab
+                Sfx.Play("swing", 0.8f, 0.1f);
                 Dust(StrikePosAt(strike.Actor, slot, t), -dir);   // 急停扬尘
             }
             if (!strikeLanded && t >= WindTime + DashTime + HitAt) { strikeLanded = true; ApplyEvent(strike); }
@@ -281,9 +288,11 @@ namespace LiuBeiRPG.Game
                     }
                     break;
                 case BattleResult.Defeat:
+                    Sfx.Play("defeat");
                     Play(new List<BattleEvent> { new BattleEvent("我军全军覆没……") }, () => { battle = null; mode = Mode.GameOver; });
                     break;
                 case BattleResult.Fled:
+                    Sfx.Play("flee");
                     EndBattle();
                     break;
             }
@@ -447,7 +456,7 @@ namespace LiuBeiRPG.Game
                     pending = new BattleCommand { Actor = CurrentCommander };
                     if (index == 0) { pending.Type = CommandType.Attack; bstate = BState.TargetEnemy; menuIndex = 0; }
                     else if (index == 1 && CanCast) { bstate = BState.TacticMenu; menuIndex = 0; }
-                    else if (index == 2) { pending.Type = CommandType.Defend; CommitCommand(pending); }
+                    else if (index == 2) { pending.Type = CommandType.Defend; CommitCommand(pending); Sfx.Play("defend"); }
                     else if (index == 3 && BattleItems().Count > 0) { bstate = BState.ItemMenu; menuIndex = 0; }
                     else if (index == 4) { commands.Clear(); reservedTP = 0; Play(battle.TryRetreat(), AfterTurn); }   // 任何一人选逃跑，全军撤退
                     else if (index == 5) { autoBattle = true; AutoCommands(); }   // 这一位和后面的人都自动攻击
@@ -456,7 +465,7 @@ namespace LiuBeiRPG.Game
                 case BState.TacticMenu:
                 {
                     var t = party.AvailableTactics()[index];
-                    if (party.TP - reservedTP < t.Cost) { log.Add("法力不足！"); return; }
+                    if (party.TP - reservedTP < t.Cost) { log.Add("法力不足！"); Sfx.Play("ui_error"); return; }
                     pending.Type = CommandType.Tactic;
                     pending.Tactic = t;
                     if (t.TargetsAll) CommitCommand(pending);
@@ -469,7 +478,7 @@ namespace LiuBeiRPG.Game
                     pending.Type = CommandType.Item;
                     pending.ItemId = BattleItems()[index];
                     if (ItemDb.Get(pending.ItemId).Kind == ItemKind.Wine) { CommitCommand(pending); break; }   // 酒是全军的法力，不用选人
-                    if (AllyTargets().Count == 0) { log.Add("没有败走的人。"); return; }
+                    if (AllyTargets().Count == 0) { log.Add("没有败走的人。"); Sfx.Play("ui_error"); return; }
                     bstate = BState.TargetAlly;
                     menuIndex = 0;
                     break;

@@ -32,7 +32,7 @@ namespace LiuBeiRPG.Game
             camSnap = true;
             walkersPlaced = false;   // 路人按钟点重新摆：夜里在屋里，白天在外面
             irisStart = Time.time;
-            if (newMap) { titleText = map.Name; titleStart = Time.time + 0.25f; }
+            if (newMap) { titleText = map.Name; titleStart = Time.time + 0.25f; Sfx.Play("map_enter"); }
         }
 
         /// <summary>圆形转场：黑幕中间一个从主角处张开的圆洞。</summary>
@@ -99,9 +99,9 @@ namespace LiuBeiRPG.Game
             // 写字：按宽度从左往右露出来
             GUI.BeginGroup(new Rect(r.x, r.y - 20, size.x * reveal + 4, h + 40));
             var inner = new Rect(0, 20, size.x, h);
-            st.normal.textColor = new Color(0, 0, 0, 0.6f * a);
+            Gfx.SetColor(st, new Color(0, 0, 0, 0.6f * a));
             GUI.Label(new Rect(inner.x + 3, inner.y + 3, inner.width, inner.height), titleText, st);
-            st.normal.textColor = new Color(0.98f, 0.94f, 0.86f, a);
+            Gfx.SetColor(st, new Color(0.98f, 0.94f, 0.86f, a));
             GUI.Label(inner, titleText, st);
             GUI.EndGroup();
         }

@@ -202,16 +202,24 @@ namespace LiuBeiRPG.Game
 
         public static void ClearStyleCache() { styleCache.Clear(); }
 
+        /// <summary>字色四个状态一起设：GUI.Label 在按下 / 悬停时会换用 active / hover 的颜色（默认皮肤是不透明的），
+        /// 只设 normal 的话一按下去，投影和描边那几遍都变成同一个实色，看着就是重影。</summary>
+        public static void SetColor(GUIStyle st, Color c)
+        {
+            st.normal.textColor = st.hover.textColor = st.active.textColor = st.focused.textColor = c;
+            st.onNormal.textColor = st.onHover.textColor = st.onActive.textColor = st.onFocused.textColor = c;
+        }
+
         public static void Text(Rect r, string text, int size, Color c, TextAnchor anchor = TextAnchor.UpperLeft, bool wrap = false, bool shadow = true)
         {
             var st = Style(size, anchor, wrap);
             if (Paper) { c = Ink(c); shadow = false; }
             if (shadow)
             {
-                st.normal.textColor = new Color(0, 0, 0, 0.8f * c.a);
+                SetColor(st, new Color(0, 0, 0, 0.8f * c.a));
                 GUI.Label(new Rect(r.x + 1.5f, r.y + 1.5f, r.width, r.height), text, st);
             }
-            st.normal.textColor = c;
+            SetColor(st, c);
             GUI.Label(r, text, st);
         }
 
@@ -245,18 +253,18 @@ namespace LiuBeiRPG.Game
             var st = BrushStyle(size, anchor);
             float d = Mathf.Max(1.5f, size * 0.09f);
             // 投影：往下错开，叠两层越外越淡
-            st.normal.textColor = new Color(0, 0, 0, 0.35f * c.a);
+            SetColor(st, new Color(0, 0, 0, 0.35f * c.a));
             GUI.Label(new Rect(r.x + d * 0.6f, r.y + d * 2.2f, r.width, r.height), text, st);
             GUI.Label(new Rect(r.x, r.y + d * 1.6f, r.width, r.height), text, st);
             // 描边
-            st.normal.textColor = new Color(0.14f, 0.08f, 0.03f, 0.95f * c.a);
+            SetColor(st, new Color(0.14f, 0.08f, 0.03f, 0.95f * c.a));
             for (int i = 0; i < 8; i++)
             {
                 float ang = i * Mathf.PI / 4f;
                 GUI.Label(new Rect(r.x + Mathf.Cos(ang) * d, r.y + Mathf.Sin(ang) * d, r.width, r.height), text, st);
             }
             // 字身：整字压暗，再只露上半截画提亮的
-            st.normal.textColor = new Color(c.r * 0.72f, c.g * 0.66f, c.b * 0.6f, c.a);
+            SetColor(st, new Color(c.r * 0.72f, c.g * 0.66f, c.b * 0.6f, c.a));
             GUI.Label(r, text, st);
             float mid;   // 这一行字的中线
             switch (anchor)
@@ -267,7 +275,7 @@ namespace LiuBeiRPG.Game
             }
             float top = Mathf.Min(r.y, mid - size);
             GUI.BeginGroup(new Rect(r.x - size, top, r.width + size * 2, mid - top));
-            st.normal.textColor = new Color(Mathf.Lerp(c.r, 1, 0.3f), Mathf.Lerp(c.g, 1, 0.3f), Mathf.Lerp(c.b, 1, 0.3f), c.a);
+            SetColor(st, new Color(Mathf.Lerp(c.r, 1, 0.3f), Mathf.Lerp(c.g, 1, 0.3f), Mathf.Lerp(c.b, 1, 0.3f), c.a));
             GUI.Label(new Rect(size, r.y - top, r.width, r.height), text, st);
             GUI.EndGroup();
         }
@@ -292,18 +300,20 @@ namespace LiuBeiRPG.Game
             Paper = paper;
         }
 
-        /// <summary>检测在某个区域内的鼠标点击（已考虑缩放矩阵）。</summary>
-        public static bool Clicked(Rect r)
+        /// <summary>检测在某个区域内的鼠标点击（已考虑缩放矩阵）。点中了响 sfx（null = 不响，调用方自己放）。</summary>
+        public static bool Clicked(Rect r, string sfx = "ui_tap")
         {
             var e = Event.current;
             if (e.type == EventType.MouseDown && e.button == 0 && r.Contains(e.mousePosition))
             {
                 e.Use();
+                if (sfx != null) Sfx.Play(sfx);
                 return true;
             }
             if (e.type == EventType.TouchDown && r.Contains(e.mousePosition))
             {
                 e.Use();
+                if (sfx != null) Sfx.Play(sfx);
                 return true;
             }
             return false;

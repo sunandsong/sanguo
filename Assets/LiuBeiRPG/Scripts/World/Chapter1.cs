@@ -55,7 +55,7 @@ namespace LiuBeiRPG.World
 
         static DialogueLine L(string speaker, string text) { return new DialogueLine(speaker, text); }
 
-        /// <summary>宝箱（通用）：开一次给钱，开过换成打开的图。图见 ArtSrc/宝箱提示词.md，缺图时箱子看不见但照样能开。</summary>
+        /// <summary>宝箱（通用）：开一次给钱，开的时候演一段（GameRoot.Chest），开过换成打开的图。图见 ArtSrc/宝箱提示词.md，缺图时箱子看不见但照样能开。</summary>
         Npc Chest(string flag, int x, int y, int gold, string item = null, int count = 1)
         {
             var flags = host.Flags;
@@ -68,13 +68,17 @@ namespace LiuBeiRPG.World
                 flags.Set(flag);
                 host.Party.Gold += gold;
                 for (int i = 0; it != null && i < count; i++) host.Party.Items.Add(item);
-                n.Sprite = "Art/chest_open";
                 string got = it == null ? "金钱 " + gold : it.Name + (count > 1 ? " ×" + count : "") + (gold > 0 ? "、金钱 " + gold : "");
-                Say(L(null, "打开宝箱，获得" + got + "！"));
+                host.OpenChest(n, it == null ? null : item, count, gold, "打开宝箱，获得" + got + "！");
             };
             return n;
         }
         void Say(params DialogueLine[] lines) { host.Say(new List<DialogueLine>(lines)); }
+
+        void GuardStop()
+        {
+            Say(L("守卫", "城外黄巾贼出没，你一个人出去就是送死。"), L("守卫", "要出城，先招些人马再说吧。"));
+        }
 
         static readonly System.Random chatRng = new System.Random();
 
@@ -99,7 +103,6 @@ namespace LiuBeiRPG.World
                 L(null, "巨鹿人张角聚众起事，头裹黄巾，号称“黄巾军”，四方响应。"),
                 L(null, "幽州涿郡涿县，有一人姓刘名备，字玄德，乃汉室宗亲，以织席贩履为生。"),
                 L("刘备", "听说城里贴出了招兵的榜文……去城门口看看吧。"),
-                L(null, "【操作】方向键移动，Z/空格/回车 确认，X/Esc 取消。"),
             });
         }
 
@@ -140,20 +143,18 @@ namespace LiuBeiRPG.World
                     "T.......==.........T",
                     "TTTTTTT.==.TTTTTTTTT",
                     "TTTTTTTT==TTTTTTTTTT",
-                    "TTTTTTTTg=TTTTTTTTTT",
+                    "TTTTTTTTggTTTTTTTTTT",   // 城门两格都能出城
                 }
             };
             // 底图只有地面；房子、树、桃园、灯笼都在物件清单里（Resources/Map/Decor/zhuoxian_ground.txt）
             m.DecorFile = "zhuoxian_ground";
             // 活气：刘备家烟囱冒炊烟，院子里有鸡，草地上有麻雀和蝴蝶
             m.Emitters.Add(new MapEmitter("smoke", 4.3f, 0.95f));
-            // 路人：城里地方小，只放三个——扛锄头的农夫、挎篮的村妇、挑担的货郎（引擎里还有巡街兵 shouwei、老人 laoren、小孩 xiaohai 可换）
+            // 路人：城里地方小，只放两个——扛锄头的农夫、挎篮的村妇（引擎里还有 shangren、巡街兵 shouwei、老人 laoren、小孩 xiaohai 可换）
             m.Npcs.Add(Walker("farmer", "农夫", "cunmin_nan", "chutou", 1.0f, new[] { 10, 7, 12, 7, 12, 9, 10, 9 }, new[] { 9, 13 },   // 家在城外，天黑出城。客栈门口只有第 10 行一条窄道，(13,10) 是唯一拐进去的口子，别在那儿逛
                 "听说东边村子被黄巾烧了，造孽啊。", "今年收成不好，地里的苗都旱蔫了。", "我那块地就在城外，如今都不敢去了。"));
             m.Npcs.Add(Walker("villager_f", "村妇", "cunmin_nv", null, 1.0f, new[] { 7, 2, 11, 2, 11, 4, 7, 4 }, new[] { 3, 10 },   // 住酒馆后头
                 "桃园的花开得正好，城东北那片。", "我家那口子也想去投军，我拦不住啊。", "米价又涨了，这日子……"));
-            m.Npcs.Add(Walker("peddler", "货郎", "huolang", "biandan", 0.9f, new[] { 9, 7, 9, 11 }, new[] { 16, 10 },   // 外地货郎，住客栈
-                "针头线脑、胭脂水粉——客官瞧一瞧！", "从中山过来，路上全是逃难的。", "张世平张掌柜？那可是做大买卖的。"));
             m.Critters.Add(new CritterSpawn("chicken", 3));
             m.Critters.Add(new CritterSpawn("sparrow", 3));
             m.Critters.Add(new CritterSpawn("butterfly", 2));
@@ -180,7 +181,8 @@ namespace LiuBeiRPG.World
 
             m.Npcs.Add(new Npc
             {
-                Id = "guanyu", Name = "关羽", Glyph = "关", Color = GameDatabase.GuanYu.Color, X = 5, Y = 10,
+                // 站在酒馆右边的空地上；别放第 10 行，酒馆门口到大路只有第 10 行这一条道，站上去就把人堵在门口
+                Id = "guanyu", Name = "关羽", Glyph = "关", Color = GameDatabase.GuanYu.Color, X = 7, Y = 9,
                 Visible = () => flags.Has(F_MetZhangFei) && !flags.Has(F_Oath),
                 Talk = () =>
                 {
@@ -200,7 +202,7 @@ namespace LiuBeiRPG.World
 
             m.Npcs.Add(new Npc
             {
-                Id = "shangren", Name = "张世平", Glyph = "商", Color = "#e0e0e0", X = 11, Y = 5,
+                Id = "shangren", Name = "张世平", Glyph = "商", Skin = "huolang", Weapon = "biandan", Color = "#e0e0e0", X = 11, Y = 5,
                 Visible = () => flags.Has(F_Oath),
                 Talk = () =>
                 {
@@ -225,10 +227,10 @@ namespace LiuBeiRPG.World
 
             m.Npcs.Add(new Npc
             {
-                Id = "shouwei", Name = "守卫", Glyph = "卫", Color = "#c0c0c0", X = 8, Y = 13, Weapon = "qiang",
+                // 站在城门里头的路中间、正对城门，贴着门楼；路有两格宽，(9,11) 还能过。结义前往城门走由他拦下（见下面 OnStep）
+                Id = "shouwei", Name = "守卫", Glyph = "卫", Color = "#c0c0c0", X = 8, Y = 11, Weapon = "qiang",
                 Visible = () => !flags.Has(F_Oath),
-                Talk = () => Say(L("守卫", "城外黄巾贼出没，你一个人出去就是送死。"),
-                                 L("守卫", "要出城，先招些人马再说吧。"))
+                Talk = GuardStop
             });
 
             // ---- 支线：黄巾换赏。客栈左边的空地上站着县衙差役（出城那条路一眼看得到，四周没有树挡着），收黄巾，十条换赏钱和一副皮甲 ----
@@ -244,6 +246,7 @@ namespace LiuBeiRPG.World
             m.Npcs.Add(new Npc
             {
                 Id = "yayi", Name = "县衙差役", Glyph = "差", Skin = "shouwei", X = 12, Y = 9,
+                Visible = () => flags.Has(F_Oath),   // 结义之后才在城里贴赏格
                 Mark = () => qHuangJin.Stage() == 0 ? "！" : qHuangJin.Stage() == 2 ? "？" : null,
                 Talk = () =>
                 {
@@ -283,6 +286,7 @@ namespace LiuBeiRPG.World
                 // 城门：出城
                 if (m.At(x, y) == 'g')
                 {
+                    if (!flags.Has(F_Oath)) { GuardStop(); return true; }
                     host.Warp(Field, 8, 1);
                     return true;
                 }
@@ -291,7 +295,7 @@ namespace LiuBeiRPG.World
             m.OnTouch = (x, y) =>
             {
                 // 桃园石桌：走到桌前往上撞，三结义
-                if ((x == 15 || x == 16) && y == 3 && flags.Has(F_MetGuanYu) && !flags.Has(F_Oath)) { Oath(); return true; }
+                if ((x == 15 || x == 16) && y == 3 && flags.Has(F_MetGuanYu) && !flags.Has(F_Oath)) { Oath(x, y + 1); return true; }
                 // 刘备家门（门口 (5,4) 往上撞）
                 if (x == 5 && y == 3) { host.Warp(Home, 6, 7); return true; }
                 // 酒馆门（门口 (3,10) 往上撞）
@@ -495,7 +499,7 @@ namespace LiuBeiRPG.World
                     "HHHHHHHHH",
                 }
             };
-            m.Npcs.Add(Chest(F_ChestInn, 3, 4, 80));   // 矮桌右边、靠栏杆的地板上，不挡第 3 行的走道
+            m.Npcs.Add(Chest(F_ChestInn, 3, 3, 80));   // 矮桌右边的地板上（第 4 行画面上是栏杆）；第 3、4 行都能走，绕得过去
 
             m.OnTouch = (x, y) =>
             {
@@ -531,12 +535,13 @@ namespace LiuBeiRPG.World
             host.Warp(Field, 8, 1);
         }
 
-        void Oath()
+        void Oath(int x, int y)
         {
             var flags = host.Flags;
             flags.Set(F_Oath);
             host.Party.Add(new General(GameDatabase.GuanYu));
             host.Party.Add(new General(GameDatabase.ZhangFei));
+            host.PlaceFollowers("back", x - 1, y, x + 1, y);   // 三人并排站在石桌前（刘备在中间），一起对着桌子拜
             host.Party.Gold += 100;
             host.Party.FullRestore();
             host.SetHour(8f);

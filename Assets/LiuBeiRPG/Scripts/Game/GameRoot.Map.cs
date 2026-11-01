@@ -40,6 +40,19 @@ namespace LiuBeiRPG.Game
 
         static string FacingOf(int dx, int dy) { return dx > 0 ? "side" : dx < 0 ? "left" : dy < 0 ? "back" : "front"; }
 
+        public void PlaceFollowers(string facing, params int[] cells)
+        {
+            trail.Clear();
+            prevTrail.Clear();
+            for (int i = 0; i * 2 + 1 < cells.Length && i + 1 < party.Members.Count; i++)
+            {
+                var c = new Vector2Int(cells[i * 2], cells[i * 2 + 1]);
+                trail.Add(c); prevTrail.Add(c);
+                var fp = Puppet(party.Members[i + 1].Def.Id);
+                if (fp != null) fp.Facing = facing;
+            }
+        }
+
         public void Warp(MapData target, int x, int y)
         {
             bool newMap = map != target;
@@ -138,6 +151,7 @@ namespace LiuBeiRPG.Game
             px = nx; py = ny;
             lastStepTime = Time.time;
             stepsSinceBattle++;
+            Sfx.Play(StepSfx(map.At(nx, ny)), 0.5f, 0.12f);
 
             var currentMap = map;
             if (map.OnStep != null && map.OnStep(px, py)) return;
@@ -150,6 +164,13 @@ namespace LiuBeiRPG.Game
                 stepsSinceBattle = 0;
                 StartBattle(GameDatabase.RandomEncounter(rng, party.Level, map.EnemyLevel), false, null);
             }
+        }
+
+        /// <summary>脚步声：室内（没有飘落物）踩木地板，屋外草地沙沙响，其余（道路、城门）是土路。</summary>
+        string StepSfx(char tile)
+        {
+            if (map.Weather == null) return "step_wood";
+            return tile == '.' || tile == ',' || tile == 'f' ? "step_grass" : "step";
         }
 
         void Investigate()
@@ -183,6 +204,7 @@ namespace LiuBeiRPG.Game
             {
                 var go = new GameObject("Main Camera") { tag = "MainCamera" };
                 cam = go.AddComponent<Camera>();
+                go.AddComponent<AudioListener>();
                 DontDestroyOnLoad(go);
             }
             cam.orthographic = true;
@@ -287,13 +309,13 @@ namespace LiuBeiRPG.Game
                     float s = n.Size;
                     add(new Vector2(n.X, n.Y), () =>
                     {
-                        var rect = new Rect(npc.X + 0.5f - s / 2, npc.Y + 0.95f - s, s, s);
+                        var rect = ChestRect(npc, new Rect(npc.X + 0.5f - s / 2, npc.Y + 0.95f - s, s, s));
                         World.Quad(ShadowTex(), new Rect(npc.X + 0.5f - s * 0.4f, npc.Y + 0.95f - s * 0.12f, s * 0.8f, s * 0.2f), Color.white);
                         float o = 1.5f / tile;
                         for (int i = 0; i < 8; i++)
                         {
                             float ang = i * Mathf.PI / 4f;
-                            World.Quad(tex, new Rect(rect.x + Mathf.Cos(ang) * o, rect.y + Mathf.Sin(ang) * o, s, s), new Color(0.14f, 0.09f, 0.06f));
+                            World.Quad(tex, new Rect(rect.x + Mathf.Cos(ang) * o, rect.y + Mathf.Sin(ang) * o, rect.width, rect.height), new Color(0.14f, 0.09f, 0.06f));
                         }
                         World.Quad(tex, rect, Color.white);
                     });
@@ -424,6 +446,8 @@ namespace LiuBeiRPG.Game
                 GUI.color = old;
                 Gfx.FxText(new Rect(c.x - 30, c.y - 24, 60, 48), mk, 34, mk == "？" ? new Color(0.55f, 1f, 0.5f) : new Color(1f, 0.82f, 0.25f));
             }
+
+            DrawChestFx();
 
             // 格子线（G 键开关）：极淡的纯黑，只把底下压暗一点，草地上偏深绿、土路上偏深黄，自动随背景
             if (showGrid)

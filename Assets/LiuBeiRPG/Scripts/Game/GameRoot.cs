@@ -60,6 +60,7 @@ namespace LiuBeiRPG.Game
             dialogueQueue.Clear();
             currentDialogue = null;
             choice = null;
+            chestFx = null;
             chapter = new Chapter1(this);
             mode = Mode.Map;
             chapter.Begin();
@@ -77,11 +78,14 @@ namespace LiuBeiRPG.Game
         void Update()
         {
             UpdateTouch();
+            UpdateChest();
             if (mode == Mode.Map) UpdateMap();
             if (mode == Mode.Map && map != null) { UpdateCamera(); if (!UiBusy) UpdateWalkers(); }
             TickLeader();
             foreach (var p in portraits.Values) p.Tick(Time.deltaTime);
             if (mode == Mode.Battle) UpdateBattle();
+            // 结算时让出来给胜利号角；全军覆没、通关静音
+            Sfx.Music(mode == Mode.Title ? "bgm_title" : mode == Mode.Map ? "bgm_map" : mode == Mode.Battle && bstate != BState.Result ? "bgm_battle" : null);
         }
 
         void OnApplicationFocus(bool focus)
@@ -131,6 +135,8 @@ namespace LiuBeiRPG.Game
 
         void OnKey(InputKey key)
         {
+            if (ChestPlaying) return;   // 开箱演出时不吃按键
+            KeySfx(key);
             // 对话 / 选项优先
             if (choice != null) { ChoiceKey(key); return; }
             if (currentDialogue != null)
@@ -160,6 +166,17 @@ namespace LiuBeiRPG.Game
             }
         }
 
+        /// <summary>界面里按键的声：挪光标 / 确认 / 取消。地图上走路、调查和战报播放时不响。</summary>
+        void KeySfx(InputKey key)
+        {
+            if (currentDialogue != null) return;   // 对话翻页的声在 AdvanceDialogue
+            bool ui = choice != null || menuPage != 0 || mode != Mode.Map && !(mode == Mode.Battle && bstate == BState.Playing);
+            if (!ui) return;
+            if (key == InputKey.Confirm) Sfx.Play("ui_tap");
+            else if (key == InputKey.Cancel) Sfx.Play("ui_cancel");
+            else Sfx.Play("ui_move", 0.6f);
+        }
+
         // ---------------- 对话框 ----------------
 
         class DialogueBatch
@@ -182,6 +199,7 @@ namespace LiuBeiRPG.Game
 
         void AdvanceDialogue()
         {
+            Sfx.Play("dialog_next", 0.35f);   // 翻页：比按钮清脆、轻
             var b = currentDialogue;
             // 还在打字：先把这句一次显示完
             if (shownLine == b.Lines[b.Index] && Revealed(shownLine) < shownLine.Text.Length) { lineStart = -1000f; return; }
@@ -191,7 +209,7 @@ namespace LiuBeiRPG.Game
             if (b.OnDone != null) b.OnDone();
         }
 
-        bool UiBusy { get { return currentDialogue != null || choice != null || menuPage != 0; } }
+        bool UiBusy { get { return currentDialogue != null || choice != null || menuPage != 0 || ChestPlaying; } }
 
         /// <summary>对话框贴在安全区域底部居中（最宽 900），横竖屏使用不同高度。</summary>
         static Rect DialogRect
@@ -214,7 +232,7 @@ namespace LiuBeiRPG.Game
         static readonly Dictionary<string, string> PortraitIds = new Dictionary<string, string>
         {
             { "刘备", "liubei" }, { "关羽", "guanyu" }, { "张飞", "zhangfei" }, { "母亲", "muqin" },
-            { "守卫", "shouwei" }, { "张世平", "shangren" }, { "店小二", "xiaoer" }, { "逃难村民", "nanmin" },
+            { "守卫", "shouwei" }, { "张世平", "huolang" }, { "店小二", "xiaoer" }, { "逃难村民", "nanmin" },
         };
         readonly Dictionary<string, PuppetActor> portraits = new Dictionary<string, PuppetActor>();
         DialogueLine shownLine;   // 正在打字的那句
@@ -275,7 +293,7 @@ namespace LiuBeiRPG.Game
                 Gfx.Text(new Rect(r.xMax - 40, r.yMax - 34 + Mathf.Sin(Time.time * 6f) * 3f, 20, 20), "▼", 14, Accent);
 
             // 刚弹出的一瞬不吃点击：手机上按“确认”键调查时，同一下触摸会再被当成点了对话框
-            if (Gfx.Clicked(r) && Time.time - dialogueOpenTime > 0.1f) AdvanceDialogue();
+            if (Gfx.Clicked(r, null) && Time.time - dialogueOpenTime > 0.1f) AdvanceDialogue();
         }
 
         // ---------------- 选项框 ----------------
@@ -314,15 +332,17 @@ namespace LiuBeiRPG.Game
             if (choice == null) return;
             var r = DialogRect;
             Gfx.Modern(r);
-            Gfx.Text(new Rect(r.x + 20, r.y + 16, r.width - 40, 60), choice.Question, 20, Color.white, TextAnchor.UpperLeft, true);
+            Gfx.Text(new Rect(r.x + 32, r.y + 24, r.width - 64, r.height - 40), choice.Question, Gfx.Portrait ? 24 : 22, Color.white, TextAnchor.UpperLeft, true);
 
-            var box = new Rect(r.xMax - 200, r.y - 30 - choice.Options.Length * 34, 200, 20 + choice.Options.Length * 34);
+            // 选项框大一点，手机上好点
+            const float rowH = 54f;
+            var box = new Rect(r.xMax - 280, r.y - 16 - 24 - choice.Options.Length * rowH, 280, 24 + choice.Options.Length * rowH);
             Gfx.Modern(box);
             for (int i = 0; i < choice.Options.Length; i++)
             {
-                var ir = new Rect(box.x + 12, box.y + 10 + i * 34, box.width - 24, 32);
+                var ir = new Rect(box.x + 14, box.y + 12 + i * rowH, box.width - 28, rowH - 4);
                 bool sel = i == choice.Selected;
-                Gfx.MenuRow(ir, choice.Options[i], 20, sel, sel ? Accent : Color.white);
+                Gfx.MenuRow(ir, choice.Options[i], 26, sel, sel ? Accent : Color.white);
                 if (Gfx.Clicked(ir)) { PickChoice(i); return; }
             }
         }
@@ -334,6 +354,7 @@ namespace LiuBeiRPG.Game
             clearTitle = title;
             clearHint = nextHint;
             mode = Mode.ChapterClear;
+            Sfx.Play("chapter_clear");
         }
 
         string clearTitle, clearHint;
@@ -369,6 +390,7 @@ namespace LiuBeiRPG.Game
             DrawMenuPage();
             if (choice != null) DrawChoice();
             else DrawDialogue();
+            DrawNote();
 
             // 转场：切地图、进出战斗时从黑场淡入
             float fade = 1f - (Time.time - fadeStart) / FadeTime;
@@ -396,9 +418,6 @@ namespace LiuBeiRPG.Game
             }
             Gfx.Text(new Rect(0, oy + 140, Gfx.VW, 70), "汉末英雄传", 56, new Color(1f, 0.85f, 0.35f), TextAnchor.MiddleCenter);
             Gfx.Text(new Rect(0, oy + 215, Gfx.VW, 40), "—— 刘备篇 · 第一章 桃园结义 ——", 24, Color.white, TextAnchor.MiddleCenter);
-            if (Mathf.Repeat(Time.time, 1.2f) < 0.8f)
-                Gfx.Text(new Rect(0, oy + 360, Gfx.VW, 30), "按 Z / 空格 / 回车 开始", 20, new Color(1, 1, 1, 0.85f), TextAnchor.MiddleCenter);
-            Gfx.Text(new Rect(0, oy + 500, Gfx.VW, 24), "Unity Demo · 方向键移动 · Z 确认 · X 取消", 14, new Color(1, 1, 1, 0.5f), TextAnchor.MiddleCenter);
             if (Gfx.Clicked(new Rect(0, 0, Gfx.VW, Gfx.VH))) NewGame();
         }
 

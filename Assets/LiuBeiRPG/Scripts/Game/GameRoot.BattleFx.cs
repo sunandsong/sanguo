@@ -50,6 +50,7 @@ namespace LiuBeiRPG.Game
         void SprayBlood(Vector2 at, float footY, float dir, bool crit, bool kill)
         {
             float power = kill ? 1.6f : crit ? 1.3f : 1f;
+            Sfx.Play("blood", 0.45f * power, 0.1f);   // 噗：喷得越猛越响
             int n = Mathf.RoundToInt(70 * power * power);
             for (int i = 0; i < n; i++)
             {
@@ -351,6 +352,7 @@ namespace LiuBeiRPG.Game
             if (downAt.ContainsKey(g)) return;
             downAt[g] = Time.time;
             bool enemy = battle.Enemies.Contains(g);
+            Sfx.Play(enemy ? "enemy_fly" : "ally_down");
             PuppetActorOf(g, a => { if (enemy) { a.Hit(); a.Play("hit", true); } else a.Play("down", true); });
         }
 
@@ -477,7 +479,7 @@ namespace LiuBeiRPG.Game
                     RotatedImage(seal, Texture2D.whiteTexture, -8f, new Color(0.72f, 0.1f, 0.08f, 0.92f * a));
                     if (brushFont == null) brushFont = Resources.Load<Font>("Fonts/BrushFont");
                     var st = new GUIStyle(GUI.skin.label) { font = brushFont, fontSize = Mathf.RoundToInt(38 * ss), alignment = TextAnchor.MiddleCenter, clipping = TextClipping.Overflow };
-                    st.normal.textColor = new Color(1f, 0.92f, 0.8f, a);
+                    Gfx.SetColor(st, new Color(1f, 0.92f, 0.8f, a));
                     GUI.Label(seal, "战", st);
                 }
             }

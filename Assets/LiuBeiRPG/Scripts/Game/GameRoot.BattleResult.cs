@@ -48,6 +48,23 @@ namespace LiuBeiRPG.Game
 
         const float LootShowAt = 0.55f, LootPopGap = 0.13f, LootHold = 0.85f, LootScatter = 0.25f, LootFly = 0.4f;
 
+        /// <summary>排一轮奖励的时间：一个个亮相 → 停一下 → 一起碎开 → 小图标排着队飞进去。返回最后一个落进去的时刻。</summary>
+        static float ScheduleLoot(List<ResultLoot> round, float start)
+        {
+            int n = round.Count;
+            float flyAt = start + (n - 1) * LootPopGap + LootHold, end = start;
+            for (int i = 0; i < n; i++)
+            {
+                var l = round[i];
+                l.Slot = i; l.RowN = n; l.ShowAt = start; l.FlyAt = flyAt;
+                l.PopAt = start + i * LootPopGap;
+                l.Land = new float[l.Bits];
+                for (int j = 0; j < l.Bits; j++) l.Land[j] = flyAt + LootScatter + i * 0.08f + j * 0.045f + LootFly;
+                end = Mathf.Max(end, l.Land[l.Bits - 1]);
+            }
+            return end;
+        }
+
         void ShowResult()
         {
             resultFromLevel = party.Level;
@@ -87,15 +104,9 @@ namespace LiuBeiRPG.Game
                 int n = round.Count;
                 if (n == 0) continue;
                 if (round == spells && up) start = Mathf.Max(start, resultLevelEnd + 0.2f);
-                float flyAt = start + (n - 1) * LootPopGap + LootHold, end = start;
-                for (int i = 0; i < n; i++)
+                float end = ScheduleLoot(round, start);
+                foreach (var l in round)
                 {
-                    var l = round[i];
-                    l.Slot = i; l.RowN = n; l.ShowAt = start; l.FlyAt = flyAt;
-                    l.PopAt = start + i * LootPopGap;
-                    l.Land = new float[l.Bits];
-                    for (int j = 0; j < l.Bits; j++) l.Land[j] = flyAt + LootScatter + i * 0.08f + j * 0.045f + LootFly;
-                    end = Mathf.Max(end, l.Land[l.Bits - 1]);
                     if (l.Icon == "Art/icon_exp")
                     {
                         resultLevelAt = l.Land[l.Bits - 1] + LevelCharge;
@@ -108,7 +119,36 @@ namespace LiuBeiRPG.Game
             }
 
             resultAt = Time.time;
+            resultSfxT = 0;
             bstate = BState.Result;
+            Sfx.Play("victory");
+        }
+
+        float resultSfxT;
+
+        /// <summary>结算演出的声，在 Update 里按时间轴跨过就响：奖励亮相、小图标落进格子、升级蓄力 / 爆开。点一下快进跳过去的不补。</summary>
+        void ResultSfx()
+        {
+            float t = Time.time - resultAt, prev = resultSfxT;
+            resultSfxT = t;
+            if (t < prev || t - prev > 0.25f) return;
+            LootSfx(resultLoot, prev, t);
+            bool up = party.Level > resultFromLevel;
+            if (up && Crossed(resultLevelAt - LevelCharge, prev, t)) Sfx.Play("level_charge");
+            if (up && Crossed(resultLevelAt, prev, t)) Sfx.Play("level_up");
+        }
+
+        static bool Crossed(float at, float prev, float t) { return prev < at && t >= at; }
+
+        /// <summary>奖励（结算、开箱共用）：亮相一下 pop，每个小图标落进去响一下——金钱是铜钱声，经验是清脆的叮，物品是收进袋子。</summary>
+        static void LootSfx(List<ResultLoot> loot, float prev, float t)
+        {
+            foreach (var l in loot)
+            {
+                if (Crossed(l.PopAt, prev, t)) Sfx.Play("loot_pop", 0.8f, 0.05f);
+                foreach (var a in l.Land)
+                    if (Crossed(a, prev, t)) Sfx.Play(l.Icon == "Art/icon_gold" ? "coin" : l.Icon == "Art/icon_exp" ? "exp_tick" : "item_get", 0.7f, 0.08f);
+            }
         }
 
         void CloseResult()
@@ -304,7 +344,7 @@ namespace LiuBeiRPG.Game
             }
 
             if (up) DrawLevelUp(r, title, bar, lu);
-            DrawLootShow(r, t);
+            DrawLootShow(resultLoot, r.center + new Vector2(0, -10), r.width, t);
 
             float end = Mathf.Max(resultDoneAt, up ? resultLevelEnd : 0);
             GUI.matrix = baseM;
@@ -321,24 +361,25 @@ namespace LiuBeiRPG.Game
         ///   亮相：压暗，奖励在面板中间一排，一个个先炸出白金光团 + 光芒 + 星星，图标放大落定，背后一圈光晕、底下写数量；
         ///   碎开：大图标缩没，原地迸出一群小图标散开；
         ///   飞入：小图标排着队沿弧线加速飞向各自格子，落进去的那一下闪颗星。
+        /// 开宝箱也用这一套（GameRoot.Chest）。center 是亮相那一排的中心，width 是那一排最宽多宽。
         /// </summary>
-        void DrawLootShow(Rect panel, float t)
+        void DrawLootShow(List<ResultLoot> loot, Vector2 center, float width, float t)
         {
-            int n = resultLoot.Count;
-            if (n == 0 || t < LootShowAt) return;
+            int n = loot.Count;
+            if (n == 0 || t < loot[0].ShowAt) return;
             var old = GUI.color;
 
             // 压暗：每轮亮相时压，碎开后慢慢放亮
             float dim = 0;
-            foreach (var l in resultLoot)
+            foreach (var l in loot)
                 dim = Mathf.Max(dim, Mathf.Clamp01((t - l.ShowAt) / 0.15f) * (1 - Mathf.Clamp01((t - l.FlyAt) / 0.3f)));
             if (dim > 0) Gfx.Rect(new Rect(0, 0, Gfx.VW, Gfx.VH), new Color(0, 0, 0, 0.6f * dim));
 
             for (int i = 0; i < n; i++)
             {
-                var l = resultLoot[i];
-                float gap = Mathf.Min(210, (panel.width - 20) / l.RowN), flyAt = l.FlyAt;
-                var c = new Vector2(panel.center.x + (l.Slot - (l.RowN - 1) * 0.5f) * gap, panel.center.y - 10);
+                var l = loot[i];
+                float gap = Mathf.Min(210, (width - 20) / l.RowN), flyAt = l.FlyAt;
+                var c = new Vector2(center.x + (l.Slot - (l.RowN - 1) * 0.5f) * gap, center.y);
                 float k = t - l.PopAt;
                 if (k < 0) continue;
 
@@ -467,13 +508,13 @@ namespace LiuBeiRPG.Game
         {
             if (brushFont == null) brushFont = Resources.Load<Font>("Fonts/BrushFont");
             var st = new GUIStyle(GUI.skin.label) { font = brushFont, fontSize = size, alignment = TextAnchor.MiddleCenter, clipping = TextClipping.Overflow };
-            st.normal.textColor = new Color(0.2f, 0.08f, 0.02f, 0.9f);
+            Gfx.SetColor(st, new Color(0.2f, 0.08f, 0.02f, 0.9f));
             for (int i = 0; i < 8; i++)
             {
                 float ang = i * Mathf.PI / 4f;
                 GUI.Label(new Rect(r.x + Mathf.Cos(ang) * 3, r.y + Mathf.Sin(ang) * 3, r.width, r.height), text, st);
             }
-            st.normal.textColor = color;
+            Gfx.SetColor(st, color);
             GUI.Label(r, text, st);
         }
 
