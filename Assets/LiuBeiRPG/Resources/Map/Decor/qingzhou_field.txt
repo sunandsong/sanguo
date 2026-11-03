@@ -1,0 +1,53 @@
+# 青州郊外（30×20）：底图只有地面，树、围营、芦苇都在这里
+# 树（树干那格在 Chapter2.cs 的 Rows 里是 T）
+tree_autumn_2 5.60 1.90 1.88 plant amp=0.03
+tree_green_0 23.60 1.90 1.54 plant amp=0.03
+tree_green_2 2.60 2.90 1.83 plant amp=0.03
+tree_autumn_1 26.60 2.90 1.82 plant amp=0.03
+tree_autumn_2 4.60 4.90 1.62 plant amp=0.03
+tree_autumn_0 24.60 4.90 1.58 plant amp=0.03
+tree_green_0 7.60 7.90 1.73 plant amp=0.03
+tree_green_1 26.60 7.90 1.9 plant amp=0.03
+tree_autumn_1 2.60 10.90 1.66 plant amp=0.03
+tree_autumn_1 21.60 10.90 1.84 plant amp=0.03
+tree_autumn_0 5.60 14.90 1.88 plant amp=0.03
+tree_autumn_0 12.60 15.90 1.87 plant amp=0.03
+tree_autumn_0 18.60 15.90 1.61 plant amp=0.03
+tree_green_0 24.60 16.90 1.85 plant amp=0.03
+tree_green_2 2.60 17.90 1.69 plant amp=0.03
+# 水塘边的芦苇
+reed_0 5.30 10.80 0.7 plant amp=0.05
+reed_1 9.70 11.10 0.7 plant amp=0.05
+cattail_0 4.80 12.20 0.6 plant amp=0.05
+reed_0 9.40 12.60 0.7 plant amp=0.05
+# 草丛
+bush_1 3.50 6.60 0.9 plant amp=0.04
+bush_1 12.40 9.50 0.9 plant amp=0.04
+bush_1 19.60 12.70 0.9 plant amp=0.04
+bush_2 8.30 16.40 0.9 plant amp=0.04
+bush_0 25.40 10.60 0.9 plant amp=0.04
+bush_2 22.50 17.30 0.9 plant amp=0.04
+bush_0 4.50 2.80 0.9 plant amp=0.04
+# 城下两座黄巾围营（C 那四格），左右各一座；篝火在 Chapter2.cs 的 Emitters 里
+palisade 10.00 3.00 1.3
+palisade 11.25 2.98 1.3
+flag_big 10.70 3.01 1.3 flag amp=0.05 lift=0.6
+tent_big 10.40 4.75 2.1
+tent_small 11.75 4.55 1.4
+firepit 10.60 4.60 0.9
+fire 10.60 4.61 0.7 frames=6 fps=10 lift=0.21
+weapon_rack 11.90 3.75 0.85
+crates 9.70 4.9 1.0
+palisade 20.00 3.00 1.3
+palisade 21.25 2.98 1.3
+flag_big 20.70 3.01 1.3 flag amp=0.05 lift=0.6
+tent_big 20.40 4.75 2.1
+tent_small 21.75 4.55 1.4
+firepit 20.60 4.60 0.9
+fire 20.60 4.61 0.7 frames=6 fps=10 lift=0.21
+weapon_rack 21.90 3.75 0.85
+crates 19.70 4.9 1.0
+# 官道口的路牌、城门口两面旗
+signpost 16.50 18.60 0.7
+flag_small 14.40 1.20 0.8 flag amp=0.05 lift=0.9
+flag_small 16.60 1.20 0.8 flag amp=0.05 lift=0.9

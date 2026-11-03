@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using LiuBeiRPG.Core;
+using LiuBeiRPG.World;
 using Puppet;
 
 namespace LiuBeiRPG.Game
@@ -50,7 +51,13 @@ namespace LiuBeiRPG.Game
             { "hjtm", "podao" },          // 黄巾头目：朴刀
             { "chengyuanzhi", "zhanchui" },   // 程远志：战锤
             { "dengmao", "huaji" },       // 邓茂：画戟
+            { "zhangbao", "fuchen" },     // 张宝：拂尘（九节杖掉给玩家）
+            { "zhangliang", "langya" },   // 张梁：狼牙棒
+            { "zhangjiao", "jiujie" },    // 张角：九节杖
         };
+
+        /// <summary>武将用哪个骨骼角色：填了 Skin 用 Skin（还没做专属角色的先借现成的），黄巾兵叫 huangjin，其余同 Id。</summary>
+        static string SkinOf(GeneralDef d) { return d.Skin ?? (d.Id == "hjb" ? "huangjin" : d.Id); }
 
         PuppetActor BattlePuppet(General g, bool enemy)
         {
@@ -58,7 +65,7 @@ namespace LiuBeiRPG.Game
             if (battlePuppets.TryGetValue(g, out a)) return a;
             try
             {
-                a = PuppetActor.Load(g.Def.Id == "hjb" ? "huangjin" : g.Def.Id);   // 黄巾兵的骨骼角色叫 huangjin
+                a = PuppetActor.Load(SkinOf(g.Def));
                 a.Facing = enemy ? "side" : "left";
                 string w;
                 if (!enemy) a.Equip(g.WeaponSprite);   // 和地图上一样
@@ -181,10 +188,13 @@ namespace LiuBeiRPG.Game
             log.Add(e.Text);
             if (log.Count > 50) log.RemoveAt(0);
             Vector2 mp;
-            if (e.Target != null && e.SoldiersAfter < 0 && slots.TryGetValue(e.Target, out mp))   // 法术被识破
+            if (e.Popup != null && e.Target != null && slots.TryGetValue(e.Target, out mp))   // 识破 / 无效 / 状态名
             {
-                popups.Add(new Popup { text = "识破", at = mp + new Vector2(0, -HeightOf(e.Target) - 20f), born = Time.time });
-                Sfx.Play("resist");
+                var td = TacticDb.Get(e.Fx);
+                bool good = e.Popup == "怒" || e.Popup == "解" || td != null && td.Kind == TacticKind.Status && !TacticDef.IsBad(td.Buff);   // 增益绿字，不良状态 / 识破红字
+                bool miss = e.Popup == "识破" || e.Popup == "无效" || e.Popup == "失手";
+                popups.Add(new Popup { text = e.Popup, at = mp + new Vector2(0, -HeightOf(e.Target) - 20f), born = Time.time, heal = good });
+                Sfx.Play(miss ? "resist" : good ? "rally" : "hex_thunder", 0.7f);
             }
             if (e.Target == null || e.SoldiersAfter < 0) return;
             int before;
@@ -302,6 +312,7 @@ namespace LiuBeiRPG.Game
         void EndBattle()
         {
             if (battleExit >= 0f) return;
+            if (battle.Result == BattleResult.Victory) Sfx.Play("dialog_next", 0.9f);   // 结算面板收起：一声清脆的
             battleExit = Time.time;
             bstate = BState.Playing;
             foreach (var kv in battlePuppets)
@@ -312,12 +323,39 @@ namespace LiuBeiRPG.Game
         {
             var victory = battle.Result == BattleResult.Victory;
             var cb = onBattleVictory;
+            var recruit = battle.Recruit;
             battle = null;
             onBattleVictory = null;
-            foreach (var m in party.Members) m.Defending = false;
+            foreach (var m in party.Members) m.ClearBuffs();
             mode = Mode.Map;
             stepsSinceBattle = 0;
             if (victory && cb != null) cb();
+            if (victory && recruit != null) OfferRecruit(recruit.Def);
+        }
+
+        /// <summary>战后收编（吞食天地）：败将愿意归降就问收不收；要名马的先问送不送马。</summary>
+        void OfferRecruit(GeneralDef def)
+        {
+            Action join = () =>
+            {
+                party.Add(new General(def));
+                bool front = party.Members.Count <= Party.MaxMembers && party.Members[party.Members.Count - 1].Def == def;
+                Say(new List<DialogueLine> { new DialogueLine(null, def.Name + " 加入队伍！" + (front ? "" : "队伍已满，先在后方待命。（城里 菜单 → 队伍 可调整）")) });
+            };
+            var horse = ItemDb.Get(def.WantsHorse);
+            if (horse != null)
+                Choose(def.Name + "：「久闻将军有" + horse.Name + "。若肯相赠，我便归降。」送吗？", new[] { "送" + horse.Name, "不送" }, i =>
+                {
+                    if (i != 0) { Say(new List<DialogueLine> { new DialogueLine(def.Name, "那便告辞了。") }); return; }
+                    party.Items.Remove(horse.Id);
+                    join();
+                });
+            else
+                Choose(def.Name + " 愿意归降，收入麾下吗？", new[] { "收下", "放他走" }, i =>
+                {
+                    if (i == 0) join();
+                    else Say(new List<DialogueLine> { new DialogueLine(def.Name, "多谢将军不杀之恩！") });
+                });
         }
 
         // ---------------- 菜单 ----------------
@@ -346,17 +384,16 @@ namespace LiuBeiRPG.Game
             if (autoBattle) AutoCommands();
         }
 
-        /// <summary>法术只有军师能放（吞食天地）。</summary>
-        bool CanCast { get { return CurrentCommander != null && CurrentCommander == party.Strategist && party.AvailableTactics().Count > 0; } }
+        /// <summary>法术只有军师能放（吞食天地）；军师在后备时，上场的人都能替他下令。</summary>
+        bool CanCast { get { return CurrentCommander != null && battle.CanCast(CurrentCommander) && party.AvailableTactics().Count > 0; } }
 
-        /// <summary>战斗里能用的物品：药、还魂丹、酒，扣掉这一回合前面的人已经点了要用的，用完的不列。</summary>
+        /// <summary>撤退令只有队长（上场第一人）能下。</summary>
+        bool IsLeader { get { return CurrentCommander != null && CurrentCommander == battle.Leader; } }
+
+        /// <summary>战斗里能用的物品：药、还魂丹、酒、怒气丸、狼烟，扣掉这一回合前面的人已经点了要用的，用完的不列。</summary>
         List<string> BattleItems()
         {
-            return party.Slots().Where(id =>
-            {
-                var k = ItemDb.Get(id).Kind;
-                return (k == ItemKind.Heal || k == ItemKind.Revive || k == ItemKind.Wine) && ItemLeft(id) > 0;
-            }).ToList();
+            return party.Slots().Where(id => ItemDb.Get(id).InBattle && ItemLeft(id) > 0).ToList();
         }
 
         int ItemLeft(string id) { return party.Count(id) - commands.Count(c => c.ItemId == id); }
@@ -458,7 +495,8 @@ namespace LiuBeiRPG.Game
                     else if (index == 1 && CanCast) { bstate = BState.TacticMenu; menuIndex = 0; }
                     else if (index == 2) { pending.Type = CommandType.Defend; CommitCommand(pending); Sfx.Play("defend"); }
                     else if (index == 3 && BattleItems().Count > 0) { bstate = BState.ItemMenu; menuIndex = 0; }
-                    else if (index == 4) { commands.Clear(); reservedTP = 0; Play(battle.TryRetreat(), AfterTurn); }   // 任何一人选逃跑，全军撤退
+                    else if (index == 4 && IsLeader) { commands.Clear(); reservedTP = 0; Play(battle.TryRetreat(), AfterTurn); }   // 队长下令，全军撤退
+                    else if (index == 4) { log.Add("只有队长 " + battle.Leader.Name + " 能下撤退令。"); Sfx.Play("ui_error"); }
                     else if (index == 5) { autoBattle = true; AutoCommands(); }   // 这一位和后面的人都自动攻击
                     break;
 
@@ -477,7 +515,8 @@ namespace LiuBeiRPG.Game
                 {
                     pending.Type = CommandType.Item;
                     pending.ItemId = BattleItems()[index];
-                    if (ItemDb.Get(pending.ItemId).Kind == ItemKind.Wine) { CommitCommand(pending); break; }   // 酒是全军的法力，不用选人
+                    var it = ItemDb.Get(pending.ItemId);
+                    if (it.Kind == ItemKind.Wine || it.Effect == "flee") { CommitCommand(pending); break; }   // 酒是全军的法力、狼烟是全军撤退，不用选人
                     if (AllyTargets().Count == 0) { log.Add("没有败走的人。"); Sfx.Play("ui_error"); return; }
                     bstate = BState.TargetAlly;
                     menuIndex = 0;
@@ -549,6 +588,7 @@ namespace LiuBeiRPG.Game
                 Gfx.Text(ar, "自动中 · 点击取消", 16, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
                 if (Gfx.Clicked(ar)) autoBattle = false;
             }
+            DrawScoutButton();
             DrawScreenFlash();
             DrawBattleTitle();
             if (bstate == BState.Result) DrawResult();
@@ -686,6 +726,8 @@ namespace LiuBeiRPG.Game
                 if (enemy && dead) continue;   // 倒下的敌人不再画兵力条、名字
                 // 头顶兵力条、脚下名字
                 Gfx.Bar(new Rect(foot.x - 30, foot.y - h - 12, 60, 6), (float)shown / g.MaxSoldiers, c);
+                DrawBuffTags(g, new Vector2(foot.x, foot.y - h - 30));
+                if (scouting && enemy) DrawScoutInfo(g, foot, h);
                 var nameCol = g == cur ? Color.yellow : enemy ? new Color(0.55f, 1f, 0.55f) : Color.white;
                 Gfx.FxText(new Rect(foot.x - 80, foot.y + 2, 160, 26), (g.Def.IsBoss ? "首领 " : "") + g.Name, 19, nameCol, TextAnchor.UpperCenter);
 
@@ -708,6 +750,55 @@ namespace LiuBeiRPG.Game
             if (bstate == BState.Playing && Gfx.Clicked(new Rect(bx, top, bw, bottom - top))) StepPlayback();   // 点战场快进
         }
 
+        // ---------------- 侦察 / 状态 ----------------
+
+        // 侦察（吞食天地队长的指令）：下令阶段左上角一个牌子，点开在每个敌人旁边列出兵力和四维；不占回合。Tab 键也能开关
+        bool scouting;
+
+        void DrawScoutButton()
+        {
+            if (bstate == BState.Playing || bstate == BState.Result || battleExit >= 0f) { scouting = false; return; }
+            var r = new Rect(bx + 12, by + 12, 96, 34);
+            Gfx.RoundRect(r, scouting ? Accent : new Color(0, 0, 0, 0.5f));
+            Gfx.Text(r, "侦察", 17, scouting ? new Color(0.12f, 0.09f, 0.04f) : Color.white, TextAnchor.MiddleCenter, false, !scouting);
+            if (Gfx.Clicked(r)) scouting = !scouting;
+        }
+
+        /// <summary>侦察到的敌情：兵力、攻 / 防 / 谋 / 速，贴在敌人左边。</summary>
+        void DrawScoutInfo(General g, Vector2 foot, float h)
+        {
+            var r = new Rect(foot.x - 36 - 122, foot.y - h * 0.9f, 118, 88);
+            if (r.x < bx + 4) r.x = foot.x + 40;   // 竖屏左边放不下就贴右边
+            Gfx.RoundRect(r, new Color(0, 0, 0, 0.6f));
+            var dim = new Color(1, 1, 1, 0.6f);
+            Gfx.Text(new Rect(r.x + 8, r.y + 4, r.width - 16, 20), "兵 " + g.Soldiers + "/" + g.MaxSoldiers, 14, Color.white);
+            Gfx.Text(new Rect(r.x + 8, r.y + 24, 52, 20), "攻 " + g.Atk, 14, dim);
+            Gfx.Text(new Rect(r.x + 60, r.y + 24, 52, 20), "防 " + g.Defense, 14, dim);
+            Gfx.Text(new Rect(r.x + 8, r.y + 44, 52, 20), "谋 " + g.Mou, 14, dim);
+            Gfx.Text(new Rect(r.x + 60, r.y + 44, 52, 20), "速 " + g.Su, 14, dim);
+            Gfx.Text(new Rect(r.x + 8, r.y + 64, r.width - 16, 20), g.Def.Tactics.Length > 0 ? "会法术" : "不会法术", 13, dim);
+        }
+
+        // 状态在兵力条上面挂一排小牌：不良状态红底，增益金底
+        static readonly Dictionary<Buff, string> BuffTag = new Dictionary<Buff, string>
+        {
+            { Buff.Stun, "乱" }, { Buff.Confuse, "间" }, { Buff.Silence, "封" }, { Buff.Disarm, "疑" }, { Buff.Rally, "奋" }, { Buff.Fury, "怒" },
+            { Buff.Guard, "守" }, { Buff.Haste, "疾" }, { Buff.Twice, "连" }, { Buff.First, "先" }, { Buff.FireWard, "水" }, { Buff.WaterWard, "堤" },
+        };
+
+        void DrawBuffTags(General g, Vector2 center)
+        {
+            if (g.Buffs.Count == 0) return;
+            float x = center.x - g.Buffs.Count * 11f;
+            foreach (var b in g.Buffs.Keys)
+            {
+                var r = new Rect(x, center.y - 10, 20, 20);
+                Gfx.RoundRect(r, TacticDef.IsBad(b) ? new Color(0.75f, 0.2f, 0.15f, 0.9f) : new Color(0.85f, 0.65f, 0.2f, 0.9f));
+                Gfx.Text(r, BuffTag[b], 13, Color.white, TextAnchor.MiddleCenter, false, false);
+                x += 22f;
+            }
+        }
+
         /// <summary>底部一排指令按钮，只在要玩家选的时候出现；选目标直接在战场上点人或按方向键。播战报时换成战报。</summary>
         void DrawCommandPanel()
         {
@@ -715,7 +806,7 @@ namespace LiuBeiRPG.Game
             var enabled = new List<bool>();
             switch (bstate)
             {
-                case BState.GeneralMenu: items.AddRange(GeneralItems); enabled.AddRange(new[] { true, CanCast, true, BattleItems().Count > 0, true, true }); break;
+                case BState.GeneralMenu: items.AddRange(GeneralItems); enabled.AddRange(new[] { true, CanCast, true, BattleItems().Count > 0, IsLeader, true }); break;
                 case BState.ConfirmTarget: items.AddRange(ConfirmItems); break;
                 case BState.TacticMenu: DrawTacticCards(); return;
                 case BState.ItemMenu: DrawItemCards(); return;

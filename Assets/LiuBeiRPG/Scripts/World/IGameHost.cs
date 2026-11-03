@@ -11,6 +11,9 @@ namespace LiuBeiRPG.World
         public DialogueLine(string speaker, string text) { Speaker = speaker; Text = text; }
     }
 
+    /// <summary>一座城的落地点（飞鸟扇用）。</summary>
+    public class TownSpot { public MapData Map; public int X, Y; }
+
     /// <summary>剧情进度标记，例如 "oath"（已结义）。存档时只要存这个集合即可。</summary>
     public class StoryFlags
     {
@@ -34,6 +37,7 @@ namespace LiuBeiRPG.World
         void StartBattle(List<General> enemies, bool isBoss, Action onVictory = null);
         void Warp(MapData map, int x, int y);
         void ChapterClear(string title, string nextHint);
+        bool StartChapter(int number);   // 开始第 n 章（队伍、物品、flags 都带着）；没有这一章返回 false 回标题
         void OpenShop(string[] goods);   // 商店：goods 是卖的物品 Id
         void PlaceFollowers(string facing, params int[] cells);   // 剧情站位：队友（第 2、3… 人）站到 x0,y0, x1,y1…，朝 facing（front/back/left/side）
         void SetHour(float hour);        // 跳到某个时辰（住店睡一晚 → 清晨）

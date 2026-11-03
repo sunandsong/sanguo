@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace LiuBeiRPG.Core
 {
@@ -27,6 +28,9 @@ namespace LiuBeiRPG.Core
         public string Junk;             // 必掉的材料杂物 Id（每个敌人掉一件），null = 不掉
         public string[] Tactics = new string[0]; // 敌方可用的策略
         public bool IsBoss;
+        public bool Recruitable;        // 打败后有机会劝降入队（剧情敌将、首领不能收）
+        public string WantsHorse;       // 要先送这匹名马（物品 Id）才肯来
+        public string Skin;             // 骨骼角色名，不填就用 Id（还没做专属角色的先借一个现成的）
     }
 
     /// <summary>战斗中/队伍中的武将实例。</summary>
@@ -39,12 +43,29 @@ namespace LiuBeiRPG.Core
         public const int GearSlots = 6;
         public string[] Gear = new string[GearSlots];   // 装备的物品 Id，按 ItemDef.Slot 放，null = 空着
         public bool Defending;
+        // 战斗里的状态 → 还剩几个回合。施加时多记 1，当前这个没打完的回合不算
+        public readonly Dictionary<Buff, int> Buffs = new Dictionary<Buff, int>();
+
+        public bool Has(Buff b) { return Buffs.ContainsKey(b); }
+        public void AddBuff(Buff b, int turns) { Buffs[b] = turns + 1; }
+        public void ClearBuffs() { Buffs.Clear(); Defending = false; }
+
+        /// <summary>回合结束：每个状态少一回合，到 0 就消。返回这回合消掉的。</summary>
+        public List<Buff> TickBuffs()
+        {
+            var gone = new List<Buff>();
+            foreach (var b in new List<Buff>(Buffs.Keys))
+                if (--Buffs[b] <= 0) { Buffs.Remove(b); gone.Add(b); }
+            return gone;
+        }
 
         public string Name { get { return Def.Name; } }
-        public int Wu { get { return Def.Wu + Bonus(ItemKind.Weapon); } }
-        public int Zhi { get { return Def.Zhi + Bonus(ItemKind.Trinket); } }
+        // 法器（九节杖、羽扇）占武器格但加的是智力
+        public int Wu { get { return Def.Wu + (MagicWeapon ? 0 : Bonus(ItemKind.Weapon)); } }
+        public int Zhi { get { return Def.Zhi + Bonus(ItemKind.Trinket) + (MagicWeapon ? Bonus(ItemKind.Weapon) : 0); } }
+        bool MagicWeapon { get { var w = ItemDb.Get(Weapon); return w != null && w.Magic; } }
         public int Tong { get { return Def.Tong + Bonus(ItemKind.Helmet) + Bonus(ItemKind.Armor); } }
-        public int Su { get { return Def.Su + Bonus(ItemKind.Boots) + Bonus(ItemKind.Horse); } }
+        public int Su { get { return Def.Su + Bonus(ItemKind.Boots) + Bonus(ItemKind.Horse) + (Has(Buff.Haste) ? 30 : 0); } }
         // 战斗里真正用的：四维（含装备）× 成长倍率。速度不乘，只管出手顺序
         public int Atk { get { return Grown(Wu); } }
         public int Defense { get { return Grown(Tong); } }

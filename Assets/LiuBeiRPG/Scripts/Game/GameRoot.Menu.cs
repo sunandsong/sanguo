@@ -11,13 +11,13 @@ namespace LiuBeiRPG.Game
     /// </summary>
     public partial class GameRoot
     {
-        int menuPage;      // 0 = 没开，PageMain = 菜单首页，PagePeople = 人物（装备 + 物品），PageShop = 商店
+        int menuPage;      // 0 = 没开，PageMain = 菜单首页，PagePeople = 人物（装备 + 物品），PageShop = 商店，PageTeam = 队伍
         int pageMember;    // 人物页正在看第几个人
         int mainSel;       // 首页选中的按钮
-        const int PagePeople = 1, PageMain = 3, PageShop = 4;
+        const int PagePeople = 1, PageMain = 3, PageShop = 4, PageTeam = 5;
         const int ItemSlots = Party.BagSlots;
 
-        static readonly string[] MenuItems = { "人物 · 物品 · 法术", "存档", "读档" };
+        static readonly string[] MenuItems = { "人物 · 物品 · 法术", "队伍", "存档", "读档" };
 
         void OpenMenu() { menuPage = PageMain; }
 
@@ -27,14 +27,19 @@ namespace LiuBeiRPG.Game
             switch (i)
             {
                 case 0: menuPage = PagePeople; pageMember = 0; itemSel = 0; tacticSel = 0; break;
-                case 1: SaveGame(); break;                  // 提示框叠在菜单上，看完还在菜单
-                case 2: menuPage = 0; LoadGame(); break;
+                case 1:   // 队伍调整只在城里（吞食天地的营地）：没有遇敌的地图都算城里
+                    if (map.EncounterRate > 0) { Note("要回到城里才能调整队伍。", null); Sfx.Play("ui_error"); }
+                    else { menuPage = PageTeam; teamSel = 0; }
+                    break;
+                case 2: menuPage = 0; SaveGame(); break;   // 选档的选项框弹在地图上，选完回到菜单
+                case 3: menuPage = 0; LoadGame(); break;
             }
         }
 
         void MenuPageKey(InputKey key)
         {
             if (menuPage == PageShop) { ShopKey(key); return; }
+            if (menuPage == PageTeam) { TeamKey(key); return; }
             if (menuPage == PageMain)
             {
                 if (key == InputKey.Up) mainSel = (mainSel + MenuItems.Length - 1) % MenuItems.Length;
@@ -54,8 +59,8 @@ namespace LiuBeiRPG.Game
             else if (key == InputKey.Cancel) CloseMenuPage();
         }
 
-        /// <summary>人物页返回首页，首页、商店返回地图。</summary>
-        void CloseMenuPage() { menuPage = menuPage == PagePeople ? PageMain : 0; }
+        /// <summary>人物页、队伍页返回首页，首页、商店返回地图。</summary>
+        void CloseMenuPage() { menuPage = menuPage == PagePeople || menuPage == PageTeam ? PageMain : 0; }
 
         void DrawMenuPage()
         {
@@ -63,7 +68,95 @@ namespace LiuBeiRPG.Game
             Gfx.Rect(new Rect(0, 0, Gfx.VW, Gfx.VH), new Color(0, 0, 0, 0.45f));
             if (menuPage == PageMain) DrawMainPage();
             else if (menuPage == PageShop) DrawShop();
+            else if (menuPage == PageTeam) DrawTeamPage();
             else DrawPeoplePage();
+        }
+
+        // ---------------- 队伍（吞食天地的营地 + 队形）：换顺序、调去后方、调回 ----------------
+
+        int teamSel;   // 0～Members.Count-1 是队里的，往后是后方的
+
+        void TeamKey(InputKey key)
+        {
+            int n = party.Members.Count + party.Stored.Count, m = party.Members.Count;
+            if (key == InputKey.Up) teamSel = (teamSel + n - 1) % n;
+            else if (key == InputKey.Down) teamSel = (teamSel + 1) % n;
+            else if (key == InputKey.Left && teamSel > 0 && teamSel < m) { party.Swap(teamSel, -1); teamSel--; }
+            else if (key == InputKey.Right && teamSel < m - 1) { party.Swap(teamSel, 1); teamSel++; }
+            else if (key == InputKey.Confirm) TeamToggle(teamSel);
+            else if (key == InputKey.Cancel) CloseMenuPage();
+        }
+
+        /// <summary>队里的调去后方，后方的调回队里。</summary>
+        void TeamToggle(int i)
+        {
+            int m = party.Members.Count;
+            string msg = i < m ? party.ToStored(party.Members[i]) : party.ToMembers(party.Stored[i - m]);
+            if (msg != null) { Note(msg, null); Sfx.Play("ui_error"); return; }
+            Sfx.Play("equip");
+            teamSel = Mathf.Clamp(teamSel, 0, party.Members.Count + party.Stored.Count - 1);
+        }
+
+        void DrawTeamPage()
+        {
+            float w = Mathf.Min(Gfx.VW - 24, 720), h = Mathf.Min(Gfx.VH - 24, 600);
+            var r = PagePanel(w, h);
+            if (menuPage != PageTeam) return;
+            var fighters = party.Fighters();
+            Gfx.Text(new Rect(r.x + 24, r.y + 18, w - 160, 30), "队伍　上场 " + fighters.Count + " 人 · 队里 " + party.Members.Count + "/" + Party.MaxMembers + " · 后方 " + party.Stored.Count, 20, Accent);
+            Gfx.Text(new Rect(r.x + 24, r.y + 50, w - 48, 24), "活着的前 5 人上场，后面的后备；超过 5 人时军师留在后备供法术。前面有人败走，下一仗后备顶上。", 14, new Color(1, 1, 1, 0.55f));
+            float x0 = r.x + 24, rw = w - 48, y = r.y + 84;
+            const float rowH = 46;
+            int m = party.Members.Count;
+            for (int i = 0; i < m + party.Stored.Count; i++)
+            {
+                bool stored = i >= m;
+                if (i == m)
+                {
+                    Gfx.Text(new Rect(x0, y + 6, rw, 24), "后方待命", 16, new Color(1, 1, 1, 0.5f));
+                    y += 34;
+                    if (party.Stored.Count == 0) { Gfx.Text(new Rect(x0, y, rw, 24), "（没有人。收编的武将队伍满了会放在这里）", 14, new Color(1, 1, 1, 0.35f)); break; }
+                }
+                var g = stored ? party.Stored[i - m] : party.Members[i];
+                var row = new Rect(x0, y, rw, rowH - 6);
+                if (row.yMax > r.yMax - 12) break;
+                bool sel = i == teamSel;
+                Gfx.RoundRect(row, new Color(1, 1, 1, sel ? 0.14f : 0.06f));
+                if (sel) Gfx.Frame(row, Accent, 2);
+                if (Gfx.Clicked(row)) teamSel = i;
+                // 身份牌：军师金色，上场白色，后备灰色
+                string role = stored ? "后方" : g == party.Strategist ? "军师" : fighters.Contains(g) ? "上场" : "后备";
+                var tag = new Rect(row.x + 10, row.y + 8, 52, 24);
+                Gfx.RoundRect(tag, role == "军师" ? new Color(Accent.r, Accent.g, Accent.b, 0.25f) : new Color(1, 1, 1, 0.08f));
+                Gfx.Text(tag, role, 14, role == "军师" ? Accent : role == "上场" ? Color.white : new Color(1, 1, 1, 0.5f), TextAnchor.MiddleCenter, false, false);
+                Gfx.Text(new Rect(row.x + 72, row.y + 6, 110, 28), g.Name, 19, g.Alive ? Color.white : Color.gray);
+                Gfx.Bar(new Rect(row.x + 184, row.y + 16, Mathf.Max(60, rw - 184 - 250), 8), g.MaxSoldiers > 0 ? (float)g.Soldiers / g.MaxSoldiers : 0, new Color(0.4f, 0.8f, 0.45f));
+                // 右边的按钮：队里的 ▲ ▼ 后方，后方的 调回
+                float bxr = row.xMax - 8;
+                if (!stored)
+                {
+                    var toBack = new Rect(bxr - 64, row.y + 5, 60, 30);
+                    var down = new Rect(toBack.x - 44, row.y + 5, 38, 30);
+                    var up = new Rect(down.x - 44, row.y + 5, 38, 30);
+                    Gfx.RoundRect(up, new Color(1, 1, 1, i > 0 ? 0.12f : 0.04f));
+                    Gfx.RoundRect(down, new Color(1, 1, 1, i < m - 1 ? 0.12f : 0.04f));
+                    Gfx.RoundRect(toBack, new Color(1, 1, 1, 0.12f));
+                    Gfx.Text(up, "▲", 15, new Color(1, 1, 1, i > 0 ? 1f : 0.3f), TextAnchor.MiddleCenter, false, false);
+                    Gfx.Text(down, "▼", 15, new Color(1, 1, 1, i < m - 1 ? 1f : 0.3f), TextAnchor.MiddleCenter, false, false);
+                    Gfx.Text(toBack, "后方", 15, Color.white, TextAnchor.MiddleCenter, false, false);
+                    if (i > 0 && Gfx.Clicked(up)) { party.Swap(i, -1); teamSel = i - 1; return; }
+                    if (i < m - 1 && Gfx.Clicked(down)) { party.Swap(i, 1); teamSel = i + 1; return; }
+                    if (Gfx.Clicked(toBack)) { TeamToggle(i); return; }
+                }
+                else
+                {
+                    var back = new Rect(bxr - 64, row.y + 5, 60, 30);
+                    Gfx.RoundRect(back, Accent);
+                    Gfx.Text(back, "调回", 15, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
+                    if (Gfx.Clicked(back)) { TeamToggle(i); return; }
+                }
+                y += rowH;
+            }
         }
 
         /// <summary>面板 + 右上角“返回”。点返回关掉这一页。</summary>
@@ -273,13 +366,37 @@ namespace LiuBeiRPG.Game
         void UseItem()
         {
             string id = party.Slots()[itemSel];
+            var item = ItemDb.Get(id);
+            if (item.Kind == ItemKind.Tool && !item.InBattle) { UseTool(item); return; }
             int had = party.Count(id);
             string msg = party.UseItem(id, party.Members[pageMember]);
             if (msg != null) Note(msg, null);
-            var item = ItemDb.Get(id);
             if (item.Equip) Sfx.Play("equip");
             else if (party.Count(id) >= had) Sfx.Play("ui_error");   // 没用掉：满了 / 救不回来
             else Sfx.Play(item.Kind == ItemKind.Book ? "learn" : item.Kind == ItemKind.Wine ? "drink" : "heal");
+        }
+
+        /// <summary>地图上用的道具：烟幕弹一段路不遇敌；飞鸟扇飞回去过的城。</summary>
+        void UseTool(ItemDef item)
+        {
+            if (item.Effect == "smoke")
+            {
+                party.Items.Remove(item.Id);
+                smokeSteps = 60;
+                Sfx.Play("cast");
+                Note("撒下烟幕，接下来 60 步不会遇敌。", null);
+                return;
+            }
+            var towns = chapter.Towns.FindAll(t => flags.Has("visited_" + t.Map.Id));
+            if (towns.Count == 0) { Note("还没有去过的城池。", null); Sfx.Play("ui_error"); return; }
+            var names = new List<string>(towns.ConvertAll(t => t.Map.Name)) { "取消" };
+            menuPage = 0;
+            Choose("飞往哪座城？", names.ToArray(), i =>
+            {
+                if (i >= towns.Count) { OpenMenu(); return; }
+                party.Items.Remove(item.Id);
+                Warp(towns[i].Map, towns[i].X, towns[i].Y);
+            });
         }
 
         /// <summary>行囊按钮上的字：兵书研读、药酒使用、装备给左边这个人换上。</summary>
@@ -466,73 +583,100 @@ namespace LiuBeiRPG.Game
             Gfx.Text(r, noteText, 19, new Color(1, 1, 1, a), TextAnchor.MiddleCenter, false, false);
         }
 
-        // ---------------- 存档：一个档位，JSON 放 PlayerPrefs ----------------
-        // 剧情进度全在 flags 里，地图上的人和东西都由 flags 推出来，所以只存队伍（含物品、兵书学的策略）+ flags + 位置
+        // ---------------- 存档：三个档位（吞食天地），JSON 放 PlayerPrefs ----------------
+        // 剧情进度全在 flags 里，地图上的人和东西都由 flags 推出来，所以只存队伍（含物品、学会的法术）+ flags + 位置
 
-        const string SaveKey = "save1";
+        const int SaveSlots = 3;
+        static string SaveKey(int slot) { return "save" + (slot + 1); }   // 第一档就是以前的 save1，老档照读
+        static readonly string[] SlotNames = { "一", "二", "三" };
 
         [Serializable] class SavedMember { public string Id; public string[] Gear; public int Soldiers, WeaponBonus; }   // WeaponBonus：旧档用
         [Serializable] class SaveData
         {
-            public int Level, Exp, Gold, TP;
+            public int Level, Exp, Gold, TP, TPBonus, Chapter;
             public string Strategist;
-            public List<SavedMember> Members = new List<SavedMember>();
+            public List<SavedMember> Members = new List<SavedMember>(), Stored = new List<SavedMember>();
             public List<string> Flags = new List<string>();
             public List<string> Items = new List<string>(), Learned = new List<string>();
             public string Map;
             public int X, Y;
         }
 
-        MapData[] ChapterMaps { get { return new[] { chapter.Town, chapter.Field, chapter.Home, chapter.Tavern, chapter.Inn, chapter.Inn2F }; } }
+
+        /// <summary>选档框的选项：「第一档：Lv 3　涿县」，空的写「空」，最后一项取消。</summary>
+        string[] SlotLabels()
+        {
+            var labels = new string[SaveSlots + 1];
+            for (int i = 0; i < SaveSlots; i++)
+            {
+                var json = PlayerPrefs.GetString(SaveKey(i), "");
+                var sd = json == "" ? null : JsonUtility.FromJson<SaveData>(json);
+                labels[i] = "第" + SlotNames[i] + "档：" + (sd == null ? "空" : "Lv " + sd.Level + "　" + sd.Map);
+            }
+            labels[SaveSlots] = "取消";
+            return labels;
+        }
 
         void SaveGame()
         {
-            var s = new SaveData { Level = party.Level, Exp = party.Exp, Gold = party.Gold, TP = party.TP, Map = map.Name, X = px, Y = py };
-            foreach (var m in party.Members)
-                s.Members.Add(new SavedMember { Id = m.Def.Id, Soldiers = m.Soldiers, Gear = m.Gear });
-            s.Flags.AddRange(flags.All);
-            s.Items.AddRange(party.Items);
-            s.Learned.AddRange(party.Learned);
-            s.Strategist = party.Strategist.Def.Id;
-            PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(s));
-            PlayerPrefs.Save();
-            Note("已存档。", null);
-            Sfx.Play("save");
+            Choose("存到哪一档？", SlotLabels(), slot =>
+            {
+                OpenMenu();
+                if (slot >= SaveSlots) return;
+                var s = new SaveData { Level = party.Level, Exp = party.Exp, Gold = party.Gold, TP = party.TP, TPBonus = party.TPBonus, Chapter = chapter.Number, Map = map.Name, X = px, Y = py };
+                foreach (var m in party.Members) s.Members.Add(new SavedMember { Id = m.Def.Id, Soldiers = m.Soldiers, Gear = m.Gear });
+                foreach (var m in party.Stored) s.Stored.Add(new SavedMember { Id = m.Def.Id, Soldiers = m.Soldiers, Gear = m.Gear });
+                s.Flags.AddRange(flags.All);
+                s.Items.AddRange(party.Items);
+                s.Learned.AddRange(party.Learned);
+                s.Strategist = party.Strategist.Def.Id;
+                PlayerPrefs.SetString(SaveKey(slot), JsonUtility.ToJson(s));
+                PlayerPrefs.Save();
+                Note("已存到第" + SlotNames[slot] + "档。", null);
+                Sfx.Play("save");
+            });
         }
 
         static string Nul(string s) { return string.IsNullOrEmpty(s) ? null : s; }   // JsonUtility 把 null 存成 ""
 
+        General LoadMember(SavedMember sm, int level)
+        {
+            var def = GameDatabase.Find(sm.Id);
+            if (def == null) return null;
+            var g = new General(def, level);   // 兵力上限按等级算，不读存档（旧档是按老公式存的）
+            g.Soldiers = Math.Min(sm.Soldiers, g.MaxSoldiers);
+            for (int i = 0; sm.Gear != null && i < sm.Gear.Length && i < General.GearSlots; i++) g.Gear[i] = Nul(sm.Gear[i]);
+            if (g.Weapon == null && sm.WeaponBonus > 0) g.Weapon = ItemDb.Signature(def.Id).Id;   // 旧档：受赠过就是专属兵器
+            return g;
+        }
+
         void LoadGame()
         {
-            var json = PlayerPrefs.GetString(SaveKey, "");
-            if (json == "") { Note("还没有存档。", OpenMenu); return; }
-            var s = JsonUtility.FromJson<SaveData>(json);
-            party = new Party { Level = s.Level, Exp = s.Exp, Gold = s.Gold };
-            party.RecalcMaxTP();
-            party.TP = s.TP;
-            party.Items.AddRange(s.Items);
-            party.Learned.UnionWith(s.Learned);
-            var defs = new[] { GameDatabase.LiuBei, GameDatabase.GuanYu, GameDatabase.ZhangFei };
-            foreach (var sm in s.Members)
+            Choose("读哪一档？", SlotLabels(), slot =>
             {
-                var def = Array.Find(defs, d => d.Id == sm.Id);
-                if (def == null) continue;
-                var g = new General(def, s.Level);   // 兵力上限按等级算，不读存档（旧档是按老公式存的）
-                g.Soldiers = Math.Min(sm.Soldiers, g.MaxSoldiers);
-                for (int i = 0; sm.Gear != null && i < sm.Gear.Length && i < General.GearSlots; i++) g.Gear[i] = Nul(sm.Gear[i]);
-                if (g.Weapon == null && sm.WeaponBonus > 0) g.Weapon = ItemDb.Signature(def.Id).Id;   // 旧档：受赠过就是专属兵器
-                party.Members.Add(g);
-            }
-            party.Strategist = party.Members.Find(m => m.Def.Id == s.Strategist);
-            flags = new StoryFlags();
-            foreach (var f in s.Flags) flags.Set(f);
-            dialogueQueue.Clear();
-            currentDialogue = null;
-            choice = null;
-            chapter = new Chapter1(this);
-            var target = Array.Find(ChapterMaps, m => m.Name == s.Map) ?? chapter.Town;
-            Warp(target, s.X, s.Y);
-            Note("读档完成。", null);
+                if (slot >= SaveSlots) { OpenMenu(); return; }
+                var json = PlayerPrefs.GetString(SaveKey(slot), "");
+                if (json == "") { Note("第" + SlotNames[slot] + "档是空的。", OpenMenu); return; }
+                var s = JsonUtility.FromJson<SaveData>(json);
+                party = new Party { Level = s.Level, Exp = s.Exp, Gold = s.Gold, TPBonus = s.TPBonus };
+                party.Items.AddRange(s.Items);
+                party.Learned.UnionWith(s.Learned);
+                foreach (var sm in s.Members) { var g = LoadMember(sm, s.Level); if (g != null) party.Members.Add(g); }
+                foreach (var sm in s.Stored) { var g = LoadMember(sm, s.Level); if (g != null) party.Stored.Add(g); }
+                party.Strategist = party.Members.Find(m => m.Def.Id == s.Strategist);
+                party.LearnByLevel();   // 旧档：升级学的法术以前不记在 Learned 里，这里补上
+                party.RecalcMaxTP();
+                party.TP = Math.Min(s.TP, party.MaxTP);
+                flags = new StoryFlags();
+                foreach (var f in s.Flags) flags.Set(f);
+                dialogueQueue.Clear();
+                currentDialogue = null;
+                smokeSteps = 0;
+                chapter = MakeChapter(Math.Max(1, s.Chapter)) ?? new Chapter1(this);   // 老档没记章数，就是第一章
+                var target = Array.Find(chapter.Maps, m => m.Name == s.Map) ?? chapter.Maps[0];
+                Warp(target, s.X, s.Y);
+                Note("读档完成。", null);
+            });
         }
     }
 }

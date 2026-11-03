@@ -13,15 +13,18 @@ namespace LiuBeiRPG.Core
         public const int MaxFighters = 5, MaxMembers = 7;
 
         public readonly List<General> Members = new List<General>();
-        public readonly List<General> Stored = new List<General>();   // ponytail: 后方武将还没有换人的地方，等有第 8 个人入队时做营地
+        public readonly List<General> Stored = new List<General>();   // 后方待命的武将，城里「队伍」页调进调出
         General strategist;
         public int Level = 1;
         public int Exp;
         public int Gold;
         public int TP;       // 策略点
         public int MaxTP;
+        public int TPBonus;  // 每学一个新法术法力上限随机 +3～5（吞食天地），累计在这里
         public readonly List<string> Items = new List<string>();        // 物品 Id，一格一个
-        public readonly HashSet<string> Learned = new HashSet<string>(); // 读兵书学会的策略 Id
+        public readonly HashSet<string> Learned = new HashSet<string>(); // 学会的法术 Id（升级学的、读兵书学的都在）
+
+        static readonly Random learnRng = new Random();
 
         public Party()
         {
@@ -31,7 +34,7 @@ namespace LiuBeiRPG.Core
 
         public int ExpToNext { get { return 20 + Level * Level * 10; } }
 
-        public void RecalcMaxTP() { MaxTP = 8 + Level * 4; }
+        public void RecalcMaxTP() { MaxTP = 8 + Level * 4 + TPBonus; }
 
         public void Add(General g)
         {
@@ -40,14 +43,52 @@ namespace LiuBeiRPG.Core
             g.Soldiers = g.MaxSoldiers;
             if (Members.Count >= MaxMembers) Stored.Add(g);
             else Members.Add(g);
+            LearnByLevel();   // 来了个更聪明的军师，之前智力不够没学会的法术这时补上
         }
 
-        /// <summary>这一仗上场的：活着的前 5 个。</summary>
+        public bool Has(GeneralDef def)
+        {
+            foreach (var m in Members) if (m.Def == def) return true;
+            foreach (var m in Stored) if (m.Def == def) return true;
+            return false;
+        }
+
+        /// <summary>这一仗上场的：活着的前 5 个。队里超过 5 人时军师不上场，留在后备只供法术（吞食天地）。</summary>
         public List<General> Fighters()
         {
             var list = new List<General>();
-            foreach (var m in Members) if (m.Alive && list.Count < MaxFighters) list.Add(m);
+            bool benchStrategist = Members.Count > MaxFighters;
+            foreach (var m in Members)
+                if (m.Alive && list.Count < MaxFighters && !(benchStrategist && m == Strategist)) list.Add(m);
             return list;
+        }
+
+        // ---------------- 队伍调整（城里的「队伍」页） ----------------
+
+        /// <summary>前排 / 后备里换顺序：第 i 个和第 i+d 个对调。</summary>
+        public void Swap(int i, int d)
+        {
+            int j = i + d;
+            if (i < 0 || j < 0 || i >= Members.Count || j >= Members.Count) return;
+            var t = Members[i]; Members[i] = Members[j]; Members[j] = t;
+        }
+
+        /// <summary>调到后方。主公不能走，返回提示。</summary>
+        public string ToStored(General g)
+        {
+            if (g.Def.Id == "liubei") return "主公不能离队。";
+            if (Members.Count <= 1) return "队里不能没有人。";
+            Members.Remove(g);
+            Stored.Add(g);
+            return null;
+        }
+
+        public string ToMembers(General g)
+        {
+            if (Members.Count >= MaxMembers) return "队伍已满（最多 " + MaxMembers + " 人）。";
+            Stored.Remove(g);
+            Members.Add(g);
+            return null;
         }
 
         /// <summary>军师：没任命过（或任命的人离队了）就是队里智力最高的。</summary>
@@ -74,7 +115,8 @@ namespace LiuBeiRPG.Core
 
         public void FullRestore()
         {
-            foreach (var m in Members) { m.Soldiers = m.MaxSoldiers; m.Defending = false; }
+            foreach (var m in Members) { m.Soldiers = m.MaxSoldiers; m.ClearBuffs(); }
+            foreach (var m in Stored) m.Soldiers = m.MaxSoldiers;
             TP = MaxTP;
         }
 
@@ -97,18 +139,37 @@ namespace LiuBeiRPG.Core
                     msgs.Add(m.Name + " 兵力上限 +" + (m.MaxSoldiers - max) + "，攻击 +" + (m.Atk - atk));
                 }
                 foreach (var m in Stored) m.SetLevel(Level);
-                foreach (var t in TacticDb.All)
-                    if (t.PlayerUsable && !t.Book && t.MinLevel == Level)
-                        msgs.Add("习得法术「" + t.Name + "」！");
+                msgs.AddRange(LearnByLevel());
             }
             return msgs;
+        }
+
+        /// <summary>升级学法术（吞食天地）：等级到了、军师智力够就学会，每学一个法力上限 +3～5。返回「习得法术「X」！」提示。</summary>
+        public List<string> LearnByLevel()
+        {
+            var msgs = new List<string>();
+            var s = Strategist;
+            foreach (var t in TacticDb.All)
+                if (t.PlayerUsable && !t.Book && t.MinLevel <= Level && !Learned.Contains(t.Id) && s != null && s.Zhi >= t.MinZhi)
+                    msgs.Add(Learn(t));
+            return msgs;
+        }
+
+        string Learn(TacticDef t)
+        {
+            Learned.Add(t.Id);
+            int bonus = 3 + learnRng.Next(3);
+            TPBonus += bonus;
+            RecalcMaxTP();
+            TP += bonus;
+            return "习得法术「" + t.Name + "」！法力上限 +" + bonus;
         }
 
         public List<TacticDef> AvailableTactics()
         {
             var list = new List<TacticDef>();
             foreach (var t in TacticDb.All)
-                if (t.PlayerUsable && t.MinLevel <= Level && (!t.Book || Learned.Contains(t.Id))) list.Add(t);
+                if (t.PlayerUsable && Learned.Contains(t.Id)) list.Add(t);
             return list;
         }
 
@@ -140,9 +201,8 @@ namespace LiuBeiRPG.Core
                 case ItemKind.Book:
                     var t = TacticDb.Get(item.Teaches);
                     if (Learned.Contains(t.Id)) return "已经学会「" + t.Name + "」了。";
-                    Learned.Add(t.Id);
                     Items.Remove(id);
-                    return "研读《" + item.Name + "》，全军习得法术「" + t.Name + "」！";
+                    return "研读《" + item.Name + "》，全军" + Learn(t);
                 case ItemKind.Heal:
                     if (!who.Alive) return who.Name + "已经败走，药救不回来。";
                     if (who.Soldiers >= who.MaxSoldiers) return who.Name + "兵力是满的。";
@@ -161,6 +221,8 @@ namespace LiuBeiRPG.Core
                     return "喝了" + item.Name + "，法力恢复 " + (TP - before) + "。";
                 case ItemKind.Material:
                     return item.Name + "没什么用，拿去商店卖了吧。";
+                case ItemKind.Tool:   // 地图上的道具由 GameRoot.UseTool 处理，战斗里的由 BattleSystem.DoItem 处理；走到这儿就是用错地方
+                    return item.Name + (item.InBattle ? "只能在战斗中使用。" : "只能在地图上使用。");
                 default:
                     if (item.Owner != null && item.Owner != who.Def.Id) return item.Name + "是专属兵器，" + who.Name + "用不了。";
                     Items.Remove(id);

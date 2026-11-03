@@ -170,7 +170,7 @@ namespace LiuBeiRPG.Game
             if (resultFigs.TryGetValue(d.Id, out a)) return a;
             try
             {
-                a = PuppetActor.Load(d.Id == "hjb" ? "huangjin" : d.Id);
+                a = PuppetActor.Load(SkinOf(d));
                 string w;
                 if (EnemyWeapons.TryGetValue(d.Id, out w)) a.Equip(w);
                 a.Facing = "front";
@@ -353,7 +353,7 @@ namespace LiuBeiRPG.Game
                 Gfx.Rect(new Rect(0, 0, Gfx.VW, Gfx.VH), new Color(1, 0.97f, 0.88f, lu < 0.05f ? 0.9f : 0.9f * Mathf.Pow(1 - (lu - 0.05f) / 0.45f, 2)));
             // 全部演完停一会儿（看清数值）自己关，不用点
             if (t > end + AutoClose) { EndBattle(); return; }
-            if (Gfx.Clicked(new Rect(0, 0, Gfx.VW, Gfx.VH))) CloseResult();
+            if (Gfx.Clicked(new Rect(0, 0, Gfx.VW, Gfx.VH), null)) CloseResult();   // 关面板的声在 EndBattle，点快进不响
         }
 
         /// <summary>

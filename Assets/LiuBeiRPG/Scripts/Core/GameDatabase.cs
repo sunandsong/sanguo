@@ -50,8 +50,38 @@ namespace LiuBeiRPG.Core
         {
             Id = "hjtm", Name = "黄巾头目", Glyph = "头", Color = "#ff7a5c",
             Wu = 82, Zhi = 60, Tong = 70, Su = 55, BaseSoldiers = 380, ExpReward = 30, GoldReward = 30,
-            Drop = "caoyao", DropRate = 0.5, Junk = "huangjinbu"
+            Drop = "caoyao", DropRate = 0.5, Junk = "huangjinbu", Recruitable = true   // 打败后有机会劝降（吞食天地的战后收编）
         };
+
+        // ---------- 第二章：张角三兄弟（设计文档 4.3），简雍来投（4.1）。骨骼角色在 sanguoguge 的 Puppet 引擎里（2026-11-03 已做） ----------
+        public static readonly GeneralDef JianYong = new GeneralDef
+        {
+            Id = "jianyong", Name = "简雍", Glyph = "简", Color = "#c9d8f0",
+            Wu = 30, Zhi = 68, Tong = 35, Su = 50, BaseSoldiers = 200
+        };
+        public static readonly GeneralDef ZhangBao = new GeneralDef
+        {
+            Id = "zhangbao", Name = "张宝", Glyph = "宝", Color = "#d49cff",
+            Wu = 70, Zhi = 85, Tong = 60, Su = 60, BaseSoldiers = 1100, ExpReward = 276, GoldReward = 172, IsBoss = true,
+            Tactics = new[] { "yaoshu", "luolei" }, Drop = "jiujiezhang", DropRate = 1
+        };
+        public static readonly GeneralDef ZhangLiang = new GeneralDef
+        {
+            Id = "zhangliang", Name = "张梁", Glyph = "梁", Color = "#ffb060",
+            Wu = 92, Zhi = 50, Tong = 70, Su = 62, BaseSoldiers = 1400, ExpReward = 336, GoldReward = 210, IsBoss = true,
+            Drop = "langyabang", DropRate = 1
+        };
+        public static readonly GeneralDef ZhangJiao = new GeneralDef
+        {
+            Id = "zhangjiao", Name = "张角", Glyph = "角", Color = "#ffe066",
+            Wu = 60, Zhi = 95, Tong = 75, Su = 65, BaseSoldiers = 1400, ExpReward = 480, GoldReward = 300, IsBoss = true,
+            Tactics = new[] { "yaoshu", "luolei", "hunluan" }, Drop = "taipingyaoshu", DropRate = 1
+        };
+
+        /// <summary>所有武将表，读档按 Id 找人。</summary>
+        public static readonly GeneralDef[] All = { LiuBei, GuanYu, ZhangFei, JianYong, HuangJinBing, HuangJinLiShi, HuangJinShuShi, HuangJinTouMu, ChengYuanZhi, DengMao, ZhangBao, ZhangLiang, ZhangJiao };
+
+        public static GeneralDef Find(string id) { return Array.Find(All, d => d.Id == id); }
 
         // ---------- 第一章 Boss（演义第一回：刘关张初战程远志） ----------
         public static readonly GeneralDef ChengYuanZhi = new GeneralDef
@@ -67,12 +97,12 @@ namespace LiuBeiRPG.Core
             Drop = "pikui", DropRate = 1
         };
 
-        /// <summary>野外随机遇敌。等级越高越容易遇到头目。敌人等级 = 地图等级随机 ±1。</summary>
-        public static List<General> RandomEncounter(Random rng, int partyLevel, int mapLevel)
+        /// <summary>野外随机遇敌。mapPool 是这张图的兵种表（空 = 第一章的黄巾表，等级越高越容易遇到头目）。敌人等级 = 地图等级随机 ±1。</summary>
+        public static List<General> RandomEncounter(Random rng, int partyLevel, int mapLevel, GeneralDef[] mapPool = null)
         {
-            var pool = new List<GeneralDef> { HuangJinBing, HuangJinBing, HuangJinBing, HuangJinLiShi, HuangJinShuShi };
-            if (partyLevel >= 2) pool.Add(HuangJinLiShi);
-            if (partyLevel >= 3) pool.Add(HuangJinTouMu);
+            var pool = mapPool != null ? new List<GeneralDef>(mapPool) : new List<GeneralDef> { HuangJinBing, HuangJinBing, HuangJinBing, HuangJinLiShi, HuangJinShuShi };
+            if (mapPool == null && partyLevel >= 2) pool.Add(HuangJinLiShi);
+            if (mapPool == null && partyLevel >= 3) pool.Add(HuangJinTouMu);
 
             int count = 1 + rng.Next(partyLevel >= 2 ? 5 : 3);   // 和吞食天地一样最多 5 队：1级 1~3 队，2级起 1~5 队
             var list = new List<General>();
@@ -90,6 +120,21 @@ namespace LiuBeiRPG.Core
                 new General(HuangJinShuShi, 3),
                 new General(HuangJinLiShi, 3),
             };
+        }
+
+        public static List<General> Chapter2Siege()
+        {
+            return new List<General> { new General(HuangJinLiShi, 7), new General(HuangJinShuShi, 7), new General(ZhangBao, 7), new General(HuangJinShuShi, 7), new General(HuangJinLiShi, 7) };
+        }
+
+        public static List<General> Chapter2Bridge()
+        {
+            return new List<General> { new General(HuangJinTouMu, 8), new General(HuangJinLiShi, 8), new General(ZhangLiang, 8), new General(HuangJinLiShi, 8), new General(HuangJinTouMu, 8) };
+        }
+
+        public static List<General> Chapter2Boss()
+        {
+            return new List<General> { new General(HuangJinShuShi, 9), new General(HuangJinTouMu, 9), new General(ZhangJiao, 10), new General(HuangJinTouMu, 9), new General(HuangJinShuShi, 9) };
         }
     }
 }

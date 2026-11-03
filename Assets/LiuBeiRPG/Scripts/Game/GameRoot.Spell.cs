@@ -74,7 +74,7 @@ namespace LiuBeiRPG.Game
         {
             if (head.Actor == null || head.Fx == null || head.Target != null || !slots.ContainsKey(head.Actor)) return false;
             var s = new Spell { Actor = head.Actor, Id = head.Fx, Start = Time.time, End = float.MaxValue };
-            while (playQueue.Count > 0 && playQueue.Peek().Actor == null && playQueue.Peek().Target != null)
+            while (playQueue.Count > 0 && playQueue.Peek().Actor == null && playQueue.Peek().Target != null && playQueue.Peek().Fx == head.Fx)
             {
                 var e = playQueue.Dequeue();
                 if (!s.Hits.ContainsKey(e.Target)) { s.Hits[e.Target] = new List<BattleEvent>(); s.Targets.Add(e.Target); }

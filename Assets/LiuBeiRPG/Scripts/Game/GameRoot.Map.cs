@@ -16,6 +16,7 @@ namespace LiuBeiRPG.Game
         int faceX, faceY = 1;
         readonly List<Vector2Int> trail = new List<Vector2Int>();   // 跟随武将的位置（吞食天地式一字长蛇）
         int stepsSinceBattle;
+        int smokeSteps;  // 烟幕弹：还剩几步不遇敌（ponytail: 不存档，读档就散了）
         bool showGrid;   // 格子线，调试对齐用（G 键开关）
         float nextMoveTime;
         InputKey? queuedMove;   // 上一格还没滑完时按下的方向，滑完再走（轻点一下不会丢）
@@ -38,6 +39,8 @@ namespace LiuBeiRPG.Game
             return puppets[id] = a;
         }
 
+        PuppetActor Puppet(General g) { return Puppet(g.Def.Id, g.Def.Skin); }
+
         static string FacingOf(int dx, int dy) { return dx > 0 ? "side" : dx < 0 ? "left" : dy < 0 ? "back" : "front"; }
 
         public void PlaceFollowers(string facing, params int[] cells)
@@ -48,7 +51,7 @@ namespace LiuBeiRPG.Game
             {
                 var c = new Vector2Int(cells[i * 2], cells[i * 2 + 1]);
                 trail.Add(c); prevTrail.Add(c);
-                var fp = Puppet(party.Members[i + 1].Def.Id);
+                var fp = Puppet(party.Members[i + 1]);
                 if (fp != null) fp.Facing = facing;
             }
         }
@@ -64,6 +67,7 @@ namespace LiuBeiRPG.Game
             prevTrail.Clear();
             stepsSinceBattle = 0;
             mode = Mode.Map;
+            if (target.EncounterRate <= 0 && flags != null) flags.Set("visited_" + target.Id);   // 去过的城，飞鸟扇能飞回来
             OnEnterMap(newMap);
         }
 
@@ -125,7 +129,7 @@ namespace LiuBeiRPG.Game
         {
             if (mode != Mode.Map || UiBusy) return;
             faceX = dx; faceY = dy;
-            var leaderPuppet = Puppet(party.Members[0].Def.Id);
+            var leaderPuppet = Puppet(party.Members[0]);
             if (leaderPuppet != null) leaderPuppet.Facing = FacingOf(dx, dy);
             int nx = px + dx, ny = py + dy;
 
@@ -144,13 +148,14 @@ namespace LiuBeiRPG.Game
             {
                 var from = i < oldTrail.Count ? oldTrail[i] : trail[i];   // 刚入队的就地出现
                 prevTrail.Add(from);
-                var fp = i + 1 < party.Members.Count ? Puppet(party.Members[i + 1].Def.Id) : null;
+                var fp = i + 1 < party.Members.Count ? Puppet(party.Members[i + 1]) : null;
                 if (fp != null && from != trail[i]) fp.Facing = FacingOf(trail[i].x - from.x, trail[i].y - from.y);
             }
             prevX = px; prevY = py;
             px = nx; py = ny;
             lastStepTime = Time.time;
             stepsSinceBattle++;
+            if (smokeSteps > 0) smokeSteps--;
             Sfx.Play(StepSfx(map.At(nx, ny)), 0.5f, 0.12f);
 
             var currentMap = map;
@@ -159,10 +164,10 @@ namespace LiuBeiRPG.Game
 
             // 随机遇敌
             var tile = Tiles.Get(map.At(px, py));
-            if (tile.Encounter && stepsSinceBattle >= 4 && rng.NextDouble() < map.EncounterRate)
+            if (tile.Encounter && stepsSinceBattle >= 4 && smokeSteps == 0 && rng.NextDouble() < map.EncounterRate)
             {
                 stepsSinceBattle = 0;
-                StartBattle(GameDatabase.RandomEncounter(rng, party.Level, map.EnemyLevel), false, null);
+                StartBattle(GameDatabase.RandomEncounter(rng, party.Level, map.EnemyLevel, map.EnemyPool), false, null);
             }
         }
 
@@ -336,11 +341,11 @@ namespace LiuBeiRPG.Game
                 int memberIndex = i + 1;
                 if (memberIndex >= party.Members.Count) continue;
                 var m = party.Members[memberIndex];
-                var mp = Puppet(m.Def.Id);
+                var mp = Puppet(m);
                 var cell = Slide(prevTrail[i], trail[i]);
                 if (mp != null) add(cell, () => DrawPuppet(mp, cell, !m.Alive));
             }
-            var lPuppet = Puppet(party.Members[0].Def.Id);
+            var lPuppet = Puppet(party.Members[0]);
             var lp = LeaderPos();
             if (lPuppet != null) add(lp, () => DrawPuppet(lPuppet, lp));
             actors.Sort((a, b) => a.Key.CompareTo(b.Key));
@@ -426,10 +431,10 @@ namespace LiuBeiRPG.Game
             {
                 if (i + 1 >= party.Members.Count) continue;
                 var m = party.Members[i + 1];
-                if (Puppet(m.Def.Id) == null) Gfx.Token(Inset(TileRect(trail[i].x, trail[i].y), 5), m.Def.Glyph, Gfx.Hex(m.Def.Color), !m.Alive);
+                if (Puppet(m) == null) Gfx.Token(Inset(TileRect(trail[i].x, trail[i].y), 5), m.Def.Glyph, Gfx.Hex(m.Def.Color), !m.Alive);
             }
             var leader = party.Members[0];
-            if (Puppet(leader.Def.Id) == null) Gfx.Token(Inset(TileRect(px, py), 2), leader.Def.Glyph, Gfx.Hex(leader.Def.Color));
+            if (Puppet(leader) == null) Gfx.Token(Inset(TileRect(px, py), 2), leader.Def.Glyph, Gfx.Hex(leader.Def.Color));
 
             // 任务记号：头顶一个金色“！”（有任务可接）或绿色“？”（可以交差），上下轻轻跳
             foreach (var n in map.Npcs)
@@ -535,7 +540,7 @@ namespace LiuBeiRPG.Game
             bool walking = Time.time - lastStepTime < MoveInterval * 1.5f;
             for (int i = 0; i < party.Members.Count; i++)
             {
-                var a = Puppet(party.Members[i].Def.Id);
+                var a = Puppet(party.Members[i]);
                 // 队伍不满时跟随者原地不动（trail 还没轮到他）就待机
                 bool moving = walking && (i == 0 ? new Vector2Int(prevX, prevY) != new Vector2Int(px, py)
                                                  : i - 1 < trail.Count && prevTrail[i - 1] != trail[i - 1]);

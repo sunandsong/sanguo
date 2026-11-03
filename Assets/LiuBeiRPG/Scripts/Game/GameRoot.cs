@@ -35,7 +35,7 @@ namespace LiuBeiRPG.Game
 
         Party party;
         StoryFlags flags;
-        Chapter1 chapter;
+        Chapter chapter;
 
         public Party Party { get { return party; } }
         public StoryFlags Flags { get { return flags; } }
@@ -61,19 +61,39 @@ namespace LiuBeiRPG.Game
             currentDialogue = null;
             choice = null;
             chestFx = null;
-            chapter = new Chapter1(this);
-            mode = Mode.Map;
-            chapter.Begin();
+            smokeSteps = 0;
+            StartChapter(1);
             if (Application.isEditor && DevStartAtField)
             {
                 dialogueQueue.Clear();
                 currentDialogue = null;
-                chapter.SkipToField();
+                chapter.SkipToField();   // 第一章：结义、受赠都算完成，站到城外
+                while (party.Level < DevLevel) party.GainExp(party.ExpToNext - party.Exp);
+                party.FullRestore();
+                if (DevChapter > 1) { flags.Set(Chapter1.F_Boss); StartChapter(DevChapter); dialogueQueue.Clear(); currentDialogue = null; chapter.SkipToField(); }
             }
         }
 
-        // ponytail: 调试开关，编辑器里新游戏直接从城外开始（城内剧情算走完）；测完城内剧情改回 false
+        // ponytail: 调试开关，编辑器里新游戏直接从城外开始（城内剧情算走完）、直接到 DevLevel 级、直接进第 DevChapter 章；测完改回 false
         const bool DevStartAtField = true;
+        const int DevLevel = 10;
+        const int DevChapter = 2;
+
+        Chapter MakeChapter(int n) { return n == 1 ? new Chapter1(this) : n == 2 ? (Chapter)new Chapter2(this) : null; }
+
+        /// <summary>开始第 n 章：队伍、物品、flags 都带着，只换剧情和地图。没有这一章就回标题。</summary>
+        public bool StartChapter(int n)
+        {
+            dialogueQueue.Clear();
+            currentDialogue = null;
+            choice = null;
+            chestFx = null;
+            chapter = MakeChapter(n);
+            if (chapter == null) { mode = Mode.Title; return false; }
+            mode = Mode.Map;
+            chapter.Begin();
+            return true;
+        }
 
         void Update()
         {
@@ -119,6 +139,7 @@ namespace LiuBeiRPG.Game
             InputKey key;
             if (e.type == EventType.KeyDown && e.keyCode == KeyCode.G) { showGrid = !showGrid; e.Use(); return; }
             if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Tab && menuPage == PagePeople) { bagTab = (bagTab + 1) % 3; e.Use(); return; }   // 人物页切 物品 / 法术 / 任务
+            if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Tab && mode == Mode.Battle && menuPage == 0) { scouting = !scouting; e.Use(); return; }   // 战斗里开关侦察
             if (e.type == EventType.KeyDown && e.keyCode != KeyCode.None && MapKey(e.keyCode, out key))
             {
                 bool repeat = held.Contains(key);
@@ -161,7 +182,7 @@ namespace LiuBeiRPG.Game
                     if (key == InputKey.Confirm) { mode = Mode.Map; chapter.RespawnAfterDefeat(); }
                     break;
                 case Mode.ChapterClear:
-                    if (key == InputKey.Confirm) mode = Mode.Title;
+                    if (key == InputKey.Confirm) StartChapter(chapter.Number + 1);
                     break;
             }
         }
@@ -170,7 +191,7 @@ namespace LiuBeiRPG.Game
         void KeySfx(InputKey key)
         {
             if (currentDialogue != null) return;   // 对话翻页的声在 AdvanceDialogue
-            bool ui = choice != null || menuPage != 0 || mode != Mode.Map && !(mode == Mode.Battle && bstate == BState.Playing);
+            bool ui = choice != null || menuPage != 0 || mode != Mode.Map && !(mode == Mode.Battle && (bstate == BState.Playing || bstate == BState.Result));   // 结算面板的声在 EndBattle
             if (!ui) return;
             if (key == InputKey.Confirm) Sfx.Play("ui_tap");
             else if (key == InputKey.Cancel) Sfx.Play("ui_cancel");
@@ -233,6 +254,7 @@ namespace LiuBeiRPG.Game
         {
             { "刘备", "liubei" }, { "关羽", "guanyu" }, { "张飞", "zhangfei" }, { "母亲", "muqin" },
             { "守卫", "shouwei" }, { "张世平", "huolang" }, { "店小二", "xiaoer" }, { "逃难村民", "nanmin" },
+            { "简雍", "jianyong" }, { "龚景", "gongjing" }, { "张宝", "zhangbao" }, { "张梁", "zhangliang" }, { "张角", "zhangjiao" },
         };
         readonly Dictionary<string, PuppetActor> portraits = new Dictionary<string, PuppetActor>();
         DialogueLine shownLine;   // 正在打字的那句
@@ -437,9 +459,10 @@ namespace LiuBeiRPG.Game
             Gfx.Text(new Rect(0, oy + 150, Gfx.VW, 60), clearTitle, 42, new Color(1f, 0.85f, 0.35f), TextAnchor.MiddleCenter);
             Gfx.Text(new Rect(0, oy + 230, Gfx.VW, 30),
                 "全军等级 " + party.Level + "　　金钱 " + party.Gold, 20, Color.white, TextAnchor.MiddleCenter);
-            Gfx.Text(new Rect(0, oy + 280, Gfx.VW, 30), clearHint + "（敬请期待）", 22, new Color(0.7f, 0.85f, 1f), TextAnchor.MiddleCenter);
-            Gfx.Text(new Rect(0, oy + 400, Gfx.VW, 30), "按确认键回到标题", 18, new Color(1, 1, 1, 0.7f), TextAnchor.MiddleCenter);
-            if (Gfx.Clicked(new Rect(0, 0, Gfx.VW, Gfx.VH))) mode = Mode.Title;
+            bool hasNext = MakeChapter(chapter.Number + 1) != null;
+            Gfx.Text(new Rect(0, oy + 280, Gfx.VW, 30), clearHint + (hasNext ? "" : "（敬请期待）"), 22, new Color(0.7f, 0.85f, 1f), TextAnchor.MiddleCenter);
+            Gfx.Text(new Rect(0, oy + 400, Gfx.VW, 30), hasNext ? "按确认键继续" : "按确认键回到标题", 18, new Color(1, 1, 1, 0.7f), TextAnchor.MiddleCenter);
+            if (Gfx.Clicked(new Rect(0, 0, Gfx.VW, Gfx.VH))) StartChapter(chapter.Number + 1);
         }
     }
 }

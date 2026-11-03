@@ -7,11 +7,10 @@ namespace LiuBeiRPG.World
     /// 第一章「桃园结义」：涿县城内剧情 → 出城练级 → 黄巾营寨 Boss。
     /// 每一章都按这个模板写：地图字符串 + NPC + 剧情标记 + Boss。
     /// </summary>
-    public class Chapter1
+    public class Chapter1 : Chapter
     {
         public const int InnCost = 20;
 
-        readonly IGameHost host;
         public readonly MapData Town;
         public readonly MapData Field;
         public readonly MapData Home;
@@ -25,7 +24,7 @@ namespace LiuBeiRPG.World
         const string F_MetGuanYu = "c1_guanyu";
         const string F_Oath = "c1_oath";
         const string F_Gift = "c1_gift";
-        const string F_Boss = "c1_boss";
+        public const string F_Boss = "c1_boss";
         const string F_Liutao = "c1_liutao";   // 母亲给了《六韬》
         const string F_ChestHome = "c1_chest_home", F_ChestInn = "c1_chest_inn2f";   // 宝箱开过了
         const string F_ChestFieldNE = "c1_chest_field_ne", F_ChestFieldSW = "c1_chest_field_sw", F_ChestFieldE = "c1_chest_field_e";
@@ -33,66 +32,33 @@ namespace LiuBeiRPG.World
         const string Q_HuangJin = "c1_q_huangjin", Q_HuangJinDone = "c1_q_huangjin_done";
         const int HuangJinNeed = 10;
 
-        /// <summary>这一章的支线任务，人物页“任务”页签列的就是这些。</summary>
-        public readonly List<Quest> Quests = new List<Quest>();
+        // 涿县商店（设计文档 8.3）
+        static readonly string[] ShopGoods = { "caoyao", "zhuojiu", "langyan", "yanmudan", "nuqiwan", "feiniaoshan", "qimeigun", "tiejian", "huanshoudao", "changqiang", "shoufu", "pikui", "pijia", "buxue", "numa", "yupei" };
 
-        // 涿县商店（设计文档 8.3）。ponytail: 狼烟要等战斗里能用物品再上架
-        static readonly string[] ShopGoods = { "caoyao", "zhuojiu", "qimeigun", "tiejian", "huanshoudao", "changqiang", "shoufu", "pikui", "pijia", "buxue", "numa", "yupei" };
-
-        public Chapter1(IGameHost host)
+        public Chapter1(IGameHost host) : base(host)
         {
-            this.host = host;
             Town = BuildTown();
             Field = BuildField();
             Home = BuildHome();
             Tavern = BuildTavern();
-            Inn = BuildInn();
-            Inn2F = BuildInn2F();
+            var inn = BuildInn("inn", InnCost, () => host.Warp(Town, 16, 10), Chest(F_ChestInn, 3, 3, 80));   // 二楼矮桌右边的地板上
+            Inn = inn[0];
+            Inn2F = inn[1];
         }
+
+        public override int Number { get { return 1; } }
+        public override MapData[] Maps { get { return new[] { Town, Field, Home, Tavern, Inn, Inn2F }; } }
+        public override List<TownSpot> Towns { get { return new List<TownSpot> { new TownSpot { Map = Town, X = 8, Y = 12 } }; } }
 
         public int StartX { get { return 5; } }
         public int StartY { get { return 5; } }
-
-        static DialogueLine L(string speaker, string text) { return new DialogueLine(speaker, text); }
-
-        /// <summary>宝箱（通用）：开一次给钱，开的时候演一段（GameRoot.Chest），开过换成打开的图。图见 ArtSrc/宝箱提示词.md，缺图时箱子看不见但照样能开。</summary>
-        Npc Chest(string flag, int x, int y, int gold, string item = null, int count = 1)
-        {
-            var flags = host.Flags;
-            var n = new Npc { Id = flag, Name = "宝箱", Glyph = "箱", X = x, Y = y, Size = 1f, Sprite = flags.Has(flag) ? "Art/chest_open" : "Art/chest" };
-            n.Talk = () =>
-            {
-                if (flags.Has(flag)) { Say(L(null, "箱子是空的。")); return; }
-                var it = ItemDb.Get(item);
-                if (it != null && !host.Party.CanHold(item)) { Say(L(null, "行囊满了，拿不下。")); return; }
-                flags.Set(flag);
-                host.Party.Gold += gold;
-                for (int i = 0; it != null && i < count; i++) host.Party.Items.Add(item);
-                string got = it == null ? "金钱 " + gold : it.Name + (count > 1 ? " ×" + count : "") + (gold > 0 ? "、金钱 " + gold : "");
-                host.OpenChest(n, it == null ? null : item, count, gold, "打开宝箱，获得" + got + "！");
-            };
-            return n;
-        }
-        void Say(params DialogueLine[] lines) { host.Say(new List<DialogueLine>(lines)); }
 
         void GuardStop()
         {
             Say(L("守卫", "城外黄巾贼出没，你一个人出去就是送死。"), L("守卫", "要出城，先招些人马再说吧。"));
         }
 
-        static readonly System.Random chatRng = new System.Random();
-
-        /// <summary>路人：沿 route（x0,y0,x1,y1…）来回闲逛，搭话时随机说一句；天黑走回 home（家门口 x,y）进屋，天亮再出来。
-        /// skin 是引擎里的骨骼角色，weapon 是手里拿的东西。</summary>
-        Npc Walker(string id, string name, string skin, string weapon, float step, int[] route, int[] home, params string[] lines)
-        {
-            var n = new Npc { Id = id, Name = name, Glyph = name.Substring(0, 1), Skin = skin, Weapon = weapon, StepSeconds = step, Route = route, Home = home, X = route[0], Y = route[1] };
-            n.Visible = () => !n.Indoors;
-            n.Talk = () => Say(L(name, lines[chatRng.Next(lines.Length)]));
-            return n;
-        }
-
-        public void Begin()
+        public override void Begin()
         {
             host.Party.Add(new General(GameDatabase.LiuBei));
             host.Party.Gold = 50;
@@ -107,7 +73,7 @@ namespace LiuBeiRPG.World
         }
 
         /// <summary>全灭后：回到客栈门口，兵力全满，金钱减半。</summary>
-        public void RespawnAfterDefeat()
+        public override void RespawnAfterDefeat()
         {
             host.Party.Gold /= 2;
             host.Party.FullRestore();
@@ -427,91 +393,8 @@ namespace LiuBeiRPG.World
             return m;
         }
 
-        // =====================================================================
-        // 客栈一楼门厅（下边敞口；东北角楼梯上二楼）
-        // =====================================================================
-        MapData BuildInn()
-        {
-            var m = new MapData
-            {
-                Id = "inn",
-                Name = "客栈",
-                Art = "inn",
-                Grade = "#fff0dc", Light = "#e8d6c0",
-                ArtMargin = 0,
-                Rows = new[]
-                {
-                    "HHHHHHHHH",
-                    "HHHHHHHHH",
-                    "HHHH..HHH",
-                    "........H",
-                    ".........",
-                    ".........",
-                }
-            };
-
-            m.Npcs.Add(new Npc
-            {
-                Id = "xiaoer", Name = "店小二", Glyph = "店", Color = "#e0e0e0", X = 4, Y = 2,
-                Talk = () =>
-                {
-                    host.Choose("客官，住店一晚 " + InnCost + " 金，兵马都能休整好。住吗？", new[] { "住店", "不了" }, i =>
-                    {
-                        if (i != 0) { Say(L("店小二", "客官慢走！")); return; }
-                        if (host.Party.Gold < InnCost) { Say(L("店小二", "客官，您这钱……不太够啊。")); return; }
-                        host.Party.Gold -= InnCost;
-                        host.Party.FullRestore();
-                        host.SetHour(7f);
-                        Say(L(null, "一夜休整。全军兵力、法力已恢复！"));
-                    });
-                }
-            });
-
-            m.OnTouch = (x, y) =>
-            {
-                if (y >= m.Height) { host.Warp(Town, 16, 10); return true; }
-                if (x == 8 && y == 3) { host.Warp(Inn2F, 7, 3); return true; }   // 楼梯口 (8,4) 往上走
-                return false;
-            };
-
-            return m;
-        }
-
-        // =====================================================================
-        // 客栈二楼客房（东北角楼梯下楼；前景层是下边的栏杆）
-        // =====================================================================
-        MapData BuildInn2F()
-        {
-            var m = new MapData
-            {
-                Id = "inn_2f",
-                Name = "客栈二楼",
-                Art = "inn_2f",
-                Grade = "#fff0dc", Light = "#e8d6c0",
-                ArtMargin = 0,
-                Rows = new[]
-                {
-                    "HHHHHHHHH",
-                    "HHHHHHHHH",
-                    "HH.H.HHHH",
-                    "HH.......",   // (1,3) 是矮桌，走不上去
-                    ".H......H",
-                    "HHHHHHHHH",
-                }
-            };
-            m.Npcs.Add(Chest(F_ChestInn, 3, 3, 80));   // 矮桌右边的地板上（第 4 行画面上是栏杆）；第 3、4 行都能走，绕得过去
-
-            m.OnTouch = (x, y) =>
-            {
-                if (x == 7 && y == 2) { host.Warp(Inn, 8, 4); return true; }   // 楼梯口 (7,3) 往上撞就下楼
-                return false;
-            };
-
-            return m;
-        }
-
         /// <summary>调试用：跳过城内剧情（结义、受赠都算完成），直接站到城外。</summary>
-        public void SkipToField()
+        public override void SkipToField()
         {
             var flags = host.Flags;
             if (!flags.Has(F_Oath))
@@ -653,11 +536,11 @@ namespace LiuBeiRPG.World
                     host.Warp(Town, 8, 12);
                     return true;
                 }
-                // ponytail: 第二章地图还没做，走到官道口先只给提示；做了青州就在这里 Warp 过去
+                // 官道口：第一章打完了就去青州（第二章）
                 if (x == 19 && y == 23)
                 {
-                    Say(L("关羽", "兄长，往南便是去青州的官道。"),
-                        L(null, "（第二章「青州解围」尚未开放）"));
+                    if (flags.Has(F_Boss)) host.StartChapter(2);
+                    else Say(L("关羽", "兄长，往南便是去青州的官道。"));
                     return true;
                 }
                 return false;
@@ -694,7 +577,7 @@ namespace LiuBeiRPG.World
                         L("刘备", "初战告捷，全赖两位贤弟！"),
                         L("关羽", "兄长，听说青州被黄巾围困，太守龚景求援。"),
                         L("张飞", "那还等什么，杀过去！"),
-                    }, () => host.ChapterClear("第一章 桃园结义 · 完", "下一章：青州解围"));
+                    }, () => host.ChapterClear("第一章 桃园结义 · 完", "第二章：黄巾之乱"));
                 });
             });
         }

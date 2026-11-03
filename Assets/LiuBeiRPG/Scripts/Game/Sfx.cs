@@ -11,7 +11,6 @@ namespace LiuBeiRPG.Game
     {
         static readonly Dictionary<string, AudioClip> clips = new Dictionary<string, AudioClip>();
         static AudioSource[] pool;
-        static int next;
         static readonly Dictionary<string, float> lastAt = new Dictionary<string, float>();
 
         /// <summary>pitch 在 1±jitter 里随机，连续同一个声（脚步、金币）听着不机械。同一个声 0.03 秒内只响一次。</summary>
@@ -27,11 +26,19 @@ namespace LiuBeiRPG.Game
             {
                 var go = new GameObject("Sfx");
                 Object.DontDestroyOnLoad(go);
-                pool = new AudioSource[10];   // ponytail: 10 个声道轮着用，同时响的多了会掐掉最早那个
+                pool = new AudioSource[10];
                 for (int i = 0; i < pool.Length; i++) { pool[i] = go.AddComponent<AudioSource>(); pool[i].playOnAwake = false; }
             }
-            var s = pool[next];
-            next = (next + 1) % pool.Length;
+            // 先用空着的声道；都在响就掐快放完的那个，别掐掉胜利号角这种长的（结算时金币、经验一连串短音会把 10 个声道转一遍）
+            AudioSource s = null;
+            float best = -1f;
+            for (int i = 0; i < pool.Length; i++)
+            {
+                var p = pool[i];
+                if (!p.isPlaying) { s = p; break; }
+                float done = p.clip == null ? 1f : p.time / p.clip.length;
+                if (done > best) { best = done; s = p; }
+            }
             s.clip = clip;
             s.volume = volume;
             s.pitch = 1f + Random.Range(-jitter, jitter);
