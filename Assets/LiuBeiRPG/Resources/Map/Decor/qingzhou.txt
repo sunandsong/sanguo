@@ -1,10 +1,242 @@
-# 青州城（20×14）
-# 房子：H 块。太守府（2-6,1-3）、客栈（14-17,1-3）、民居（2-4,7-9）、商铺（14-17,7-9）；门都朝下
-house_tavern 4.50 3.60 5.2
-house_inn 16.00 3.86 3.9
-cottage_0 3.50 9.90 3.0
-cottage_1 16.00 9.90 3.6
-lantern 14.55 3.87 0.38 hang amp=0.22 lift=0.80
-lantern 17.45 3.87 0.38 hang amp=0.22 lift=0.80
-banner_blue 2.30 3.61 0.5 hang amp=0.14 lift=0.85
-banner_blue 6.70 3.61 0.5 hang amp=0.14 lift=0.85
+# 青州城（40×28）。底图只有地面，房子、树、摊位都在这里
+# 城门（城墙不要了，只留门楼）
+city_gate 20.00 28.00 4.8
+# 城墙里侧一圈树
+tree_green_3 1.60 0.90 1.85 plant amp=0.03
+tree_green_3 2.60 0.90 1.68 plant amp=0.03
+tree_green_1 3.60 0.90 1.57 plant amp=0.03
+tree_green_3 4.60 0.90 1.75 plant amp=0.03
+tree_green_1 5.60 0.90 1.54 plant amp=0.03
+tree_green_2 6.60 0.90 1.56 plant amp=0.03
+tree_green_0 7.60 0.90 1.74 plant amp=0.03
+tree_green_3 8.60 0.90 1.89 plant amp=0.03
+tree_green_1 9.60 0.90 1.75 plant amp=0.03
+tree_green_0 10.60 0.90 1.52 plant amp=0.03
+tree_green_1 11.60 0.90 1.85 plant amp=0.03
+tree_green_0 12.60 0.90 1.81 plant amp=0.03
+tree_green_2 13.60 0.90 1.68 plant amp=0.03
+tree_green_1 14.60 0.90 1.71 plant amp=0.03
+tree_green_2 15.60 0.90 1.70 plant amp=0.03
+tree_green_0 16.60 0.90 1.68 plant amp=0.03
+tree_green_2 17.60 0.90 1.66 plant amp=0.03
+tree_green_0 18.60 0.90 1.78 plant amp=0.03
+tree_green_2 19.60 0.90 1.80 plant amp=0.03
+tree_green_2 20.60 0.90 1.51 plant amp=0.03
+tree_green_0 21.60 0.90 1.66 plant amp=0.03
+tree_green_2 22.60 0.90 1.65 plant amp=0.03
+tree_green_0 23.60 0.90 1.84 plant amp=0.03
+tree_green_0 24.60 0.90 1.59 plant amp=0.03
+tree_green_0 25.60 0.90 1.69 plant amp=0.03
+tree_green_3 26.60 0.90 1.67 plant amp=0.03
+tree_green_1 27.60 0.90 1.81 plant amp=0.03
+tree_green_2 28.60 0.90 1.63 plant amp=0.03
+tree_green_2 29.60 0.90 1.63 plant amp=0.03
+tree_green_3 30.60 0.90 1.80 plant amp=0.03
+tree_green_0 31.60 0.90 1.55 plant amp=0.03
+tree_green_0 32.60 0.90 1.50 plant amp=0.03
+tree_green_3 33.60 0.90 1.82 plant amp=0.03
+tree_green_1 34.60 0.90 1.77 plant amp=0.03
+tree_green_1 35.60 0.90 1.68 plant amp=0.03
+tree_green_1 36.60 0.90 1.89 plant amp=0.03
+tree_green_1 37.60 0.90 1.67 plant amp=0.03
+tree_green_3 38.60 0.90 1.55 plant amp=0.03
+tree_green_3 0.60 1.90 1.90 plant amp=0.03
+tree_green_0 39.60 1.90 1.61 plant amp=0.03
+tree_green_2 0.60 2.90 1.90 plant amp=0.03
+tree_green_0 39.60 2.90 1.58 plant amp=0.03
+tree_green_3 0.60 3.90 1.90 plant amp=0.03
+tree_green_0 39.60 3.90 1.52 plant amp=0.03
+tree_green_1 0.60 4.90 1.59 plant amp=0.03
+tree_green_2 39.60 4.90 1.50 plant amp=0.03
+tree_green_2 0.60 5.90 1.83 plant amp=0.03
+tree_green_3 39.60 5.90 1.53 plant amp=0.03
+tree_green_0 0.60 6.90 1.58 plant amp=0.03
+tree_green_1 39.60 6.90 1.51 plant amp=0.03
+tree_green_2 0.60 7.90 1.65 plant amp=0.03
+tree_green_3 39.60 7.90 1.55 plant amp=0.03
+tree_green_3 0.60 8.90 1.83 plant amp=0.03
+tree_green_1 39.60 8.90 1.85 plant amp=0.03
+tree_green_1 0.60 9.90 1.75 plant amp=0.03
+tree_green_2 39.60 9.90 1.86 plant amp=0.03
+tree_green_1 0.60 10.90 1.79 plant amp=0.03
+tree_green_1 39.60 10.90 1.80 plant amp=0.03
+tree_green_1 0.60 11.90 1.77 plant amp=0.03
+tree_green_3 39.60 11.90 1.85 plant amp=0.03
+tree_green_0 0.60 12.90 1.67 plant amp=0.03
+tree_green_0 39.60 12.90 1.54 plant amp=0.03
+tree_green_2 0.60 13.90 1.60 plant amp=0.03
+tree_green_3 39.60 13.90 1.60 plant amp=0.03
+tree_green_3 0.60 14.90 1.62 plant amp=0.03
+tree_green_1 39.60 14.90 1.87 plant amp=0.03
+tree_green_0 0.60 15.90 1.55 plant amp=0.03
+tree_green_3 39.60 15.90 1.72 plant amp=0.03
+tree_green_0 0.60 16.90 1.61 plant amp=0.03
+tree_green_1 39.60 16.90 1.80 plant amp=0.03
+tree_green_0 0.60 17.90 1.61 plant amp=0.03
+tree_green_3 39.60 17.90 1.60 plant amp=0.03
+tree_green_0 0.60 18.90 1.57 plant amp=0.03
+tree_green_2 39.60 18.90 1.71 plant amp=0.03
+tree_green_1 0.60 19.90 1.54 plant amp=0.03
+tree_green_1 39.60 19.90 1.86 plant amp=0.03
+tree_green_2 0.60 20.90 1.76 plant amp=0.03
+tree_green_1 39.60 20.90 1.74 plant amp=0.03
+tree_green_0 0.60 21.90 1.69 plant amp=0.03
+tree_green_2 39.60 21.90 1.78 plant amp=0.03
+tree_green_0 0.60 22.90 1.51 plant amp=0.03
+tree_green_0 39.60 22.90 1.69 plant amp=0.03
+tree_green_2 0.60 23.90 1.63 plant amp=0.03
+tree_green_0 39.60 23.90 1.53 plant amp=0.03
+tree_green_2 0.60 24.90 1.79 plant amp=0.03
+tree_green_1 39.60 24.90 1.82 plant amp=0.03
+tree_green_2 0.60 25.90 1.64 plant amp=0.03
+tree_green_3 39.60 25.90 1.86 plant amp=0.03
+tree_green_3 0.60 26.90 1.88 plant amp=0.03
+tree_green_0 39.60 26.90 1.85 plant amp=0.03
+tree_green_0 1.60 27.90 1.75 plant amp=0.03
+tree_green_3 2.60 27.90 1.65 plant amp=0.03
+tree_green_0 3.60 27.90 1.74 plant amp=0.03
+tree_green_0 4.60 27.90 1.54 plant amp=0.03
+tree_green_0 5.60 27.90 1.90 plant amp=0.03
+tree_green_3 6.60 27.90 1.79 plant amp=0.03
+tree_green_3 7.60 27.90 1.87 plant amp=0.03
+tree_green_3 8.60 27.90 1.68 plant amp=0.03
+tree_green_0 9.60 27.90 1.71 plant amp=0.03
+tree_green_0 10.60 27.90 1.62 plant amp=0.03
+tree_green_0 11.60 27.90 1.69 plant amp=0.03
+tree_green_1 12.60 27.90 1.88 plant amp=0.03
+tree_green_0 13.60 27.90 1.70 plant amp=0.03
+tree_green_3 14.60 27.90 1.60 plant amp=0.03
+tree_green_0 15.60 27.90 1.65 plant amp=0.03
+tree_green_1 16.60 27.90 1.77 plant amp=0.03
+tree_green_1 23.60 27.90 1.71 plant amp=0.03
+tree_green_2 24.60 27.90 1.76 plant amp=0.03
+tree_green_3 25.60 27.90 1.70 plant amp=0.03
+tree_green_1 26.60 27.90 1.63 plant amp=0.03
+tree_green_2 27.60 27.90 1.58 plant amp=0.03
+tree_green_3 28.60 27.90 1.82 plant amp=0.03
+tree_green_1 29.60 27.90 1.85 plant amp=0.03
+tree_green_3 30.60 27.90 1.59 plant amp=0.03
+tree_green_2 31.60 27.90 1.58 plant amp=0.03
+tree_green_1 32.60 27.90 1.70 plant amp=0.03
+tree_green_0 33.60 27.90 1.78 plant amp=0.03
+tree_green_2 34.60 27.90 1.83 plant amp=0.03
+tree_green_0 35.60 27.90 1.68 plant amp=0.03
+tree_green_2 36.60 27.90 1.87 plant amp=0.03
+tree_green_3 37.60 27.90 1.65 plant amp=0.03
+tree_green_3 38.60 27.90 1.77 plant amp=0.03
+# 房子（小庙 house_temple、粮仓 house_barn 的图还没出，出了会自动显示）：太守府 house_fu、客栈、酒馆、武器铺 / 药铺 house_shop、小庙 house_temple、粮仓 house_barn、民居
+house_fu 20.00 7.98 9.6
+flag_big 15.00 7.61 1.3 flag amp=0.05 lift=0.6
+flag_big 25.00 7.61 1.3 flag amp=0.05 lift=0.6
+house_inn 5.50 12.98 5.7
+lantern 3.60 12.87 0.42 hang amp=0.22 lift=0.85
+lantern 7.40 12.87 0.42 hang amp=0.22 lift=0.85
+house_tavern 34.50 11.98 5.8
+banner_blue 32.40 11.61 0.5 hang amp=0.14 lift=0.85
+lantern 36.60 11.61 0.42 hang amp=0.22 lift=0.9
+house_shop 13.00 18.98 3.9
+house_shop 27.00 18.98 3.9
+house_temple 12.00 3.60 4.2
+house_barn 28.50 3.60 3.2
+cottage_0 3.50 18.98 3.8
+cottage_1 36.50 18.98 3.8
+cottage_1 4.50 25.20 3.8
+cottage_0 35.50 25.20 3.8
+cottage_0 13.50 25.20 3.8
+cottage_1 26.50 25.20 3.8
+# 市集那几块土方（S 格）先种花草；想换摊子按 ArtSrc/地图生命感提示词.md §18 出图
+bush_0 13.48 13.01 1.55 plant amp=0.035
+grass_0 13.08 13.00 0.55 plant amp=0.06
+grass_0 13.90 12.86 0.5 plant amp=0.06
+bush_1 15.49 13.01 1.55 plant amp=0.035
+grass_0 15.08 13.00 0.55 plant amp=0.06
+grass_0 15.90 12.86 0.5 plant amp=0.06
+bush_1 17.59 13.01 1.55 plant amp=0.035
+grass_0 17.08 13.00 0.55 plant amp=0.06
+grass_0 17.90 12.86 0.5 plant amp=0.06
+bush_2 22.51 13.01 1.55 plant amp=0.035
+grass_0 22.08 13.00 0.55 plant amp=0.06
+grass_0 22.90 12.86 0.5 plant amp=0.06
+bush_0 24.46 13.01 1.55 plant amp=0.035
+grass_0 24.08 13.00 0.55 plant amp=0.06
+grass_0 24.90 12.86 0.5 plant amp=0.06
+bush_0 26.39 13.01 1.55 plant amp=0.035
+grass_0 26.08 13.00 0.55 plant amp=0.06
+grass_0 26.90 12.86 0.5 plant amp=0.06
+bush_0 13.56 20.01 1.55 plant amp=0.035
+grass_0 13.08 20.00 0.55 plant amp=0.06
+grass_0 13.90 19.86 0.5 plant amp=0.06
+bush_2 15.58 20.01 1.55 plant amp=0.035
+grass_0 15.08 20.00 0.55 plant amp=0.06
+grass_0 15.90 19.86 0.5 plant amp=0.06
+bush_1 17.36 20.01 1.55 plant amp=0.035
+grass_0 17.08 20.00 0.55 plant amp=0.06
+grass_0 17.90 19.86 0.5 plant amp=0.06
+bush_1 22.56 20.01 1.55 plant amp=0.035
+grass_0 22.08 20.00 0.55 plant amp=0.06
+grass_0 22.90 19.86 0.5 plant amp=0.06
+bush_1 24.36 20.01 1.55 plant amp=0.035
+grass_0 24.08 20.00 0.55 plant amp=0.06
+grass_0 24.90 19.86 0.5 plant amp=0.06
+bush_0 28.39 20.01 1.55 plant amp=0.035
+grass_0 28.08 20.00 0.55 plant amp=0.06
+grass_0 28.90 19.86 0.5 plant amp=0.06
+well 30.25 20.55 1.1
+fence 2.50 20.00 1.6
+fence 37.50 20.00 1.6
+haystack 6.80 17.60 1.1
+crates 9.80 17.80 0.9
+weapon_rack 10.30 19.30 0.9
+# 西北角园子：塘边柳树、荷叶、芦苇；东北角桃园
+tree_green_2 1.60 2.90 1.7 plant amp=0.035
+tree_green_1 6.60 1.90 1.6 plant amp=0.035
+tree_green_3 6.60 5.90 1.4 plant amp=0.04
+lotus_0 4.00 3.90 0.6
+lotus_0 4.90 4.40 0.5
+reed_0 2.80 5.30 0.7 plant amp=0.05
+reed_1 6.20 3.40 0.7 plant amp=0.05
+cattail_0 3.30 2.60 0.6 plant amp=0.05
+stone_table 2.60 4.60 1.1
+tree_peach_2 33.60 1.90 1.51 plant amp=0.03
+tree_peach_2 36.60 1.90 1.58 plant amp=0.03
+tree_peach_1 32.60 3.90 1.59 plant amp=0.03
+tree_peach_2 35.60 3.90 1.51 plant amp=0.03
+tree_peach_0 37.60 4.90 1.62 plant amp=0.03
+tree_peach_0 34.60 5.90 1.51 plant amp=0.03
+# 草丛
+bush_1 10.50 7.60 0.85 plant amp=0.04
+bush_0 29.50 7.60 0.85 plant amp=0.04
+bush_0 2.50 13.60 0.85 plant amp=0.04
+bush_0 37.50 13.60 0.85 plant amp=0.04
+bush_2 16.50 22.60 0.85 plant amp=0.04
+bush_0 23.50 22.60 0.85 plant amp=0.04
+bush_1 9.50 26.60 0.85 plant amp=0.04
+bush_0 30.50 26.60 0.85 plant amp=0.04
+bush_2 1.60 9.60 0.85 plant amp=0.04
+bush_2 38.40 9.60 0.85 plant amp=0.04
+
+# 街边花草
+grass_0 12.50 8.90 0.59 plant amp=0.06
+grass_0 27.50 8.90 0.61 plant amp=0.06
+grass_0 14.50 6.40 0.57 plant amp=0.06
+grass_0 25.50 6.40 0.60 plant amp=0.06
+grass_0 9.50 9.60 0.54 plant amp=0.06
+grass_0 30.50 9.60 0.51 plant amp=0.06
+grass_0 21.50 10.60 0.67 plant amp=0.06
+grass_0 18.50 10.60 0.55 plant amp=0.06
+grass_0 2.50 7.60 0.66 plant amp=0.06
+grass_0 37.50 7.60 0.54 plant amp=0.06
+grass_0 10.50 13.80 0.69 plant amp=0.06
+grass_0 29.50 13.80 0.68 plant amp=0.06
+grass_0 16.50 16.60 0.65 plant amp=0.06
+grass_0 23.50 16.60 0.65 plant amp=0.06
+grass_0 6.50 19.60 0.62 plant amp=0.06
+grass_0 33.50 19.60 0.65 plant amp=0.06
+grass_0 9.60 22.60 0.52 plant amp=0.06
+grass_0 30.40 22.60 0.60 plant amp=0.06
+grass_0 17.50 24.60 0.67 plant amp=0.06
+grass_0 22.50 24.60 0.54 plant amp=0.06
+grass_0 2.50 26.60 0.68 plant amp=0.06
+grass_0 37.50 26.60 0.68 plant amp=0.06
+grass_0 7.50 2.60 0.58 plant amp=0.06
+grass_0 31.50 6.60 0.57 plant amp=0.06

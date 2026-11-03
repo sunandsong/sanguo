@@ -21,8 +21,7 @@ namespace LiuBeiRPG.Core
 
         public int BaseSoldiers;        // 1 级兵力（吞食天地式：兵力 = 血量），兵力上限 = 基础兵力 × G(等级)
 
-        public int ExpReward;           // 击败后获得经验
-        public int GoldReward;          // 击败后获得金钱
+        public bool IsElite;            // 精英（头目之类）：经验金钱 ×2；首领 ×10。数值按等级算，见 Formula.ExpReward
         public string Drop;             // 掉落的物品 Id
         public double DropRate;         // 掉落几率 0..1
         public string Junk;             // 必掉的材料杂物 Id（每个敌人掉一件），null = 不掉

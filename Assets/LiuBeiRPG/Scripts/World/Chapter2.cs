@@ -9,7 +9,7 @@ namespace LiuBeiRPG.World
     /// </summary>
     public class Chapter2 : Chapter
     {
-        public const int InnCost = 40;
+        public const int InnCost = 60;
 
         public readonly MapData Field;     // 青州郊外
         public readonly MapData Town;      // 青州城
@@ -20,17 +20,18 @@ namespace LiuBeiRPG.World
         const string F_GongJing = "c2_gongjing";     // 龚景谢过、简雍入队
         const string F_ZhangLiang = "c2_zhangliang"; // 桥头斩张梁
         public const string F_Boss = "c2_boss";      // 破大营
-        const string F_ChestFieldSW = "c2_chest_field_sw", F_ChestFieldNE = "c2_chest_field_ne", F_ChestTown = "c2_chest_town", F_ChestInn = "c2_chest_inn2f";
+        const string F_ChestFieldSW = "c2_chest_field_sw", F_ChestFieldNE = "c2_chest_field_ne", F_ChestTown = "c2_chest_town", F_ChestTown2 = "c2_chest_town2", F_ChestInn = "c2_chest_inn2f";
         const string F_ChestGzSW = "c2_chest_gz_sw", F_ChestGzE = "c2_chest_gz_e";
 
-        // 青州商店（设计文档 8.3）
-        static readonly string[] ShopGoods = { "caoyao", "aiye", "zhuojiu", "langyan", "yanmudan", "nuqiwan", "gangcha", "tongchui", "podao", "tieqiang", "tiejia" };
+        // 青州商店（设计文档 8.3）：药铺 / 武器铺
+        static readonly string[] ShopGoods = { "caoyao", "aiye", "zhuojiu", "langyan", "yanmudan", "nuqiwan", "feiniaoshan" };
+        static readonly string[] WeaponGoods = { "gangcha", "tongchui", "podao", "tieqiang", "tiejia", "pikui", "buxue" };
 
         public Chapter2(IGameHost host) : base(host)
         {
             Field = BuildField();
             Town = BuildTown();
-            var inn = BuildInn("qz_inn", InnCost, () => host.Warp(Town, 15, 4), Chest(F_ChestInn, 3, 3, 0, "zhuojiu", 2));
+            var inn = BuildInn("qz_inn", InnCost, () => host.Warp(Town, 5, 13), Chest(F_ChestInn, 3, 3, 0, "zhuojiu", 2));
             Inn = inn[0];
             Inn2F = inn[1];
             Guangzong = BuildGuangzong();
@@ -38,7 +39,7 @@ namespace LiuBeiRPG.World
 
         public override int Number { get { return 2; } }
         public override MapData[] Maps { get { return new[] { Field, Town, Inn, Inn2F, Guangzong }; } }
-        public override List<TownSpot> Towns { get { return new List<TownSpot> { new TownSpot { Map = Town, X = 9, Y = 12 } }; } }
+        public override List<TownSpot> Towns { get { return new List<TownSpot> { new TownSpot { Map = Town, X = 19, Y = 26 } }; } }
 
         public override void Begin()
         {
@@ -58,7 +59,7 @@ namespace LiuBeiRPG.World
         {
             host.Party.Gold /= 2;
             host.Party.FullRestore();
-            if (host.Flags.Has(F_Siege)) { host.Warp(Town, 15, 4); Say(L(null, "胜败乃兵家常事。刘备一行退回青州城休整……"), L(null, "（金钱减半，兵力已恢复）")); }
+            if (host.Flags.Has(F_Siege)) { host.Warp(Town, 5, 13); Say(L(null, "胜败乃兵家常事。刘备一行退回青州城休整……"), L(null, "（金钱减半，兵力已恢复）")); }
             else { host.Warp(Field, 15, 18); Say(L(null, "胜败乃兵家常事。刘备一行退回官道口重整……"), L(null, "（金钱减半，兵力已恢复）")); }
         }
 
@@ -82,7 +83,7 @@ namespace LiuBeiRPG.World
                 Art = "qingzhou_field",
                 Grade = "#f2f4ea", Light = "#f4f0ea", Weather = "leaf",
                 EncounterRate = 0.09,
-                EnemyLevel = 5,   // 第二章等级段 4～10：郊外 4～6 级
+                EnemyLevel = 5,   // 第二章等级段 4～10：郊外 4～6 级，广宗 8～10 级
                 ActorScale = 0.8f,
                 Ground = ',',
                 EnemyPool = new[] { GameDatabase.HuangJinBing, GameDatabase.HuangJinBing, GameDatabase.HuangJinLiShi, GameDatabase.HuangJinShuShi, GameDatabase.HuangJinTouMu },
@@ -138,7 +139,7 @@ namespace LiuBeiRPG.World
 
             m.OnStep = (x, y) =>
             {
-                if (m.At(x, y) == 't') { host.Warp(Town, 9, 12); return true; }
+                if (m.At(x, y) == 't') { host.Warp(Town, 19, 26); return true; }
                 if (x == 29 && y == 8) { host.Warp(Guangzong, 1, 10); return true; }   // 东边大路 → 广宗
                 if (x == 15 && y == 19) { Say(L("关羽", "兄长，回涿郡的路远，青州的事还没了结。")); return true; }
                 return false;
@@ -184,43 +185,80 @@ namespace LiuBeiRPG.World
                 Art = "qingzhou_ground",
                 Grade = "#fff3e4", Weather = "leaf",
                 EncounterRate = 0,
+                // 40×28，四屏大城（布局图和出图任务见 ArtTask/出图任务-青州城扩大.md）。
+                // 太守府 10×7 在正上方居中（深宅，图比地皮高出去的部分在地图上边界外，镜头到不了），门 (19,7)；客栈 (3-7,9-12) 门 (5,12)；酒馆 (32-36,9-11)；武器铺 (11-14,16-18) 门 (12,18)；药铺 (25-28,16-18) 门 (26,18)
+                // 小庙 (10-13,1-3)、粮仓 (27-29,1-3)、六处民居；西北角水塘园子，东北角桃园；S = 市集摊位 / 井，走不上去
                 Rows = new[]
                 {
-                    "TTTTTTTTTTTTTTTTTTTT",
-                    "TTHHHHHTTTTTTTHHHHTT",
-                    "T.HHHHH......HHHH..T",
-                    "T.HHHHH......HHHH..T",
-                    "T...=.........==...T",
-                    "T...==========.....T",
-                    "T........=.........T",
-                    "T.HHH....=....HHHH.T",
-                    "T.HHH....=....HHHH.T",
-                    "T.HHH....=....HHHH.T",
-                    "T........=.........T",
-                    "TTTTTTTT.=.TTTTTTTTT",
-                    "TTTTTTTTT=TTTTTTTTTT",
-                    "TTTTTTTTTggTTTTTTTTT",
+                    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+                    "T.........HHHH.HHHHHHHHHH..HHH..fPffPf.T",
+                    "T.fffff...HHHH.HHHHHHHHHH..HHH..ffffff.T",
+                    "T.fw~~f...HHHH.HHHHHHHHHH..HHH..PffPff.T",
+                    "T.f~~wf........HHHHHHHHHH.......fffffP.T",
+                    "T.fffff........HHHHHHHHHH.......ffPfff.T",
+                    "T..............HHHHHHHHHH..............T",
+                    "T..............HHHHHHHHHH..............T",
+                    "T............==============............T",
+                    "T..HHHHH=....==============....=HHHHH..T",
+                    "T..HHHHH=..........==..........=HHHHH..T",
+                    "T..HHHHH=..........==..........=HHHHH..T",
+                    "T..HHHHH=....S.S.S.==.S.S.S....=.......T",
+                    "T.......=..........==..........=.......T",
+                    "T======================================T",
+                    "T======================================T",
+                    "T.HHH...=..HHHH....==....HHHH..=...HHH.T",
+                    "T.HHH...=..HHHH....==....HHHH..=...HHH.T",
+                    "T.HHH...=..HHHH....==....HHHH..=...HHH.T",
+                    "T.......=....S.S.S.==.S.S...S..=.......T",
+                    "T.......=..........==.........S=.......T",
+                    "T.====================================.T",
+                    "T.......=..........==..........=.......T",
+                    "T..HHH..=...HHH....==....HHH...=..HHH..T",
+                    "T..HHH..=...HHH....==....HHH...=..HHH..T",
+                    "T..HHH......HHH....==....HHH......HHH..T",
+                    "T..................==..................T",
+                    "TTTTTTTTTTTTTTTTTTTggTTTTTTTTTTTTTTTTTTT",
                 }
             };
             m.DecorFile = "qingzhou";
-            m.Emitters.Add(new MapEmitter("smoke", 3.3f, 6.95f));
-            m.Critters.Add(new CritterSpawn("chicken", 2));
-            m.Critters.Add(new CritterSpawn("sparrow", 3));
-            m.Critters.Add(new CritterSpawn("butterfly", 2));
+            m.Emitters.Add(new MapEmitter("smoke", 3.3f, 15.95f));
+            m.Emitters.Add(new MapEmitter("smoke", 36.3f, 15.95f));
+            m.Emitters.Add(new MapEmitter("smoke", 4.3f, 22.95f));
+            m.Critters.Add(new CritterSpawn("chicken", 4));
+            m.Critters.Add(new CritterSpawn("sparrow", 6));
+            m.Critters.Add(new CritterSpawn("butterfly", 3));
+            m.Critters.Add(new CritterSpawn("butterfly2", 2));
+            m.Critters.Add(new CritterSpawn("fish", 3));
+            m.Critters.Add(new CritterSpawn("duck", 1));
 
             var flags = host.Flags;
 
-            m.Npcs.Add(Chest(F_ChestTown, 18, 2, 80));
-            m.Npcs.Add(Person("qz_merchant", "青州商人", "shangren", null, 16, 10, () =>
-                host.Say(new List<DialogueLine> { L("青州商人", "围城的日子可算熬过去了。刀枪甲胄、草药浊酒，诸位随便看。") }, () => host.OpenShop(ShopGoods))));
-            m.Npcs.Add(Person("qz_soldier", "青州兵", "shouwei", "qiang", 8, 11, () =>
-                Say(L("青州兵", flags.Has(F_GongJing) ? "张角兄弟屯兵广宗，出城往东走大路就是。" : "太守在府前候着诸位呢，就在西北边。"))));
-            m.Npcs.Add(Walker("qz_citizen", "百姓", "cunmin_nv", null, 1.0f, new[] { 11, 6, 12, 6, 12, 10, 11, 10 }, new[] { 3, 10 },
+            m.Npcs.Add(Chest(F_ChestTown, 37, 2, 80));                 // 桃园角上
+            m.Npcs.Add(Chest(F_ChestTown2, 37, 26, 0, "zhuojiu", 2));  // 东南角巷子里
+            // 市集：武器铺、药铺各一个掌柜站在门口
+            m.Npcs.Add(Person("qz_smith", "青州铁匠", "huolang", "chui", 11, 19, () =>
+                host.Say(new List<DialogueLine> { L("青州铁匠", "围城的日子可算熬过去了。刀枪甲胄都是现打的，诸位随便看。") }, () => host.OpenShop(WeaponGoods))));
+            m.Npcs.Add(Person("qz_merchant", "药铺掌柜", "shangren", null, 26, 19, () =>
+                host.Say(new List<DialogueLine> { L("药铺掌柜", "草药、艾叶、浊酒，还有几样行军用的物件，诸位缺什么？") }, () => host.OpenShop(ShopGoods))));
+            m.Npcs.Add(Person("qz_soldier", "青州兵", "shouwei", "qiang", 18, 26, () =>
+                Say(L("青州兵", flags.Has(F_GongJing) ? "张角兄弟屯兵广宗，出城往东走大路就是。" : "太守在府前候着诸位呢，顺着大街一直往北，最上头那座大宅。"))));
+            // 街上的人：巡街的兵、挎篮的村妇、拄拐的老人、跑着玩的小孩、挑担的货郎、扛锄头的农夫
+            m.Npcs.Add(Walker("qz_patrol", "巡街兵", "shouwei", "qiang", 0.9f, new[] { 19, 23, 19, 16 }, new[] { 19, 26 },
+                "太守有令，城中不得喧哗。", "黄巾退了，城门总算能开了。", "东门外大路通广宗，那边还在打。"));
+            m.Npcs.Add(Walker("qz_citizen", "村妇", "cunmin_nv", null, 1.0f, new[] { 10, 13, 18, 13 }, new[] { 5, 13 },
                 "多亏诸位将军，城里总算能开城门了。", "围城这些天，米价涨了十倍。", "太守府里来了位姓简的先生，说是找刘将军的。"));
+            m.Npcs.Add(Walker("qz_elder", "老人", "laoren", "guaizhang", 1.3f, new[] { 22, 13, 30, 13 }, new[] { 34, 12 },
+                "老朽在青州住了六十年，头回见贼兵围城。", "西北角那口塘，年轻时常去钓鱼。", "太守是个好官，就是胆子小了点。"));
+            m.Npcs.Add(Walker("qz_kid", "小孩", "xiaohai", null, 0.7f, new[] { 2, 19, 7, 19, 7, 22, 2, 22 }, new[] { 3, 26 },
+                "大胡子叔叔的刀好长！", "娘说贼人都被打跑了，我能出来玩了！", "我长大也要当将军！"));
+            m.Npcs.Add(Walker("qz_peddler", "货郎", "huolang", "biandan", 1.1f, new[] { 21, 16, 29, 16, 29, 19, 21, 19 }, new[] { 26, 19 },
+                "针头线脑、胭脂水粉，便宜卖了！", "这几日生意好，城里人都出来逛了。", "客官要不要看看南边来的蜀锦？"));
+            m.Npcs.Add(Walker("qz_farmer", "农夫", "cunmin_nan", "chutou", 1.0f, new[] { 33, 19, 37, 19, 37, 22, 33, 22 }, new[] { 36, 19 },
+                "地里的麦子让贼兵踩了一半。", "酒馆的酒不错，就是贵。", "听说刘将军是中山靖王之后？"));
 
             m.Npcs.Add(new Npc
             {
-                Id = "gongjing", Name = "龚景", Glyph = "龚", X = 6, Y = 4,
+                Id = "gongjing", Name = "龚景", Glyph = "龚", X = 17, Y = 8,   // 府前广场上
                 Talk = () =>
                 {
                     if (flags.Has(F_GongJing))
@@ -255,8 +293,11 @@ namespace LiuBeiRPG.World
             };
             m.OnTouch = (x, y) =>
             {
-                if ((x == 15 || x == 16) && y == 3) { host.Warp(Inn, 4, 5); return true; }   // 客栈门（门口 (15,4)/(16,4) 往上撞）
-                if (x == 4 && y == 3) { Say(L(null, "太守府。门口的卫兵说，太守正在府前。")); return true; }
+                if (x == 5 && y == 12) { host.Warp(Inn, 4, 5); return true; }   // 客栈门（门口 (5,13) 往上撞）
+                if (x == 19 && y == 7) { Say(L(null, "太守府。门口的卫兵说，太守正在府前广场。")); return true; }
+                if (x == 34 && y == 11) { Say(L(null, "酒馆里闹哄哄的，全是在议论黄巾退兵的人。")); return true; }
+                if (x == 11 && y == 3) { Say(L(null, "一座小庙，供着土地。香炉里的香还是热的。")); return true; }
+                if (x == 28 && y == 3) { Say(L(null, "官仓。围城半月，里面早空了。")); return true; }
                 return false;
             };
             return m;
@@ -274,7 +315,7 @@ namespace LiuBeiRPG.World
                 Art = "guangzong",
                 Grade = "#eef0f6", Light = "#f0ece6", Weather = "leaf",
                 EncounterRate = 0.1,
-                EnemyLevel = 8,   // 7～9 级
+                EnemyLevel = 9,   // 8～10 级
                 ActorScale = 0.8f,
                 Ground = ',',
                 EnemyPool = new[] { GameDatabase.HuangJinBing, GameDatabase.HuangJinLiShi, GameDatabase.HuangJinLiShi, GameDatabase.HuangJinShuShi, GameDatabase.HuangJinTouMu, GameDatabase.HuangJinTouMu },

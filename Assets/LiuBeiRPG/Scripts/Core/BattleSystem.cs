@@ -360,8 +360,8 @@ namespace LiuBeiRPG.Core
         public List<BattleEvent> GrantRewards()
         {
             var events = new List<BattleEvent>();
-            int exp = RewardExp = Enemies.Sum(e => e.Def.ExpReward);
-            int gold = RewardGold = Enemies.Sum(e => e.Def.GoldReward);
+            int exp = RewardExp = Enemies.Sum(e => Formula.ExpReward(e));
+            int gold = RewardGold = Enemies.Sum(e => Formula.GoldReward(e));
             Party.Gold += gold;
             events.Add(new BattleEvent("胜利！获得经验 " + exp + "，金钱 " + gold));
             // 掉落：每个敌人按几率掉一件；另外每个敌人必掉一件材料杂物。行囊放不下就算了
