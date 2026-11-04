@@ -89,6 +89,7 @@ namespace LiuBeiRPG.World
         public int Frames = 1;           // >1：横排序列帧循环（篝火）
         public float Fps = 10;
         public bool Ground;              // 贴着地面画（桥）：在所有人和物件下面，人能走在上面
+        public string Gone;              // 这个旗子立了就不画（烧掉的营寨）
         public float Lift;               // 画的位置往上抬多少格，排前后仍按 Y：挂在屋檐下的灯笼 Y 跟房子一样，抬上去
         // 运行时：草被人挤开的程度、树上下次还能惊起鸟的时刻
         public float Push, NextBirds;

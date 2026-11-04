@@ -566,7 +566,9 @@ namespace LiuBeiRPG.Game
         // 战斗界面内容区：横屏 960×540 居中；竖屏铺满宽度、高 770。整屏都是战场，底下一条指令栏（播战报时显示战报）
         float bx, by, bw, bh;
         const float BarH = 62f;     // 底部指令按钮高（最多两排）；手机上手指点得准，不能再小
-        const float MenuH = 2 * BarH + 8 + 12 + 26;   // 两排按钮 + 排间距 + 底边距 + 上方小字，战场人物要让开这么高
+        // 竖屏两排按钮（每排 3 个），横屏宽、一排放 6 个；加排间距 + 底边距 + 按钮上方那行小字，战场人物要让开这么高
+        static int MenuRows { get { return Gfx.Portrait ? 2 : 1; } }
+        static float MenuH { get { return MenuRows * BarH + (MenuRows - 1) * 8 + 12 + 38; } }
 
         void DrawBattle()
         {
@@ -619,16 +621,19 @@ namespace LiuBeiRPG.Game
             // 站位：敌我各竖排一列、面对面，列间距 ColGap，同列每人相隔 RowGap，整体在指令栏以上居中
             var units = new List<KeyValuePair<General, Vector2>>();
             // 人（头顶兵力条到脚下名字）在菜单以上的区域里居中；一列人多放不下时压缩上下间距
-            float head = UnitH + 12f, name = 22f, avail = bh - MenuH - 4f;
-            float cx = bx + bw * 0.5f, cy = by + 4f + avail * 0.5f + (head - name) * 0.5f;   // 脚底中线
-            // 挤得上下会叠在一起时，隔一个往外让 70 交错站（outward = -1 往左，+1 往右）
+            // 横屏战场就是整个屏幕高（by = 0），头顶的状态牌和选中箭头（人头上方 60）要留出来，不然顶出屏幕
+            float pad = Gfx.Portrait ? 4f : 60f;
+            float head = UnitH + 12f, name = 22f, avail = bh - MenuH - pad;
+            float cx = bx + bw * 0.5f, cy = by + pad + avail * 0.5f + (head - name) * 0.5f;   // 脚底中线
+            // 挤得上下会叠在一起时，隔一个往外让 70（横屏宽，让 110）交错站（outward = -1 往左，+1 往右）
+            float zig = Gfx.Portrait ? 70f : 110f;
             System.Action<List<General>, float, float> column = (gs, x, outward) =>
             {
                 float gap = gs.Count > 1 ? Mathf.Min(RowGap, (avail - head - name) / (gs.Count - 1)) : 0f;
                 bool zigzag = gap < head + name;
                 for (int i = 0; i < gs.Count; i++)
                     units.Add(new KeyValuePair<General, Vector2>(gs[i],
-                        new Vector2(x + (zigzag && i % 2 == 1 ? outward * 70f : 0f), cy + (i - (gs.Count - 1) * 0.5f) * gap)));
+                        new Vector2(x + (zigzag && i % 2 == 1 ? outward * zig : 0f), cy + (i - (gs.Count - 1) * 0.5f) * gap)));
             };
             var es = battle.Enemies;
             column(es, cx - ColGap * 0.5f, -1f);
@@ -832,8 +837,8 @@ namespace LiuBeiRPG.Game
             }
 
             // 现代风：独立的圆角按钮，和对话框同一套。选中的填金色、字变深、往上浮一点
-            // 每排最多 PerRow 个，从上往下排，最后一排贴底
-            const int PerRow = 3;
+            // 每排最多 PerRow 个（竖屏 3 个两排，横屏 6 个一排），从上往下排，最后一排贴底
+            int PerRow = Gfx.Portrait ? 3 : 6;
             const float gap = 10f;
             float itemW = Mathf.Min(170f, (bw - 48f - (PerRow - 1) * gap) / PerRow);   // 竖屏铺满一排三个
             int rows = (items.Count + PerRow - 1) / PerRow;

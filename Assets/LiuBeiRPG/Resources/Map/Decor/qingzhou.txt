@@ -124,7 +124,14 @@ tree_green_0 35.60 27.90 1.68 plant amp=0.03
 tree_green_2 36.60 27.90 1.87 plant amp=0.03
 tree_green_3 37.60 27.90 1.65 plant amp=0.03
 tree_green_3 38.60 27.90 1.77 plant amp=0.03
-# 房子（小庙 house_temple、粮仓 house_barn 的图还没出，出了会自动显示）：太守府 house_fu、客栈、酒馆、武器铺 / 药铺 house_shop、小庙 house_temple、粮仓 house_barn、民居
+# 原武器铺那块地皮（11-14,16-18）：草丛盖住地上的炭灰印
+bush_1 11.90 17.30 1.9 plant amp=0.035
+bush_0 13.60 17.10 1.8 plant amp=0.035
+bush_2 12.60 18.60 2.0 plant amp=0.035
+bush_0 14.40 18.50 1.6 plant amp=0.035
+grass_0 11.30 18.70 0.55 plant amp=0.06
+grass_0 14.90 17.60 0.5 plant amp=0.06
+# 房子（小庙 house_temple、粮仓 house_barn 的图还没出，出了会自动显示）：太守府 house_fu、客栈、酒馆、商铺 house_shop（只有东边一家，西边那块地皮种了草丛）、小庙 house_temple、粮仓 house_barn、民居
 house_fu 20.00 7.98 9.6
 flag_big 15.00 7.61 1.3 flag amp=0.05 lift=0.6
 flag_big 25.00 7.61 1.3 flag amp=0.05 lift=0.6
@@ -134,16 +141,16 @@ lantern 7.40 12.87 0.42 hang amp=0.22 lift=0.85
 house_tavern 34.50 11.98 5.8
 banner_blue 32.40 11.61 0.5 hang amp=0.14 lift=0.85
 lantern 36.60 11.61 0.42 hang amp=0.22 lift=0.9
-house_shop 13.00 18.98 3.9
 house_shop 27.00 18.98 3.9
 house_temple 12.00 3.60 4.2
 house_barn 28.50 3.60 3.2
-cottage_0 3.50 18.98 3.8
-cottage_1 36.50 18.98 3.8
-cottage_1 4.50 25.20 3.8
-cottage_0 35.50 25.20 3.8
-cottage_0 13.50 25.20 3.8
-cottage_1 26.50 25.20 3.8
+# 民居：街坊只有 5 格深，房子最高只能到 5 格，再高就把街盖住了。cottage_0（方）5.5 宽，cottage_1（扁）6.4 宽
+cottage_0 4.00 20.95 5.5
+cottage_1 35.20 20.95 6.4
+cottage_1 4.50 26.95 6.4
+cottage_0 35.20 26.95 5.5
+cottage_0 13.50 26.95 5.5
+cottage_1 26.50 26.95 6.4
 # 市集那几块土方（S 格）先种花草；想换摊子按 ArtSrc/地图生命感提示词.md §18 出图
 bush_0 13.48 13.01 1.55 plant amp=0.035
 grass_0 13.08 13.00 0.55 plant amp=0.06
@@ -182,11 +189,8 @@ bush_0 28.39 20.01 1.55 plant amp=0.035
 grass_0 28.08 20.00 0.55 plant amp=0.06
 grass_0 28.90 19.86 0.5 plant amp=0.06
 well 30.25 20.55 1.1
-fence 2.50 20.00 1.6
-fence 37.50 20.00 1.6
-haystack 6.80 17.60 1.1
-crates 9.80 17.80 0.9
-weapon_rack 10.30 19.30 0.9
+fence 7.40 20.95 1.2
+haystack 7.40 18.00 1.1
 # 西北角园子：塘边柳树、荷叶、芦苇；东北角桃园
 tree_green_2 1.60 2.90 1.7 plant amp=0.035
 tree_green_1 6.60 1.90 1.6 plant amp=0.035

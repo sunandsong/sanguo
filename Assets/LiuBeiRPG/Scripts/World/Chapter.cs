@@ -70,17 +70,17 @@ namespace LiuBeiRPG.World
             return n;
         }
 
-        /// <summary>客栈一楼 + 二楼（每章一套，图是同一张）。cost 住一晚多少钱，leave 从一楼下边走出去干什么，chest2F 二楼放的宝箱（可空）。</summary>
-        protected MapData[] BuildInn(string id, int cost, Action leave, Npc chest2F)
+        /// <summary>客栈一楼 + 二楼（每章一套；art 是内景图名，默认涿县那套 inn / inn_2f，青州的出好后传 inn_qz）。cost 住一晚多少钱，leave 从一楼下边走出去干什么，chest2F 二楼放的宝箱（可空）。</summary>
+        protected MapData[] BuildInn(string id, int cost, Action leave, Npc chest2F, string art = "inn")
         {
             var inn = new MapData
             {
-                Id = id, Name = "客栈", Art = "inn", Grade = "#fff0dc", Light = "#e8d6c0", ArtMargin = 0,
+                Id = id, Name = "客栈", Art = art, Grade = "#fff0dc", Light = "#e8d6c0", ArtMargin = 0,
                 Rows = new[] { "HHHHHHHHH", "HHHHHHHHH", "HHHH..HHH", "........H", ".........", "........." }
             };
             var up = new MapData
             {
-                Id = id + "_2f", Name = "客栈二楼", Art = "inn_2f", Grade = "#fff0dc", Light = "#e8d6c0", ArtMargin = 0,
+                Id = id + "_2f", Name = "客栈二楼", Art = art + "_2f", Grade = "#fff0dc", Light = "#e8d6c0", ArtMargin = 0,
                 Rows = new[] { "HHHHHHHHH", "HHHHHHHHH", "HH.H.HHHH", "HH.......", ".H......H", "HHHHHHHHH" }   // (1,3) 是矮桌，走不上去
             };
             inn.Npcs.Add(new Npc

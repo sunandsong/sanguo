@@ -49,6 +49,7 @@ namespace LiuBeiRPG.Game
                 {
                     var kv = line[i].Split('=');
                     if (kv[0] == "ground") { d.Ground = true; continue; }
+                    if (kv[0] == "gone") { d.Gone = kv[1]; continue; }
                     if (kv.Length == 1)
                     {
                         d.Motion = kv[0] == "plant" ? LiuBeiRPG.World.Motion.Plant : kv[0] == "hang" ? LiuBeiRPG.World.Motion.Hang
@@ -252,6 +253,7 @@ namespace LiuBeiRPG.Game
         {
             critterMap = map;
             LoadDecor(map);
+            map.Decor.RemoveAll(d => d.Gone != null && flags.Has(d.Gone));
             critters.Clear();
             ripples.Clear();
             foreach (var s in map.Critters)

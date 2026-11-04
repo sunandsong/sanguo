@@ -14,6 +14,7 @@ namespace LiuBeiRPG.World
         public readonly MapData Field;     // 青州郊外
         public readonly MapData Town;      // 青州城
         public readonly MapData Inn, Inn2F;
+        public readonly MapData Fu;        // 太守府正堂
         public readonly MapData Guangzong; // 广宗
 
         const string F_Siege = "c2_siege";           // 打退了围城的张宝
@@ -23,22 +24,32 @@ namespace LiuBeiRPG.World
         const string F_ChestFieldSW = "c2_chest_field_sw", F_ChestFieldNE = "c2_chest_field_ne", F_ChestTown = "c2_chest_town", F_ChestTown2 = "c2_chest_town2", F_ChestInn = "c2_chest_inn2f";
         const string F_ChestGzSW = "c2_chest_gz_sw", F_ChestGzE = "c2_chest_gz_e";
 
-        // 青州商店（设计文档 8.3）：药铺 / 武器铺
-        static readonly string[] ShopGoods = { "caoyao", "aiye", "zhuojiu", "langyan", "yanmudan", "nuqiwan", "feiniaoshan" };
-        static readonly string[] WeaponGoods = { "gangcha", "tongchui", "podao", "tieqiang", "tiejia", "pikui", "buxue" };
+        // 青州商店（设计文档 8.3）：全城一家铺子，掌柜站门口，药、道具、兵器、甲都在他这儿买卖
+        static readonly string[] ShopGoods = { "caoyao", "aiye", "zhuojiu", "langyan", "yanmudan", "nuqiwan", "feiniaoshan", "gangcha", "tongchui", "podao", "tieqiang", "tiejia", "pikui", "buxue" };
 
         public Chapter2(IGameHost host) : base(host)
         {
             Field = BuildField();
             Town = BuildTown();
+            Fu = BuildFu();
+            if (host.Flags.Has(F_Siege)) BurnCamps();
             var inn = BuildInn("qz_inn", InnCost, () => host.Warp(Town, 5, 13), Chest(F_ChestInn, 3, 3, 0, "zhuojiu", 2));
             Inn = inn[0];
             Inn2F = inn[1];
             Guangzong = BuildGuangzong();
         }
 
+        /// <summary>围城已解：两座黄巾营盘烧成白地——物件（gone=c2_siege）、篝火、阻挡块一起撤掉。读档进来和打赢当场都走这里。</summary>
+        void BurnCamps()
+        {
+            host.Flags.Set(F_Siege);
+            Field.Decor.RemoveAll(d => d.Gone == F_Siege);
+            Field.Emitters.RemoveAll(e => e.Kind == "fire");
+            for (int y = 0; y < Field.Rows.Length; y++) Field.Rows[y] = Field.Rows[y].Replace('C', ',');
+        }
+
         public override int Number { get { return 2; } }
-        public override MapData[] Maps { get { return new[] { Field, Town, Inn, Inn2F, Guangzong }; } }
+        public override MapData[] Maps { get { return new[] { Field, Town, Fu, Inn, Inn2F, Guangzong }; } }
         public override List<TownSpot> Towns { get { return new List<TownSpot> { new TownSpot { Map = Town, X = 19, Y = 26 } }; } }
 
         public override void Begin()
@@ -66,7 +77,7 @@ namespace LiuBeiRPG.World
         /// <summary>调试：直接当作围城已解。</summary>
         public override void SkipToField()
         {
-            host.Flags.Set(F_Siege);
+            BurnCamps();
             host.Party.FullRestore();
             host.Warp(Field, 15, 6);
         }
@@ -91,10 +102,10 @@ namespace LiuBeiRPG.World
                 {
                     "MMMMMMMMMMMMMMMtMMMMMMMMMMMMMM",
                     "M,,,,T,,,,,,,,,=,,,,,,,T,,,,,M",
-                    "M,T,,,,,,,,,,,,=,,,,,,,,,,T,,M",
-                    "M,,,,,,,,,CC,,,=,,,,CC,,,,,,,M",
-                    "M,,,T,,,,,CC,,,=,,,,CC,,T,,,,M",
-                    "M,,,,,,,,,,,,,,=,,,,,,,,,,,,,M",
+                    "M,T,,,,,CCCCC,,=,,CCCCC,,,T,,M",
+                    "M,,,,,,,CCCCC,,=,,CCCCC,,,,,,M",
+                    "M,,,T,,,CCCCC,,=,,CCCCC,T,,,,M",
+                    "M,,,,,,,CCCCC,,=,,CCCCC,,,,,,M",
                     "M,,MM,,,,,,,,,,=,,,,,,,,,,,,,M",
                     "M,,MM,,T,,,,,,,=,,,,,,,,,,T,,M",
                     "M,,,,,,,,,,,,,,===============",
@@ -112,8 +123,8 @@ namespace LiuBeiRPG.World
                 }
             };
             m.DecorFile = "qingzhou_field";
-            m.Emitters.Add(new MapEmitter("fire", 10.6f, 4.6f));
-            m.Emitters.Add(new MapEmitter("fire", 20.6f, 4.6f));
+            m.Emitters.Add(new MapEmitter("fire", 10.2f, 5.45f));
+            m.Emitters.Add(new MapEmitter("fire", 20.2f, 5.45f));
             m.Critters.Add(new CritterSpawn("rabbit", 3));
             m.Critters.Add(new CritterSpawn("sparrow", 4));
             m.Critters.Add(new CritterSpawn("butterfly", 2));
@@ -146,8 +157,8 @@ namespace LiuBeiRPG.World
             };
             m.OnTouch = (x, y) =>
             {
-                if (m.At(x, y) != 'C') return false;
-                Say(L(null, flags.Has(F_Siege) ? "黄巾营盘已经烧成了白地。" : "黄巾的营盘，帐篷里全是人。"));
+                if (m.At(x, y) != 'C') return false;   // 烧掉之后 C 都成了草地，碰不到了
+                Say(L(null, "黄巾的营盘，帐篷里全是人。"));
                 return true;
             };
             return m;
@@ -162,7 +173,7 @@ namespace LiuBeiRPG.World
                 L("张宝", "哼，看我妖法！"),
             }, () => host.StartBattle(GameDatabase.Chapter2Siege(), true, () =>
             {
-                host.Flags.Set(F_Siege);
+                BurnCamps();
                 host.Say(new List<DialogueLine>
                 {
                     L(null, "张宝妖法被破，黄巾大乱。龚景率城中兵马杀出，内外夹攻，贼众溃散。"),
@@ -171,6 +182,55 @@ namespace LiuBeiRPG.World
                     L("关羽", "兄长，太守龚景在城中相候。"),
                 });
             }));
+        }
+
+        // =====================================================================
+        // 太守府正堂：龚景在公案前，谢过、简雍入队都在这里
+        // =====================================================================
+        MapData BuildFu()
+        {
+            var m = new MapData
+            {
+                Id = "qz_fu", Name = "太守府", Art = "fu_qz", Grade = "#fff0dc", Light = "#e8d6c0", ArtMargin = 0,
+                // 12×8：上三排是屏风和台基（公案、香炉、鼓、戟架），下面青石板地，两边红墙；从最下面走出去回府前广场
+                Rows = new[] { "HHHHHHHHHHHH", "HHHHHHHHHHHH", "HHHHHHHHHHHH", "H..........H", "H..........H", "H..........H", "H..........H", "H..........H" }
+            };
+            var flags = host.Flags;
+            m.Npcs.Add(new Npc
+            {
+                Id = "gongjing", Name = "龚景", Glyph = "龚", X = 5, Y = 3,   // 正堂公案前
+                Talk = () =>
+                {
+                    if (flags.Has(F_GongJing))
+                    {
+                        Say(L("龚景", "张角兄弟屯兵广宗，卢中郎将正与之相持。玄德若去，可解大难。"),
+                            L("龚景", "出城往东，沿大路走到头便是。"));
+                        return;
+                    }
+                    flags.Set(F_GongJing);
+                    host.Party.Gold += 300;
+                    for (int i = 0; i < 3 && host.Party.CanHold("aiye"); i++) host.Party.Items.Add("aiye");
+                    host.Party.Add(new General(GameDatabase.JianYong));
+                    host.Say(new List<DialogueLine>
+                    {
+                        L("龚景", "玄德公解青州之围，老夫代满城百姓谢过！些许犒军之物，万勿推辞。"),
+                        L(null, "获得金钱 300、艾叶 ×3！"),
+                        L("？？？", "玄德兄！"),
+                        L(null, "屏风后走出一名青衫文士，笑吟吟地拱手。"),
+                        L("简雍", "涿郡简雍，字宪和。闻兄长起兵讨贼，特来相投。军中文书钱粮，就交给小弟吧。"),
+                        L("刘备", "宪和来得正好！"),
+                        L(null, "简雍加入队伍！"),
+                        L("龚景", "眼下张角亲率主力屯兵广宗，卢植卢中郎将与之相持数月，正缺人手。"),
+                        L("龚景", "玄德曾师事卢公，何不前去相助？出城往东，沿大路走到头便是广宗。"),
+                    });
+                }
+            });
+            m.OnTouch = (x, y) =>
+            {
+                if (y >= m.Height) { host.Warp(Town, 19, 8); return true; }
+                return false;
+            };
+            return m;
         }
 
         // =====================================================================
@@ -186,8 +246,8 @@ namespace LiuBeiRPG.World
                 Grade = "#fff3e4", Weather = "leaf",
                 EncounterRate = 0,
                 // 40×28，四屏大城（布局图和出图任务见 ArtTask/出图任务-青州城扩大.md）。
-                // 太守府 10×7 在正上方居中（深宅，图比地皮高出去的部分在地图上边界外，镜头到不了），门 (19,7)；客栈 (3-7,9-12) 门 (5,12)；酒馆 (32-36,9-11)；武器铺 (11-14,16-18) 门 (12,18)；药铺 (25-28,16-18) 门 (26,18)
-                // 小庙 (10-13,1-3)、粮仓 (27-29,1-3)、六处民居；西北角水塘园子，东北角桃园；S = 市集摊位 / 井，走不上去
+                // 太守府 10×7 在正上方居中（深宅，图比地皮高出去的部分在地图上边界外，镜头到不了），门 (19,7)；客栈 (3-7,9-12) 门 (5,12)；酒馆 (32-36,9-11)；商铺 (25-28,16-18) 门 (26,18)，西边对称那块地皮空着种草丛
+                // 小庙 (10-13,1-3)、粮仓 (27-29,1-3)、六处民居（上排 1-6 / 32-38 × 16-20，下排 1-7 / 11-16 / 23-29 / 33-37 × 23-26，房子图比原来大一半到七成，再大就压到街上了）；西北角水塘园子，东北角桃园；S = 市集摊位 / 井，走不上去
                 Rows = new[]
                 {
                     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
@@ -206,17 +266,17 @@ namespace LiuBeiRPG.World
                     "T.......=..........==..........=.......T",
                     "T======================================T",
                     "T======================================T",
-                    "T.HHH...=..HHHH....==....HHHH..=...HHH.T",
-                    "T.HHH...=..HHHH....==....HHHH..=...HHH.T",
-                    "T.HHH...=..HHHH....==....HHHH..=...HHH.T",
-                    "T.......=....S.S.S.==.S.S...S..=.......T",
-                    "T.......=..........==.........S=.......T",
+                    "THHHHHH.=..........==....HHHH..=.......T",
+                    "THHHHHH.=..........==....HHHH..=HHHHHHHT",
+                    "THHHHHH.=..........==....HHHH..=HHHHHHHT",
+                    "THHHHHH.=....S.S.S.==.S.S...S..=HHHHHHHT",
+                    "THHHHHH.=..........==.........S=HHHHHHHT",
                     "T.====================================.T",
                     "T.......=..........==..........=.......T",
-                    "T..HHH..=...HHH....==....HHH...=..HHH..T",
-                    "T..HHH..=...HHH....==....HHH...=..HHH..T",
-                    "T..HHH......HHH....==....HHH......HHH..T",
-                    "T..................==..................T",
+                    "THHHHHHH=..HHHHHH..==..HHHHHHH.=.HHHHH.T",
+                    "THHHHHHH=..HHHHHH..==..HHHHHHH.=.HHHHH.T",
+                    "THHHHHHH...HHHHHH..==..HHHHHHH...HHHHH.T",
+                    "THHHHHHH...HHHHHH..==..HHHHHHH...HHHHH.T",
                     "TTTTTTTTTTTTTTTTTTTggTTTTTTTTTTTTTTTTTTT",
                 }
             };
@@ -234,14 +294,12 @@ namespace LiuBeiRPG.World
             var flags = host.Flags;
 
             m.Npcs.Add(Chest(F_ChestTown, 37, 2, 80));                 // 桃园角上
-            m.Npcs.Add(Chest(F_ChestTown2, 37, 26, 0, "zhuojiu", 2));  // 东南角巷子里
-            // 市集：武器铺、药铺各一个掌柜站在门口
-            m.Npcs.Add(Person("qz_smith", "青州铁匠", "huolang", "chui", 11, 19, () =>
-                host.Say(new List<DialogueLine> { L("青州铁匠", "围城的日子可算熬过去了。刀枪甲胄都是现打的，诸位随便看。") }, () => host.OpenShop(WeaponGoods))));
-            m.Npcs.Add(Person("qz_merchant", "药铺掌柜", "shangren", null, 26, 19, () =>
-                host.Say(new List<DialogueLine> { L("药铺掌柜", "草药、艾叶、浊酒，还有几样行军用的物件，诸位缺什么？") }, () => host.OpenShop(ShopGoods))));
+            m.Npcs.Add(Chest(F_ChestTown2, 38, 26, 0, "zhuojiu", 2));  // 东南角巷子里
+            // 市集：一家铺子，掌柜站在门口，买卖都找他
+            m.Npcs.Add(Person("qz_merchant", "掌柜", "shangren", null, 26, 19, () =>
+                host.Say(new List<DialogueLine> { L("掌柜", "围城的日子可算熬过去了。药材酒水、刀枪甲胄都齐，诸位缺什么？换下来的旧物小店也收。") }, () => host.OpenShop(ShopGoods))));
             m.Npcs.Add(Person("qz_soldier", "青州兵", "shouwei", "qiang", 18, 26, () =>
-                Say(L("青州兵", flags.Has(F_GongJing) ? "张角兄弟屯兵广宗，出城往东走大路就是。" : "太守在府前候着诸位呢，顺着大街一直往北，最上头那座大宅。"))));
+                Say(L("青州兵", flags.Has(F_GongJing) ? "张角兄弟屯兵广宗，出城往东走大路就是。" : "太守在府里候着诸位呢，顺着大街一直往北，最上头那座大宅。"))));
             // 街上的人：巡街的兵、挎篮的村妇、拄拐的老人、跑着玩的小孩、挑担的货郎、扛锄头的农夫
             m.Npcs.Add(Walker("qz_patrol", "巡街兵", "shouwei", "qiang", 0.9f, new[] { 19, 23, 19, 16 }, new[] { 19, 26 },
                 "太守有令，城中不得喧哗。", "黄巾退了，城门总算能开了。", "东门外大路通广宗，那边还在打。"));
@@ -249,42 +307,12 @@ namespace LiuBeiRPG.World
                 "多亏诸位将军，城里总算能开城门了。", "围城这些天，米价涨了十倍。", "太守府里来了位姓简的先生，说是找刘将军的。"));
             m.Npcs.Add(Walker("qz_elder", "老人", "laoren", "guaizhang", 1.3f, new[] { 22, 13, 30, 13 }, new[] { 34, 12 },
                 "老朽在青州住了六十年，头回见贼兵围城。", "西北角那口塘，年轻时常去钓鱼。", "太守是个好官，就是胆子小了点。"));
-            m.Npcs.Add(Walker("qz_kid", "小孩", "xiaohai", null, 0.7f, new[] { 2, 19, 7, 19, 7, 22, 2, 22 }, new[] { 3, 26 },
+            m.Npcs.Add(Walker("qz_kid", "小孩", "xiaohai", null, 0.7f, new[] { 2, 21, 7, 21, 7, 22, 2, 22 }, new[] { 4, 21 },
                 "大胡子叔叔的刀好长！", "娘说贼人都被打跑了，我能出来玩了！", "我长大也要当将军！"));
             m.Npcs.Add(Walker("qz_peddler", "货郎", "huolang", "biandan", 1.1f, new[] { 21, 16, 29, 16, 29, 19, 21, 19 }, new[] { 26, 19 },
                 "针头线脑、胭脂水粉，便宜卖了！", "这几日生意好，城里人都出来逛了。", "客官要不要看看南边来的蜀锦？"));
-            m.Npcs.Add(Walker("qz_farmer", "农夫", "cunmin_nan", "chutou", 1.0f, new[] { 33, 19, 37, 19, 37, 22, 33, 22 }, new[] { 36, 19 },
+            m.Npcs.Add(Walker("qz_farmer", "农夫", "cunmin_nan", "chutou", 1.0f, new[] { 32, 21, 38, 21, 38, 22, 32, 22 }, new[] { 35, 21 },
                 "地里的麦子让贼兵踩了一半。", "酒馆的酒不错，就是贵。", "听说刘将军是中山靖王之后？"));
-
-            m.Npcs.Add(new Npc
-            {
-                Id = "gongjing", Name = "龚景", Glyph = "龚", X = 17, Y = 8,   // 府前广场上
-                Talk = () =>
-                {
-                    if (flags.Has(F_GongJing))
-                    {
-                        Say(L("龚景", "张角兄弟屯兵广宗，卢中郎将正与之相持。玄德若去，可解大难。"),
-                            L("龚景", "出城往东，沿大路走到头便是。"));
-                        return;
-                    }
-                    flags.Set(F_GongJing);
-                    host.Party.Gold += 300;
-                    for (int i = 0; i < 3 && host.Party.CanHold("aiye"); i++) host.Party.Items.Add("aiye");
-                    host.Party.Add(new General(GameDatabase.JianYong));
-                    host.Say(new List<DialogueLine>
-                    {
-                        L("龚景", "玄德公解青州之围，老夫代满城百姓谢过！些许犒军之物，万勿推辞。"),
-                        L(null, "获得金钱 300、艾叶 ×3！"),
-                        L("？？？", "玄德兄！"),
-                        L(null, "府中走出一名青衫文士，笑吟吟地拱手。"),
-                        L("简雍", "涿郡简雍，字宪和。闻兄长起兵讨贼，特来相投。军中文书钱粮，就交给小弟吧。"),
-                        L("刘备", "宪和来得正好！"),
-                        L(null, "简雍加入队伍！"),
-                        L("龚景", "眼下张角亲率主力屯兵广宗，卢植卢中郎将与之相持数月，正缺人手。"),
-                        L("龚景", "玄德曾师事卢公，何不前去相助？出城往东，沿大路走到头便是广宗。"),
-                    });
-                }
-            });
 
             m.OnStep = (x, y) =>
             {
@@ -294,7 +322,7 @@ namespace LiuBeiRPG.World
             m.OnTouch = (x, y) =>
             {
                 if (x == 5 && y == 12) { host.Warp(Inn, 4, 5); return true; }   // 客栈门（门口 (5,13) 往上撞）
-                if (x == 19 && y == 7) { Say(L(null, "太守府。门口的卫兵说，太守正在府前广场。")); return true; }
+                if (x == 19 && y == 7) { host.Warp(Fu, 5, 7); return true; }   // 府门 → 正堂
                 if (x == 34 && y == 11) { Say(L(null, "酒馆里闹哄哄的，全是在议论黄巾退兵的人。")); return true; }
                 if (x == 11 && y == 3) { Say(L(null, "一座小庙，供着土地。香炉里的香还是热的。")); return true; }
                 if (x == 28 && y == 3) { Say(L(null, "官仓。围城半月，里面早空了。")); return true; }
