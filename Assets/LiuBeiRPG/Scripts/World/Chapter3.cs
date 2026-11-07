@@ -168,12 +168,12 @@ namespace LiuBeiRPG.World
                     "M,,,,,,,CCC,,,,,,,,T,,,,,,,MMM",
                     "M,,,,,,,CCC,,,,,,,,,,,,,,,,,MM",
                     "M,,T,,,,,,,,,,,,,,,,,,,,,,,,MM",
-                    "M,,,,,,,,,,,,,T,,,,,,MM,,,,,MM",
-                    "M,,,,,,,,,,,,,,,,,,,,MM,,,,MMM",
-                    "M,,,~~~,,,,,,,,,,,,,,,,,,MMMMM",
-                    "======================,,,,,,gM",
+                    "M,,,,,,,,,,,,,T,,,,,,,,,,,,,MM",
+                    "M,,,,,,,,,,,,,,,,,,,,,,,,,,MMM",
+                    "M,,,,,,,,,,,,,,,,,,,,,,,,MMMMM",
+                    "============================gM",
                     "M,,,~~~~,,,,,,,,,,,,,,,,,MMMMM",
-                    "M,,,,~~,,,,,,T,,,,,,,,,,,,,MMM",
+                    "M,,,~~~,,,,,,T,,,,,,,,,,,,,MMM",
                     "M,,,,,,,,,,,,,,,,,,,,,,,,,,,MM",
                     "M,T,,,,,,,,,,,,,,,T,,,,,,,,,MM",
                     "M,,,,,,,,,,,,,,,,,,,,,,,,,,MMM",
@@ -200,7 +200,7 @@ namespace LiuBeiRPG.World
             m.OnStep = (x, y) =>
             {
                 if (x == 0 && y == 10) { host.Warp(Camp, 28, 10); return true; }
-                if (m.At(x, y) == 'g') { host.Warp(Hulao, 14, 18); return true; }
+                if (m.At(x, y) == 'g') { host.Warp(Hulao, 28, 8); return true; }   // 关门 → 虎牢关东口
                 return false;
             };
             m.OnTouch = (x, y) =>
@@ -252,7 +252,7 @@ namespace LiuBeiRPG.World
                     "M,,T,,,,,CCC,,=,,,,CCC,,,T,,,M",
                     "M,,,,,,,,,,,,,=,,,,,,,,,,,,,,M",
                     "M,,,,,T,,,,,,,=,,,,,,,,,,,,,,M",
-                    "M,,,,,,,,,,,,,===============M",
+                    "M,,,,,,,,,,,,,================",
                     "M,MMM,,,,,,,,,=,,,,,,,,,,,,,,M",
                     "M,MMM,,,,,,,,,=,,,,,,,,,,,,,,M",
                     "M,,,,,,,T,,,,,=,,,,T,,,,,,,,,M",
@@ -283,7 +283,8 @@ namespace LiuBeiRPG.World
 
             m.OnStep = (x, y) =>
             {
-                if (x == 14 && y == 19) { host.Warp(Camp, 13, 1); return true; }
+                if (x == 14 && y == 19) { host.Warp(Camp, 13, 1); return true; }   // 南口 ↔ 联军大营北门
+                if (x == 29 && y == 8) { host.Warp(Sishui, 27, 10); return true; }   // 东口 ↔ 汜水关关门
                 if (x == 14 && y == 0 && flags.Has(F_Boss)) { host.StartChapter(4); return true; }   // 吕布退走后穿过虎牢关 → 第四章
                 return false;
             };

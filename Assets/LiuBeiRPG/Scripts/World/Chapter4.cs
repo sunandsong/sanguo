@@ -144,7 +144,7 @@ namespace LiuBeiRPG.World
                 if (m.At(x, y) == 't') { Say(L(null, flags.Has(F_GuanHai) ? "北海城里的百姓正在清理战场，孔融已备下酒宴。" : "北海城门紧闭。")); return true; }
                 if (x == 29 && y == 10)
                 {
-                    if (flags.Has(F_GuanHai)) host.Warp(Town, 14, 18);
+                    if (flags.Has(F_GuanHai)) host.Warp(Field, 1, 10);   // 东口 ↔ 徐州郊外西口
                     else Say(L("关羽", "兄长，先解北海之围，再东去徐州。"));
                     return true;
                 }
@@ -303,24 +303,24 @@ namespace LiuBeiRPG.World
                 Rows = new[]
                 {
                     "MMMMMMMMMMMMMMMtMMMMMMMMMMMMMM",
-                    "M,,,,,,,,,,,,,,=,,,,,,,,,,,,,M",
+                    "M,,,,,,,,,,,,,,=,,,,,,,,,,,,MM",
                     "M,,T,,,,,,,,,,,=,,,,,T,,,,,,,M",
                     "M,,,,,,,,T,,,,,=,,,,,,,,,,T,,M",
                     "M,,,,,,,,,,,,,,=,,,,,,,,,,,,,M",
-                    "M,,,~~~~,,,,,,,=,,,,,,,,,,,,,M",
-                    "M,,~~~~~~,,,,,,=,,,T,,,,,,,,,M",
-                    "M,,,~~~~,,,,,,,=,,,,,,,,,,,,,M",
-                    "M,,,,,,,,,,,,,,=,,,,,,,,,MMMMM",
-                    "M,,,,,,,T,,,,,,=,,,,,,,,,MMMMM",
-                    "M,,,,,,,,,,,,,,===========,,gM",
-                    "M,,,,,,,,,,,,,,,,,,,,,,,,MMMMM",
-                    "M,T,,,,,,,,,,,,,,,,,,,,,,MMMMM",
-                    "M,,,,,,,,,,,,,,,,,T,,,,,,,,,,M",
-                    "M,,,,CCCC,,,,,,,,,,,,,,,,,,,,M",
-                    "M,,,,CCCC,,,,,,,,,,,,,,,T,,,,M",
-                    "M,,,,CCCC,,,,,,,T,,,,,,,,,,,,M",
-                    "M,,T,,,,,,,,,,,,,,,,,,,,,,,,,M",
-                    "M,,,,,,,,,,,,,,,,,,,,,,,,,,,,M",
+                    "M,,,~~~~,,,,,,,=,,,,,,,,,,,,MM",
+                    "M,,~~~~~~,,,,,,=,,,T,,,,,,,,MM",
+                    "M,,,~~~~,,,,,,,=,,,,,,,,,,,MMM",
+                    "M,,,,,,,,,,,,,,=,,,,,,,,,,MMMM",
+                    "M,,,,,,,T,,,,,,=,,,,,,,,,,,,,M",
+                    "============================gM",
+                    "M,,,,,,,,,,,,,,=,,,,,,,,,,,MMM",
+                    "M,T,,,,,,,,,,,,=,,,,,,,,,,,MMM",
+                    "M,,,,,,,,,,,,,,=,,T,,,,,,,,,MM",
+                    "M,,,,CCCC,,,,,,=,,,,,,,,,,,,,M",
+                    "M,,,,CCCC,,,,,,=,,,,,,,,T,,,,M",
+                    "M,,,,CCCC,,,,,,=T,,,,,,,,,,,,M",
+                    "M,,T,,,,,,,,,,,=,,,,,,,,,,,,,M",
+                    "M,,,,,,,,,,,,,,=,,,,,,,,,,,,,M",
                     "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
                 }
             };
@@ -336,7 +336,11 @@ namespace LiuBeiRPG.World
             m.Npcs.Add(Chest(F_ChestF2, 2, 18, 0, "suozijia"));
             m.Npcs.Add(Chest(F_ChestF3, 20, 17, 400));
             m.Npcs.Add(Chest(F_ChestF4, 12, 5, 0, "jinchuangyao"));
-            m.Npcs.Add(Person("jiling_npc", "纪灵", "jiling", "cha", 9, 15, JiLingFight, () => !flags.Has(F_JiLing)));
+            m.Npcs.Add(Person("jiling_npc", "纪灵", "jiling", "cha", 9, 15, () =>
+            {
+                if (flags.Has(F_TaoQian)) JiLingFight();
+                else Say(L("关羽", "兄长，这是袁术的兵马。先进徐州城见过陶使君，再作计较。"));   // 北海过来先经过这里，别跳过陶谦
+            }, () => !flags.Has(F_JiLing)));
             m.Npcs.Add(Person("lvbu_npc2", "吕布", "lvbu", "huaji", 27, 10, LvBuFight, () => flags.Has(F_JiLing) && !flags.Has(F_Boss)));
             m.Npcs.Add(Person("xzf_scout", "徐州哨兵", "shouwei", "qiang", 14, 2, () =>
                 Say(L("徐州哨兵", !flags.Has(F_JiLing) ? "纪灵的淮南军在西南边扎营，那口三尖刀重五十斤。" : !flags.Has(F_Boss) ? "吕布夺了下邳，就在东边山口的城门前。使君小心，他那方天画戟……" : "下邳收复了！"))));
@@ -344,6 +348,7 @@ namespace LiuBeiRPG.World
             m.OnStep = (x, y) =>
             {
                 if (m.At(x, y) == 't') { host.Warp(Town, 14, 18); return true; }
+                if (x == 0 && y == 10) { host.Warp(Beihai, 28, 10); return true; }   // 西口 ↔ 北海东口
                 if (m.At(x, y) == 'g') { if (flags.Has(F_Boss)) host.StartChapter(5); else Say(L(null, "下邳城门紧闭。")); return true; }   // 吕布败后进下邳，随曹操回许都 → 第五章
                 return false;
             };

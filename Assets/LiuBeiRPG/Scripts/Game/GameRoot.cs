@@ -379,7 +379,11 @@ namespace LiuBeiRPG.Game
 
             // 选项框大一点，手机上好点
             const float rowH = 54f;
-            var box = new Rect(r.xMax - 280, r.y - 16 - 24 - choice.Options.Length * rowH, 280, 24 + choice.Options.Length * rowH);
+            // 框宽跟着最长的一项走（读档的「第一档：Lv 23　联军大营」280 放不下），至少 280，不超出屏幕
+            float bw = 280;
+            foreach (var o in choice.Options) bw = Mathf.Max(bw, Gfx.Style(26).CalcSize(new GUIContent(o)).x + 14 + 28 + 8);
+            bw = Mathf.Min(bw, Gfx.VW - 24);
+            var box = new Rect(Mathf.Max(12, r.xMax - bw), r.y - 16 - 24 - choice.Options.Length * rowH, bw, 24 + choice.Options.Length * rowH);
             Gfx.Modern(box);
             for (int i = 0; i < choice.Options.Length; i++)
             {

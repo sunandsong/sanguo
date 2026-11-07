@@ -70,8 +70,8 @@ namespace LiuBeiRPG.World
         {
             host.Party.Gold /= 2;
             host.Party.FullRestore();
-            if (host.Flags.Has(F_Siege)) { host.Warp(Town, 5, 13); Say(L(null, "胜败乃兵家常事。刘备一行退回青州城休整……"), L(null, "（金钱减半，兵力已恢复）")); }
-            else { host.Warp(Field, 15, 18); Say(L(null, "胜败乃兵家常事。刘备一行退回官道口重整……"), L(null, "（金钱减半，兵力已恢复）")); }
+            host.Warp(Town, 5, 13);   // 全灭回最近的有客栈的城：这一章只有青州城（解围前也进得去）
+            Say(L(null, "胜败乃兵家常事。刘备一行退回青州城休整……"), L(null, "（金钱减半，兵力已恢复）"));
         }
 
         /// <summary>调试：直接当作围城已解。</summary>

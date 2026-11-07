@@ -54,7 +54,8 @@ namespace LiuBeiRPG.World
         {
             host.Party.Gold /= 2;
             host.Party.FullRestore();
-            if (host.Flags.Has(F_LiuPi)) { host.Warp(Town, 5, 7); Say(L(null, "胜败乃兵家常事。刘备一行退回古城休整……"), L(null, "（金钱减半，兵力已恢复）")); }
+            // 全灭回最近的有客栈的城：古城要斩了蔡阳张飞才开门，之前没有城可回，退到南口
+            if (host.Flags.Has(F_Boss)) { host.Warp(Town, 5, 7); Say(L(null, "胜败乃兵家常事。刘备一行退回古城休整……"), L(null, "（金钱减半，兵力已恢复）")); }
             else { host.Warp(Field, 15, 18); Say(L(null, "胜败乃兵家常事。刘备一行退回汝南官道口重整……"), L(null, "（金钱减半，兵力已恢复）")); }
         }
 
@@ -77,15 +78,15 @@ namespace LiuBeiRPG.World
                 Rows = new[]
                 {
                     "MMMMMMMMMMMMMMMtMMMMMMMMMMMMMM",
-                    "MMMMMM,,,,,,,,,=,,,,,,,,,,,,,M",
-                    "MMMMM,,,,,,,,,,=,,,,,T,,,,,,,M",
+                    "MMMMM,,,,,,,,,,=,,,,,,,,,,,,,M",
+                    "MMMM,,,,,,,,,,,=,,,,,T,,,,,,,M",
                     "MMMM,,,,,,,T,,,=,,,,,,,,,,,,,M",
-                    "MMM,,,,,,,,,,,,=,,,,,,,,T,,,,M",
-                    "MM,,,,,,,,,,,,,=,,,,,,,,,,,,,M",
+                    "MM,,,,,,,,,,,,,=,,,,,,,,T,,,,M",
+                    "M,,,,,,,,,,,,,,=,,,,,,,,,,,,,M",
                     "M,,MM,,,,,,,,,,=,,,,,,HHHH,,,M",
                     "M,,MM,,,,,,,,,,=,,,,,,HHHH,,,M",
                     "M,,,,,,,,,,,,,,=,,,,,,HHHH,,,M",
-                    "M,,,,,,,,,,,,,,=======.=,,,,,M",
+                    "======================.=,,,,,M",
                     "M,,,,,,,,CCCC,,=,,,,,,,,,,,,,M",
                     "M,,,,T,,,CCCC,,=,,,,,,,T,,,,,M",
                     "M,,,,,,,,,,,,,,=,,,,,,,,,MM,,M",
@@ -156,7 +157,8 @@ namespace LiuBeiRPG.World
                     else Say(L("孙乾", "主公，汝南的刘辟、龚都扎营在西边，不先去打个招呼，怕他们从背后捅刀子。"));
                     return true;
                 }
-                if (x == 15 && y == 19) { if (flags.Has(F_Boss)) host.StartChapter(7); else Say(L("关羽", "兄长，往北才是古城。")); return true; }   // 古城会后南下投刘表 → 第七章
+                if (x == 15 && y == 19) { Say(L("关羽", flags.Has(F_Boss) ? "兄长，这是来时的路。去荆州得走西边的官道。" : "兄长，往北才是古城。")); return true; }   // 南口 = 来时的路，不换图
+                if (x == 0 && y == 9) { if (flags.Has(F_Boss)) host.StartChapter(7); else Say(L("孙乾", "主公，西边官道通荆州。古城的事还没了结，先往北去。")); return true; }   // 古城会后走西边官道南下投刘表 → 第七章
                 return false;
             };
             m.OnTouch = (x, y) =>
@@ -207,7 +209,7 @@ namespace LiuBeiRPG.World
                     L(null, "刘备、关羽、张飞，古城相会。赵云、孙乾、糜竺、简雍、周仓、关平都在，兄弟重聚，大宴三日。"),
                     L("刘备", "备飘零半生，今日方知，得兄弟者得天下。"),
                     L("赵云", "主公，曹操势大，袁绍将败，汝南不可久留。荆州刘表是主公同宗，可往投之。"),
-                    L(null, "（沿汝南郊外南边的官道南下荆州）"),
+                    L(null, "（出古城，沿汝南郊外西边的官道南下荆州）"),
                 });
             }));
         }

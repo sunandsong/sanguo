@@ -12,16 +12,15 @@ namespace LiuBeiRPG.Game
     ///   经验 / 金钱两张大卡、经验条，战利品 / 新法术的空格子；
     ///   奖励领取演出：压暗，奖励图标一个个在中间炸开亮相，再碎成一群小图标飞进各自的卡片 / 格子，
     ///   每落进去一个，那边数字就涨一截、弹一下；经验飞满了升级；
-    ///   升级了（见 DrawLevelUp）：蓄力 → 爆开 → 余韵，再各项数值逐行滚动，升级学会的法术最后单独亮相飞进格子。
+    ///   升级了（见 DrawLevelUp）：蓄力 → 爆开 → 余韵（不列各项数值），升级学会的法术最后单独亮相飞进格子。
     /// 演出中点一下快进（升级爆开那一下不让跳）；演完停 AutoClose 秒自己出场回地图，不用点（等不及也可以点）。
     /// </summary>
     public partial class GameRoot
     {
         float resultAt;
-        int resultFromLevel, resultFromMaxTP;
+        int resultFromLevel;
         float resultFromExp;                                                       // 打之前经验条走到几成
-        readonly List<KeyValuePair<General, int[]>> resultMaxBefore = new List<KeyValuePair<General, int[]>>();   // 打之前每人的 兵力上限 / 攻 / 防 / 谋
-        float resultLevelAt, resultLevelEnd, resultDoneAt;                         // 升级爆开的时刻；升级数值滚完的时刻；奖励全部飞完的时刻
+        float resultLevelAt, resultLevelEnd, resultDoneAt;                         // 升级爆开的时刻；升级演出收尾的时刻；奖励全部飞完的时刻
         const float LevelCharge = 0.45f;                                           // 经验条涨满到爆开之间蓄力多久
         const float AutoClose = 1.2f;                                              // 演完再停多久自动出场
         readonly List<string> resultLearned = new List<string>();                 // 新学会的法术 Id
@@ -68,10 +67,7 @@ namespace LiuBeiRPG.Game
         void ShowResult()
         {
             resultFromLevel = party.Level;
-            resultFromMaxTP = party.MaxTP;
             resultFromExp = (float)party.Exp / party.ExpToNext;
-            resultMaxBefore.Clear();
-            foreach (var m in party.Members) resultMaxBefore.Add(new KeyValuePair<General, int[]>(m, MemberStats(m)));
             resultLearned.Clear();
             foreach (var e in battle.GrantRewards())
                 foreach (var tc in TacticDb.All)
@@ -92,7 +88,7 @@ namespace LiuBeiRPG.Game
             if (battle.RewardExp > 0) money.Add(new ResultLoot { Icon = "Art/icon_exp", Total = battle.RewardExp, Bits = Mathf.Clamp(battle.RewardExp, 1, 8), Tint = new Color(0.55f, 0.8f, 1f) });
             if (battle.RewardGold > 0) money.Add(new ResultLoot { Icon = "Art/icon_gold", Total = battle.RewardGold, Bits = Mathf.Clamp(battle.RewardGold, 1, 8), Tint = Accent });
 
-            // 排时间，分三轮：先物品，飞完再经验 / 金钱，经验飞满蓄力爆开升级，数值滚完再亮相新法术。
+            // 排时间，分三轮：先物品，飞完再经验 / 金钱，经验飞满蓄力爆开升级，爆开演完再亮相新法术。
             // 每轮：一个个亮相 → 停一下 → 一起碎开 → 小图标排着队飞进去（后一样比前一样晚一点）
             bool up = party.Level > resultFromLevel;
             resultDoneAt = 0.9f;
@@ -110,7 +106,7 @@ namespace LiuBeiRPG.Game
                     if (l.Icon == "Art/icon_exp")
                     {
                         resultLevelAt = l.Land[l.Bits - 1] + LevelCharge;
-                        resultLevelEnd = resultLevelAt + 0.3f + (2 + resultMaxBefore.Count) * 0.15f + 0.6f;
+                        resultLevelEnd = resultLevelAt + 1.0f;   // Lv 徽记落地、炸星散完
                     }
                     resultLoot.Add(l);
                 }
@@ -190,8 +186,7 @@ namespace LiuBeiRPG.Game
             bool extra = drops.Count > 0;
 
             float w = Mathf.Min(Gfx.VW - 24, 720);
-            int statRows = up ? 2 + resultMaxBefore.Count : 0;
-            float h = Mathf.Min(Gfx.VH - 16, 314 + (up ? 24 + statRows * 30 : 0) + (extra ? 92 : 0));
+            float h = Mathf.Min(Gfx.VH - 16, 314 + (extra ? 92 : 0));
             var r = new Rect((Gfx.VW - w) * 0.5f, (Gfx.VH - h) * 0.5f, w, h);
             float pop = EaseOut(resultAt, 0.25f);
             r.y += (1f - pop) * 30f;
@@ -295,25 +290,6 @@ namespace LiuBeiRPG.Game
             int lvShown = showLevel ? party.Level : resultFromLevel;
             Gfx.Text(new Rect(bar.x, bar.yMax + 2, bar.width, 16), "Lv " + lvShown + (showLevel || !up ? "　距下一级 " + (party.ExpToNext - party.Exp) : ""), 13, new Color(1, 1, 1, 0.65f), TextAnchor.MiddleRight);
             y += 34;
-
-            // ---- 升级了：一行一行亮出来，旧值 → 新值滚上去，滚到头弹一下，旁边飘出绿色 +n ----
-            if (up)
-            {
-                y += 4;
-                var stats = new List<KeyValuePair<string, int[]>>
-                {
-                    new KeyValuePair<string, int[]>("等级", new[] { resultFromLevel, party.Level }),
-                    new KeyValuePair<string, int[]>("法力上限", new[] { resultFromMaxTP, party.MaxTP }),
-                };
-                for (int i = 0; i < stats.Count; i++)
-                    StatRow(new Rect(r.x + 40, y + i * 30, w - 80, 28), stats[i].Key, stats[i].Value[0], stats[i].Value[1], lu - 0.3f - i * 0.15f);
-                for (int i = 0; i < resultMaxBefore.Count; i++)
-                {
-                    var kv = resultMaxBefore[i];
-                    MemberStatRow(new Rect(r.x + 40, y + (stats.Count + i) * 30, w - 80, 28), kv.Key.Name, kv.Value, MemberStats(kv.Key), lu - 0.3f - (stats.Count + i) * 0.15f);
-                }
-                y += (stats.Count + resultMaxBefore.Count) * 30 + 20;   // 战利品格子往上探 10，留够空别压住最后一行
-            }
 
             // ---- 战利品、新法术：先是空格子，飞进来才亮出图标和名字 ----
             if (extra)
@@ -516,71 +492,6 @@ namespace LiuBeiRPG.Game
             }
             Gfx.SetColor(st, color);
             GUI.Label(r, text, st);
-        }
-
-        /// <summary>一行属性：名字　旧值 → 新值（从旧值滚上去，到头弹大一下）　+n 往上飘。k = 这一行出场过去了多久。</summary>
-        static readonly string[] MemberStatNames = { "兵力", "攻", "防", "谋" };
-        static int[] MemberStats(General m) { return new[] { m.MaxSoldiers, m.Atk, m.Defense, m.Mou }; }
-
-        /// <summary>升级时一个武将一行：名字，后面兵力上限 / 攻 / 防 / 谋四格，每格新值从旧值滚上去，滚完右上角飘绿色 +n。</summary>
-        void MemberStatRow(Rect r, string name, int[] from, int[] to, float k)
-        {
-            if (k <= 0) return;
-            float a = Mathf.Clamp01(k / 0.15f);
-            float slide = (1 - a) * 30;
-            var old = GUI.color;
-            GUI.color = new Color(1, 1, 1, a);
-            Gfx.RoundRect(new Rect(r.x + slide, r.y, r.width, r.height), new Color(1, 1, 1, 0.06f));
-            float nameW = NameColumn(17, 66);
-            Gfx.Text(new Rect(r.x + 14 + slide, r.y, nameW, r.height), name, 17, new Color(1, 1, 1, 0.75f), TextAnchor.MiddleLeft);
-            float rollK = Mathf.Clamp01((k - 0.1f) / 0.4f);
-            float x0 = r.x + 14 + nameW + slide, cw = (r.xMax - 8 - x0) / from.Length;
-            for (int i = 0; i < from.Length; i++)
-            {
-                float cx = x0 + i * cw;
-                Gfx.Text(new Rect(cx, r.y, 34, r.height), MemberStatNames[i], 14, new Color(1, 1, 1, 0.5f), TextAnchor.MiddleLeft);
-                int shown = Mathf.RoundToInt(Mathf.Lerp(from[i], to[i], rollK));
-                Gfx.Text(new Rect(cx + 32, r.y, 60, r.height), shown.ToString(), 18, rollK >= 1 ? Accent : Color.white, TextAnchor.MiddleLeft);
-                if (to[i] > from[i] && k > 0.5f)
-                {
-                    float f = Mathf.Clamp01((k - 0.5f) / 0.3f);
-                    Gfx.Text(new Rect(cx + 32, r.y, cw - 36, r.height), "+" + (to[i] - from[i]), 13, new Color(0.5f, 1f, 0.55f, f), TextAnchor.MiddleRight);   // 和数字同一行靠右，不再飘到两行之间
-                }
-            }
-            GUI.color = old;
-        }
-
-        void StatRow(Rect r, string label, int from, int to, float k)
-        {
-            if (k <= 0) return;
-            float a = Mathf.Clamp01(k / 0.15f);
-            float slide = (1 - a) * 30;
-            var old = GUI.color;
-            GUI.color = new Color(1, 1, 1, a);
-            Gfx.RoundRect(new Rect(r.x + slide, r.y, r.width, r.height), new Color(1, 1, 1, 0.06f));
-            Gfx.Text(new Rect(r.x + 14 + slide, r.y, 200, r.height), label, 17, new Color(1, 1, 1, 0.75f), TextAnchor.MiddleLeft);
-            float rollK = Mathf.Clamp01((k - 0.1f) / 0.4f);
-            int shown = Mathf.RoundToInt(Mathf.Lerp(from, to, rollK));
-            float bump = rollK >= 1 ? Mathf.Max(0, 1 - (k - 0.5f) / 0.2f) : 0;   // 滚到头弹一下
-            float vx = r.xMax - 230 + slide;
-            Gfx.Text(new Rect(vx, r.y, 70, r.height), from.ToString(), 17, new Color(1, 1, 1, 0.45f), TextAnchor.MiddleRight);
-            Gfx.Text(new Rect(vx + 72, r.y, 30, r.height), "→", 17, new Color(1, 1, 1, 0.5f), TextAnchor.MiddleCenter);
-            Gfx.Text(new Rect(vx + 104, r.y - 4, 80, r.height + 8), shown.ToString(), Mathf.RoundToInt(22 + bump * 10), rollK >= 1 ? Accent : Color.white, TextAnchor.MiddleLeft);
-            if (k > 0.5f && k < 0.75f)
-            {
-                // 滚到头闪颗星
-                float f = (k - 0.5f) / 0.25f, ss = 22 * (1 - f);
-                var sc = GUI.color;
-                GUI.color = new Color(1, 0.95f, 0.7f, a * (1 - f));
-                Gfx.Image(new Rect(vx + 120 - ss, r.center.y - ss, ss * 2, ss * 2), StarTex());
-                GUI.color = sc;
-            }
-            if (to > from && k > 0.5f)
-            {
-                float f = Mathf.Clamp01((k - 0.5f) / 0.8f);
-                Gfx.Text(new Rect(vx + 170, r.y - f * 8, 60, r.height), "+" + (to - from), 16, new Color(0.5f, 1f, 0.55f, 1 - f * 0.5f), TextAnchor.MiddleLeft);
-            }
-            GUI.color = old;
         }
 
         /// <summary>

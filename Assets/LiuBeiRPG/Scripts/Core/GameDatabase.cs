@@ -102,7 +102,7 @@ namespace LiuBeiRPG.Core
 
         // Boss（4.3）。吕布两次出场共用一个 Def，等级在编队里给
         public static readonly GeneralDef HuaXiong = new GeneralDef { Id = "huaxiong", Name = "华雄", Glyph = "华", Color = "#ff6a4d", Wu = 105, Zhi = 40, Tong = 72, Su = 70, BaseSoldiers = 1200, IsBoss = true, Drop = "dakandao", DropRate = 1 };
-        public static readonly GeneralDef LvBu = new GeneralDef { Id = "lvbu", Name = "吕布", Glyph = "吕", Color = "#ff3030", Wu = 150, Zhi = 30, Tong = 90, Su = 95, BaseSoldiers = 4000, IsBoss = true, Drop = "fangtianhuaji", DropRate = 1 };
+        public static readonly GeneralDef LvBu = new GeneralDef { Id = "lvbu", Name = "吕布", Glyph = "吕", Color = "#ff3030", Wu = 150, Zhi = 30, Tong = 90, Su = 95, BaseSoldiers = 8000, IsBoss = true, Drop = "fangtianhuaji", DropRate = 1 };
         public static readonly GeneralDef GuanHai = new GeneralDef { Id = "guanhai", Name = "管亥", Glyph = "管", Color = "#e8b040", Wu = 100, Zhi = 25, Tong = 65, Su = 68, BaseSoldiers = 1300, IsBoss = true, Drop = "jinchuangyao", DropRate = 1 };
         public static readonly GeneralDef JiLing = new GeneralDef { Id = "jiling", Name = "纪灵", Glyph = "纪", Color = "#d0a070", Wu = 104, Zhi = 45, Tong = 78, Su = 70, BaseSoldiers = 1500, IsBoss = true, Drop = "sanjiandao", DropRate = 1 };
         public static readonly GeneralDef CheZhou = new GeneralDef { Id = "chezhou", Name = "车胄", Glyph = "车", Color = "#b0b0c0", Wu = 85, Zhi = 40, Tong = 70, Su = 60, BaseSoldiers = 1500, IsBoss = true, Drop = "yulinjia", DropRate = 1 };
