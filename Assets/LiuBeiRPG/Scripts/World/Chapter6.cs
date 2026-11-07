@@ -112,7 +112,7 @@ namespace LiuBeiRPG.World
             m.Npcs.Add(Chest(F_ChestF3, 2, 18, 0, "qingjiu", 3));
             m.Npcs.Add(Chest(F_ChestF4, 27, 15, 0, "yulinjia"));
 
-            m.Npcs.Add(Person("zhoucang", "周仓", GameDatabase.ZhouCang.Skin, "dao", 7, 3, () =>
+            m.Npcs.Add(Person("zhoucang", "周仓", "zhoucang", "dao", 7, 3, () =>
             {
                 if (flags.Has(F_ZhouCang)) return;
                 flags.Set(F_ZhouCang);
@@ -124,7 +124,7 @@ namespace LiuBeiRPG.World
                     L(null, "周仓加入队伍！"),
                 }, () => Join(GameDatabase.ZhouCang));
             }, () => !flags.Has(F_ZhouCang)));
-            m.Npcs.Add(Person("guanping", "关平", GameDatabase.GuanPing.Skin, "dao", 24, 9, () =>
+            m.Npcs.Add(Person("guanping", "关平", "guanping", "dao", 24, 9, () =>
             {
                 if (flags.Has(F_GuanPing)) return;
                 flags.Set(F_GuanPing);
@@ -140,10 +140,10 @@ namespace LiuBeiRPG.World
 
             Action test = LiuPiFight;
             Func<bool> camped = () => !flags.Has(F_LiuPi);
-            m.Npcs.Add(Person("liupi_npc", "刘辟", GameDatabase.LiuPi.Skin, "langya", 11, 12, test, camped));
-            m.Npcs.Add(Person("gongdu_npc", "龚都", GameDatabase.GongDu.Skin, "cha", 12, 12, test, camped));
+            m.Npcs.Add(Person("liupi_npc", "刘辟", "liupi", "langya", 11, 12, test, camped));
+            m.Npcs.Add(Person("gongdu_npc", "龚都", "gongdu", "cha", 12, 12, test, camped));
 
-            m.Npcs.Add(Person("caiyang_npc", "蔡阳", GameDatabase.CaiYang.Skin, "dao", 15, 1, CaiYangFight, () => flags.Has(F_LiuPi) && !flags.Has(F_Boss)));
+            m.Npcs.Add(Person("caiyang_npc", "蔡阳", "caiyang", "dao", 15, 1, CaiYangFight, () => flags.Has(F_LiuPi) && !flags.Has(F_Boss)));
             m.Npcs.Add(Walker("rn_farmer", "农夫", "cunmin_nan", "chutou", 1.0f, new[] { 17, 14, 22, 14, 22, 15, 17, 15 }, null,
                 "卧牛山上有伙强人，头领叫周仓，力气大得很。", "东边那座庄子是关老汉家的，他二儿子武艺了得。", "汝南的黄巾余党刘辟、龚都，扎营在西边。"));
 

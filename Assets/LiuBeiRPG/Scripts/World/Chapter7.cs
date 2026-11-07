@@ -121,7 +121,7 @@ namespace LiuBeiRPG.World
             m.Npcs.Add(Chest(F_ChestTown2, 1, 18, 0, "liangyinqiang"));
             m.Npcs.Add(Person("xy_merchant", "掌柜", "shangren", null, 25, 6, () =>
                 host.Say(new List<DialogueLine> { L("掌柜", "荆州富庶，襄阳来的货都在这儿。亮银枪是新到的，看看？") }, () => host.OpenShop(ShopGoods))));
-            m.Npcs.Add(Person("xushu", "单福", GameDatabase.XuShu.Skin, "jian", 12, 12, () =>
+            m.Npcs.Add(Person("xushu", "单福", "xushu", "jian", 12, 12, () =>
             {
                 if (flags.Has(F_XuShu)) return;
                 flags.Set(F_XuShu);
@@ -162,7 +162,7 @@ namespace LiuBeiRPG.World
         {
             var flags = host.Flags;
             return BuildHall("xinye_yamen", "新野县衙", () => host.Warp(Town, 15, 6),
-                Person("liufeng", "刘封", GameDatabase.LiuFeng.Skin, "qiang", 5, 3, () =>
+                Person("liufeng", "刘封", "liufeng", "qiang", 5, 3, () =>
                 {
                     if (flags.Has(F_LiuFeng)) return;
                     flags.Set(F_LiuFeng);
@@ -224,7 +224,7 @@ namespace LiuBeiRPG.World
             m.Npcs.Add(Chest(F_ChestF1, 28, 1, 0, "zhixuesan", 2));
             m.Npcs.Add(Chest(F_ChestF2, 2, 17, 0, "yulinjia"));
             m.Npcs.Add(Chest(F_ChestF3, 22, 18, 1000));
-            m.Npcs.Add(Person("caoren_npc", "曹仁", GameDatabase.CaoRen.Skin, "dao", 15, 11, CaoRenFight, () => !flags.Has(F_CaoRen)));
+            m.Npcs.Add(Person("caoren_npc", "曹仁", "caoren", "dao", 15, 11, CaoRenFight, () => !flags.Has(F_CaoRen)));
 
             m.OnStep = (x, y) =>
             {
@@ -437,7 +437,7 @@ namespace LiuBeiRPG.World
 
             m.Npcs.Add(Chest(F_ChestBw1, 2, 17, 0, "zhixuesan", 2));
             m.Npcs.Add(Chest(F_ChestBw2, 27, 14, 1200));
-            m.Npcs.Add(Person("xiahoudun_npc", "夏侯惇", GameDatabase.XiaHouDun.Skin, "qiang", 25, 5, XiaHouDunFight, () => !flags.Has(F_Boss)));
+            m.Npcs.Add(Person("xiahoudun_npc", "夏侯惇", "xiahoudun", "qiang", 25, 5, XiaHouDunFight, () => !flags.Has(F_Boss)));
 
             m.OnStep = (x, y) =>
             {

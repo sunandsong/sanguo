@@ -108,18 +108,18 @@ namespace LiuBeiRPG.World
             var flags = host.Flags;
 
             m.Npcs.Add(Chest(F_ChestCamp, 27, 2, 150));
-            m.Npcs.Add(Person("caocao", "曹操", "gongjing", "jian", 20, 9, () =>
+            m.Npcs.Add(Person("caocao", "曹操", "caocao", "jian", 20, 9, () =>
             {
                 if (flags.Has(F_Boss)) Say(L("曹操", "董卓西逃，诸侯却只顾饮宴。竖子不足与谋！玄德，你我日后再会。"));
                 else if (flags.Has(F_HuaXiong)) Say(L("曹操", "云长一刀斩了华雄，痛快！董卓已遣吕布率十五万大军守虎牢关。"), L("曹操", "出北门便是虎牢关。吕布有万夫不当之勇，诸位务要小心。"));
                 else Say(L("曹操", "在下曹操，字孟德。玄德公虽是白身，却是汉室宗亲，操久闻大名。"), L("曹操", "汜水关守将华雄连斩我军数将，诸侯束手。玄德若肯出战，操为诸位斟酒壮行！"));
             }));
-            m.Npcs.Add(Person("yuanshao", "袁绍", "gongjing", null, 22, 9, () =>
+            m.Npcs.Add(Person("yuanshao", "袁绍", "yuanshao", null, 22, 9, () =>
             {
                 if (flags.Has(F_HuaXiong)) Say(L("袁绍", "既是汉室宗亲，赏座。虎牢关的事，就有劳诸位了。"));
                 else Say(L("袁绍", "此人是谁？……哦，中山靖王之后。既是宗亲，站到帐下听令便是。"), L(null, "袁术在一旁冷笑：「一个县令手下的小卒，也敢在此喧哗？」"));
             }));
-            m.Npcs.Add(Person("gongsunzan", "公孙瓒", "shouwei", "qiang", 8, 11, () =>
+            m.Npcs.Add(Person("gongsunzan", "公孙瓒", "gongsunzan", "qiang", 8, 11, () =>
             {
                 if (flags.Has(F_Baima)) { Say(L("公孙瓒", "玄德，汜水关就在东边官道尽头，去吧，我在大营等你的好消息。")); return; }
                 flags.Set(F_Baima);
@@ -193,7 +193,7 @@ namespace LiuBeiRPG.World
             m.Npcs.Add(Chest(F_ChestSs1, 13, 2, 200));
             m.Npcs.Add(Chest(F_ChestSs2, 2, 17, 0, "aiye", 2));
             m.Npcs.Add(Chest(F_ChestSs3, 24, 13, 0, "changji"));
-            m.Npcs.Add(Person("huaxiong_npc", "华雄", GameDatabase.HuaXiong.Skin, "podao", 26, 10, HuaXiongFight, () => !flags.Has(F_HuaXiong)));
+            m.Npcs.Add(Person("huaxiong_npc", "华雄", "huaxiong", "podao", 26, 10, HuaXiongFight, () => !flags.Has(F_HuaXiong)));
             m.Npcs.Add(Person("ss_soldier", "联军士卒", "shouwei", "qiang", 2, 9, () =>
                 Say(L("联军士卒", flags.Has(F_HuaXiong) ? "华雄死了！关门开了，诸位快进关吧。" : "关前那个使大刀的就是华雄，俞涉、潘凤两位将军都是不到三合就被他斩了。"))));
 
@@ -277,7 +277,7 @@ namespace LiuBeiRPG.World
             m.Npcs.Add(Chest(F_ChestHl2, 27, 5, 0, "aiye", 2));
             m.Npcs.Add(Chest(F_ChestHl3, 25, 17, 0, "qingjiu", 3));
             m.Npcs.Add(Chest(F_ChestHl4, 12, 4, 0, "huanhundan"));
-            m.Npcs.Add(Person("lvbu_npc", "吕布", GameDatabase.LvBu.Skin, "huaji", 14, 1, LvBuFight, () => !flags.Has(F_Boss)));
+            m.Npcs.Add(Person("lvbu_npc", "吕布", "lvbu", "huaji", 14, 1, LvBuFight, () => !flags.Has(F_Boss)));
             m.Npcs.Add(Person("hl_scout", "联军哨兵", "shouwei", "qiang", 13, 17, () =>
                 Say(L("联军哨兵", "关前那人头戴三叉束发紫金冠，骑赤兔马，手持方天画戟，便是吕布。"), L("联军哨兵", "方悦、穆顺两位将军都死在他戟下，武安国被他斩断了手腕。诸位能撑住十个回合，就是大功！"))));
 

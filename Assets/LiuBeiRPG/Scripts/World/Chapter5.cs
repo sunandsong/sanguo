@@ -114,7 +114,7 @@ namespace LiuBeiRPG.World
             m.Npcs.Add(Chest(F_ChestTown2, 1, 17, 0, "zhixuesan"));
             m.Npcs.Add(Person("xd_merchant", "掌柜", "shangren", null, 27, 6, () =>
                 host.Say(new List<DialogueLine> { L("掌柜", "天子脚下，货色自然是最全的。鱼鳞甲、止血散，别处可买不到。") }, () => host.OpenShop(ShopGoods))));
-            m.Npcs.Add(Person("chendao", "陈到", "shouwei", "qiang", 20, 13, () =>
+            m.Npcs.Add(Person("chendao", "陈到", "chendao", "qiang", 20, 13, () =>
             {
                 if (flags.Has(F_ChenDao)) return;
                 flags.Set(F_ChenDao);
@@ -125,7 +125,7 @@ namespace LiuBeiRPG.World
                     L(null, "陈到加入队伍！"),
                 }, () => Join(GameDatabase.ChenDao));
             }, () => !flags.Has(F_ChenDao)));
-            m.Npcs.Add(Person("dongcheng", "董承", "laoren", null, 8, 13, () =>
+            m.Npcs.Add(Person("dongcheng", "董承", "dongcheng", null, 8, 13, () =>
                 Say(L("董承", "（低声）皇叔……天子有密诏在此，衣带之中。曹操专权，还望皇叔日后……"), L("刘备", "（低声）国舅放心，备记下了。"))));
             m.Npcs.Add(Person("xd_guard", "许都兵", "shouwei", "qiang", 13, 18, () =>
                 Say(L("许都兵", !flags.Has(F_MeiJiu) ? "曹丞相在相府等候皇叔，顺大街一直往北。" : !flags.Has(F_Leave) ? "城外校场在南门外西边，典将军天天在那儿练兵。" : "皇叔要出征？出南门，东边大路去徐州。"))));
@@ -163,7 +163,7 @@ namespace LiuBeiRPG.World
         {
             var flags = host.Flags;
             return BuildHall("xudu_fu", "相府", () => host.Warp(Town, 15, 6),
-                Person("caocao2", "曹操", "gongjing", "jian", 5, 3, () =>
+                Person("caocao2", "曹操", "caocao", "jian", 5, 3, () =>
                 {
                     if (flags.Has(F_Leave)) { Say(L("曹操", "玄德去截袁术，操拨五万兵与你。速去速回。")); return; }
                     if (flags.Has(F_MeiJiu))
@@ -238,8 +238,8 @@ namespace LiuBeiRPG.World
             m.Npcs.Add(Chest(F_ChestF2, 2, 18, 0, "yulinjia"));
             m.Npcs.Add(Chest(F_ChestF3, 12, 17, 0, "zhixuesan"));
             m.Npcs.Add(Chest(F_ChestF4, 22, 13, 0, "huanhundan"));
-            m.Npcs.Add(Person("dianwei_npc", "典韦", GameDatabase.DianWei.Skin, "ji", 9, 6, DianWeiDuel, () => !flags.Has(F_DianWei)));
-            m.Npcs.Add(Person("xuchu_npc", "许褚", GameDatabase.XuChu.Skin, "zhanchui", 26, 10, XuChuFight, () => flags.Has(F_Leave) && !flags.Has(F_XuChu)));
+            m.Npcs.Add(Person("dianwei_npc", "典韦", "dianwei", "ji", 9, 6, DianWeiDuel, () => !flags.Has(F_DianWei)));
+            m.Npcs.Add(Person("xuchu_npc", "许褚", "xuchu", "zhanchui", 26, 10, XuChuFight, () => flags.Has(F_Leave) && !flags.Has(F_XuChu)));
 
             m.OnStep = (x, y) =>
             {
@@ -323,7 +323,7 @@ namespace LiuBeiRPG.World
         {
             var flags = host.Flags;
             return BuildHall("xuzhou_fu5", "州牧府", () => host.Warp(Xuzhou, 15, 6),
-                Person("chezhou_npc", "车胄", GameDatabase.CheZhou.Skin, "dao", 5, 3, CheZhouFight, () => !flags.Has(F_Boss)));
+                Person("chezhou_npc", "车胄", "chezhou", "dao", 5, 3, CheZhouFight, () => !flags.Has(F_Boss)));
         }
 
         void CheZhouFight()

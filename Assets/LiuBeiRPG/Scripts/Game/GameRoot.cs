@@ -268,12 +268,13 @@ namespace LiuBeiRPG.Game
             { "刘备", "liubei" }, { "关羽", "guanyu" }, { "张飞", "zhangfei" }, { "母亲", "muqin" },
             { "守卫", "shouwei" }, { "张世平", "huolang" }, { "店小二", "xiaoer" }, { "逃难村民", "nanmin" },
             { "简雍", "jianyong" }, { "龚景", "gongjing" }, { "张宝", "zhangbao" }, { "张梁", "zhangliang" }, { "张角", "zhangjiao" },
-            // 第三～七章：角色做好后放进引擎就有头像；还没做的借现成的（和 GameDatabase 里的 Skin 一致），见 ArtTask/出图任务-第三到七章.md
-            { "赵云", "shouwei" }, { "孙乾", "jianyong" }, { "糜竺", "shangren" }, { "陈到", "shouwei" }, { "周仓", "hjtm" }, { "关平", "shouwei" },
-            { "诸葛亮", "jianyong" }, { "徐庶", "jianyong" }, { "刘封", "shouwei" },
-            { "华雄", "zhangliang" }, { "吕布", "chengyuanzhi" }, { "管亥", "hjtm" }, { "纪灵", "chengyuanzhi" }, { "车胄", "shouwei" }, { "典韦", "zhangliang" }, { "许褚", "zhangliang" },
-            { "刘辟", "hjtm" }, { "龚都", "hjtm" }, { "蔡阳", "chengyuanzhi" }, { "夏侯惇", "chengyuanzhi" }, { "曹仁", "dengmao" },
-            { "曹操", "gongjing" }, { "袁绍", "gongjing" }, { "公孙瓒", "shouwei" }, { "孔融", "gongjing" }, { "太史慈", "shouwei" }, { "陶谦", "gongjing" }, { "刘表", "gongjing" }, { "童子", "xiaohai" }, { "诸葛均", "jianyong" }, { "掌柜", "shangren" }, { "随军货郎", "huolang" },
+            // 第三～七章（sanguoguge 2026-11-07 做好）
+            { "赵云", "zhaoyun" }, { "孙乾", "sunqian" }, { "糜竺", "mizhu" }, { "陈到", "chendao" }, { "周仓", "zhoucang" }, { "关平", "guanping" },
+            { "诸葛亮", "zhugeliang" }, { "徐庶", "xushu" }, { "单福", "xushu" }, { "刘封", "liufeng" }, { "寇封", "liufeng" }, { "华雄", "huaxiong" },
+            { "吕布", "lvbu" }, { "管亥", "guanhai" }, { "纪灵", "jiling" }, { "车胄", "chezhou" }, { "典韦", "dianwei" }, { "许褚", "xuchu" },
+            { "刘辟", "liupi" }, { "龚都", "gongdu" }, { "蔡阳", "caiyang" }, { "夏侯惇", "xiahoudun" }, { "曹仁", "caoren" }, { "曹操", "caocao" },
+            { "袁绍", "yuanshao" }, { "公孙瓒", "gongsunzan" }, { "孔融", "kongrong" }, { "太史慈", "taishici" }, { "陶谦", "taoqian" }, { "董承", "dongcheng" },
+            { "诸葛均", "zhugejun" }, { "童子", "xiaohai" }, { "掌柜", "shangren" }, { "随军货郎", "huolang" }, { "关定", "laoren" },
         };
         readonly Dictionary<string, PuppetActor> portraits = new Dictionary<string, PuppetActor>();
         DialogueLine shownLine;   // 正在打字的那句

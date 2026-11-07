@@ -54,6 +54,12 @@ namespace LiuBeiRPG.Game
             { "zhangbao", "fuchen" },     // 张宝：拂尘（九节杖掉给玩家）
             { "zhangliang", "langya" },   // 张梁：狼牙棒
             { "zhangjiao", "jiujie" },    // 张角：九节杖
+            // 第三～七章
+            { "xiliangbing", "dao" }, { "xiliangtieqi", "qiang" }, { "feixiongjun", "dafu" }, { "huainanbing", "gun" },
+            { "caojunbubing", "qiang" }, { "qingzhoubing", "podao" }, { "hubaoqi", "ji" },   // 曹军弓兵空手（没有弓的贴图）
+            { "huaxiong", "podao" }, { "lvbu", "huaji" }, { "guanhai", "langya" }, { "jiling", "cha" }, { "chezhou", "dao" },
+            { "dianwei", "ji" }, { "xuchu", "zhanchui" }, { "liupi", "langya" }, { "gongdu", "cha" }, { "caiyang", "dao" },
+            { "xiahoudun", "qiang" }, { "caoren", "dao" },
         };
 
         /// <summary>武将用哪个骨骼角色：填了 Skin 用 Skin（还没做专属角色的先借现成的），黄巾兵叫 huangjin，其余同 Id。</summary>

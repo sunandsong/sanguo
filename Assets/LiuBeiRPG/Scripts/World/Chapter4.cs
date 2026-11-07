@@ -127,14 +127,14 @@ namespace LiuBeiRPG.World
 
             Action siege = GuanHaiFight;
             Func<bool> besieged = () => !flags.Has(F_GuanHai);
-            m.Npcs.Add(Person("guanhai_npc", "管亥", GameDatabase.GuanHai.Skin, "langya", 15, 1, siege, besieged));
+            m.Npcs.Add(Person("guanhai_npc", "管亥", "guanhai", "langya", 15, 1, siege, besieged));
             m.Npcs.Add(Person("bh_siege_a", "黄巾兵", "huangjin", "cha", 14, 2, siege, besieged));
             m.Npcs.Add(Person("bh_siege_b", "黄巾兵", "huangjin", "cha", 16, 2, siege, besieged));
-            m.Npcs.Add(Person("kongrong", "孔融", "gongjing", null, 15, 2, () =>
+            m.Npcs.Add(Person("kongrong", "孔融", "kongrong", null, 15, 2, () =>
                 Say(L("孔融", "玄德公解北海之围，融感激不尽！"),
                     L("孔融", "方才徐州陶谦遣人来报：曹操父亲曹嵩在徐州境内被害，曹操兴兵报仇，徐州危在旦夕。"),
                     L("孔融", "陶恭祖是仁人君子，还望玄德公再走一趟。出东边大路，便是徐州。")), () => flags.Has(F_GuanHai)));
-            m.Npcs.Add(Person("taishici", "太史慈", "shouwei", "qiang", 14, 17, () =>
+            m.Npcs.Add(Person("taishici", "太史慈", "taishici", "qiang", 14, 17, () =>
                 Say(L("太史慈", flags.Has(F_GuanHai) ? "管亥已除，孔北海在城门口候着诸位。" : "管亥就在城下，带了两座营盘的人马。孔北海在城里快撑不住了，请诸位速速出手！"))));
             m.Npcs.Add(Walker("bh_refugee", "难民", "nanmin", null, 1.2f, new[] { 3, 16, 8, 16, 8, 17, 3, 17 }, null,
                 "黄巾又回来了，这日子什么时候是个头……", "管亥说要孔太守借他一万石粮。", "东边大路通徐州，听说那边曹操在打仗。"));
@@ -264,7 +264,7 @@ namespace LiuBeiRPG.World
         {
             var flags = host.Flags;
             return BuildHall("xuzhou_fu", "州牧府", () => host.Warp(Town, 15, 6),
-                Person("taoqian", "陶谦", "gongjing", null, 5, 3, () =>
+                Person("taoqian", "陶谦", "taoqian", null, 5, 3, () =>
                 {
                     if (flags.Has(F_Boss)) { Say(L("陶谦", "吕布已除，徐州总算安稳了。玄德，曹操邀你去许都，去吧，老夫替你守着。")); return; }
                     if (flags.Has(F_JiLing)) { Say(L("陶谦", "纪灵刚退，吕布竟趁虚夺了下邳！玄德，老夫当初就不该收留他。"), L("陶谦", "出南门，东边大路尽头便是下邳。")); return; }
@@ -336,8 +336,8 @@ namespace LiuBeiRPG.World
             m.Npcs.Add(Chest(F_ChestF2, 2, 18, 0, "suozijia"));
             m.Npcs.Add(Chest(F_ChestF3, 20, 17, 400));
             m.Npcs.Add(Chest(F_ChestF4, 12, 5, 0, "jinchuangyao"));
-            m.Npcs.Add(Person("jiling_npc", "纪灵", GameDatabase.JiLing.Skin, "cha", 9, 15, JiLingFight, () => !flags.Has(F_JiLing)));
-            m.Npcs.Add(Person("lvbu_npc2", "吕布", GameDatabase.LvBu.Skin, "huaji", 27, 10, LvBuFight, () => flags.Has(F_JiLing) && !flags.Has(F_Boss)));
+            m.Npcs.Add(Person("jiling_npc", "纪灵", "jiling", "cha", 9, 15, JiLingFight, () => !flags.Has(F_JiLing)));
+            m.Npcs.Add(Person("lvbu_npc2", "吕布", "lvbu", "huaji", 27, 10, LvBuFight, () => flags.Has(F_JiLing) && !flags.Has(F_Boss)));
             m.Npcs.Add(Person("xzf_scout", "徐州哨兵", "shouwei", "qiang", 14, 2, () =>
                 Say(L("徐州哨兵", !flags.Has(F_JiLing) ? "纪灵的淮南军在西南边扎营，那口三尖刀重五十斤。" : !flags.Has(F_Boss) ? "吕布夺了下邳，就在东边山口的城门前。使君小心，他那方天画戟……" : "下邳收复了！"))));
 
