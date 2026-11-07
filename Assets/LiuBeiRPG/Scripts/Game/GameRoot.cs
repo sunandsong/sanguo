@@ -184,6 +184,7 @@ namespace LiuBeiRPG.Game
             {
                 case Mode.Title:
                     if (key == InputKey.Confirm) NewGame();
+                    else if (key == InputKey.Cancel && HasSave) ContinueGame();
                     break;
                 case Mode.Map:
                     MapKeyDown(key);
@@ -460,7 +461,30 @@ namespace LiuBeiRPG.Game
             }
             Gfx.Text(new Rect(0, oy + 140, Gfx.VW, 70), "汉末英雄传", 56, new Color(1f, 0.85f, 0.35f), TextAnchor.MiddleCenter);
             Gfx.Text(new Rect(0, oy + 215, Gfx.VW, 40), "—— 刘备篇 · 第一章 桃园结义 ——", 24, Color.white, TextAnchor.MiddleCenter);
-            if (Gfx.Clicked(new Rect(0, 0, Gfx.VW, Gfx.VH))) NewGame();
+            // 有存档就给两个按钮：新游戏 / 读档；没有就点哪都是新游戏
+            if (HasSave)
+            {
+                var bNew = new Rect(Gfx.VW * 0.5f - 230, oy + 320, 200, 60);
+                var bLoad = new Rect(Gfx.VW * 0.5f + 30, oy + 320, 200, 60);
+                Gfx.RoundRect(bNew, new Color(1, 1, 1, 0.12f));
+                Gfx.RoundRect(bLoad, new Color(1f, 0.85f, 0.35f, 0.9f));
+                Gfx.Text(bNew, "新游戏（Z）", 22, Color.white, TextAnchor.MiddleCenter);
+                Gfx.Text(bLoad, "读档（X）", 22, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
+                if (Gfx.Clicked(bNew)) NewGame();
+                else if (Gfx.Clicked(bLoad)) ContinueGame();
+            }
+            else if (Gfx.Clicked(new Rect(0, 0, Gfx.VW, Gfx.VH))) NewGame();
+        }
+
+        static bool HasSave { get { return PlayerPrefs.HasKey("save1") || PlayerPrefs.HasKey("save2") || PlayerPrefs.HasKey("save3"); } }
+
+        /// <summary>标题读档：先起一局新游戏（建好章节和队伍），跳过开场白，再弹读档。</summary>
+        void ContinueGame()
+        {
+            NewGame();
+            dialogueQueue.Clear();
+            currentDialogue = null;
+            LoadGame();
         }
 
         void DrawGameOver()
@@ -468,7 +492,7 @@ namespace LiuBeiRPG.Game
             float oy = (Gfx.VH - 540f) * 0.5f;   // 内容按 540 高排版，竖屏时垂直居中
             Gfx.Rect(new Rect(0, 0, Gfx.VW, Gfx.VH), new Color(0.12f, 0.02f, 0.02f));
             Gfx.Text(new Rect(0, oy + 190, Gfx.VW, 60), "全 军 覆 没", 48, new Color(0.9f, 0.3f, 0.3f), TextAnchor.MiddleCenter);
-            Gfx.Text(new Rect(0, oy + 270, Gfx.VW, 30), "按确认键退回涿县休整（金钱减半）", 20, Color.white, TextAnchor.MiddleCenter);
+            Gfx.Text(new Rect(0, oy + 270, Gfx.VW, 30), "按确认键撤回休整（金钱减半）", 20, Color.white, TextAnchor.MiddleCenter);
             if (Gfx.Clicked(new Rect(0, 0, Gfx.VW, Gfx.VH))) { mode = Mode.Map; chapter.RespawnAfterDefeat(); }
         }
 

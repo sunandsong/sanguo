@@ -191,7 +191,7 @@ namespace LiuBeiRPG.Game
 
             float w = Mathf.Min(Gfx.VW - 24, 720);
             int statRows = up ? 2 + resultMaxBefore.Count : 0;
-            float h = Mathf.Min(Gfx.VH - 16, 314 + (up ? 12 + statRows * 30 : 0) + (extra ? 92 : 0));
+            float h = Mathf.Min(Gfx.VH - 16, 314 + (up ? 24 + statRows * 30 : 0) + (extra ? 92 : 0));
             var r = new Rect((Gfx.VW - w) * 0.5f, (Gfx.VH - h) * 0.5f, w, h);
             float pop = EaseOut(resultAt, 0.25f);
             r.y += (1f - pop) * 30f;
@@ -312,7 +312,7 @@ namespace LiuBeiRPG.Game
                     var kv = resultMaxBefore[i];
                     MemberStatRow(new Rect(r.x + 40, y + (stats.Count + i) * 30, w - 80, 28), kv.Key.Name, kv.Value, MemberStats(kv.Key), lu - 0.3f - (stats.Count + i) * 0.15f);
                 }
-                y += (stats.Count + resultMaxBefore.Count) * 30 + 8;
+                y += (stats.Count + resultMaxBefore.Count) * 30 + 20;   // 战利品格子往上探 10，留够空别压住最后一行
             }
 
             // ---- 战利品、新法术：先是空格子，飞进来才亮出图标和名字 ----
@@ -543,8 +543,8 @@ namespace LiuBeiRPG.Game
                 Gfx.Text(new Rect(cx + 32, r.y, 60, r.height), shown.ToString(), 18, rollK >= 1 ? Accent : Color.white, TextAnchor.MiddleLeft);
                 if (to[i] > from[i] && k > 0.5f)
                 {
-                    float f = Mathf.Clamp01((k - 0.5f) / 0.8f);
-                    Gfx.Text(new Rect(cx + 32, r.y - 13 - f * 6, cw - 32, 16), "+" + (to[i] - from[i]), 13, new Color(0.5f, 1f, 0.55f, 1 - f * 0.5f), TextAnchor.MiddleRight);
+                    float f = Mathf.Clamp01((k - 0.5f) / 0.3f);
+                    Gfx.Text(new Rect(cx + 32, r.y, cw - 36, r.height), "+" + (to[i] - from[i]), 13, new Color(0.5f, 1f, 0.55f, f), TextAnchor.MiddleRight);   // 和数字同一行靠右，不再飘到两行之间
                 }
             }
             GUI.color = old;

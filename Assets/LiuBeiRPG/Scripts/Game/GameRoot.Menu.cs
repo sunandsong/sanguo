@@ -66,10 +66,12 @@ namespace LiuBeiRPG.Game
         {
             if (menuPage == 0) return;
             Gfx.Rect(new Rect(0, 0, Gfx.VW, Gfx.VH), new Color(0, 0, 0, 0.45f));
+            Gfx.BlockClicks = currentDialogue != null;   // 对话框没看完，菜单不接点击，免得点穿
             if (menuPage == PageMain) DrawMainPage();
             else if (menuPage == PageShop) DrawShop();
             else if (menuPage == PageTeam) DrawTeamPage();
             else DrawPeoplePage();
+            Gfx.BlockClicks = false;
         }
 
         // ---------------- 队伍（吞食天地的营地 + 队形）：换顺序、调去后方、调回 ----------------
@@ -123,7 +125,6 @@ namespace LiuBeiRPG.Game
                 bool sel = i == teamSel;
                 Gfx.RoundRect(row, new Color(1, 1, 1, sel ? 0.14f : 0.06f));
                 if (sel) Gfx.Frame(row, Accent, 2);
-                if (Gfx.Clicked(row)) teamSel = i;
                 // 身份牌：军师金色，上场白色，后备灰色
                 string role = stored ? "后方" : g == party.Strategist ? "军师" : fighters.Contains(g) ? "上场" : "后备";
                 var tag = new Rect(row.x + 10, row.y + 8, 52, 24);
@@ -155,6 +156,7 @@ namespace LiuBeiRPG.Game
                     Gfx.Text(back, "调回", 15, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
                     if (Gfx.Clicked(back)) { TeamToggle(i); return; }
                 }
+                if (Gfx.Clicked(row)) teamSel = i;   // 放在按钮后面：先判了整行，▲▼ 就永远点不到
                 y += rowH;
             }
         }
@@ -194,12 +196,13 @@ namespace LiuBeiRPG.Game
 
             // 左下：每人一条兵力
             float y = foot.y + 40, nameW = NameColumn(18, 60);
+            float rowStep = Mathf.Min(32, (r.yMax - 46 - y) / Mathf.Max(1, party.Members.Count));   // 人多时压紧，不盖住底下那行
             foreach (var m in party.Members)
             {
                 Gfx.Text(new Rect(r.x + 24, y, nameW, 26), m.Name, 18, m.Alive ? Color.white : Color.gray);
                 Gfx.Bar(new Rect(r.x + 24 + nameW, y + 8, lw - 100 - nameW, 10), m.MaxSoldiers > 0 ? (float)m.Soldiers / m.MaxSoldiers : 0, new Color(0.4f, 0.8f, 0.45f));
                 Gfx.Text(new Rect(r.x + lw - 72, y, 60, 26), m.Soldiers.ToString(), 15, new Color(1, 1, 1, 0.75f), TextAnchor.UpperRight);
-                y += 32;
+                y += rowStep;
             }
             Gfx.Text(new Rect(r.x + 24, r.yMax - 40, lw - 30, 26), "Lv " + party.Level + "　金 " + party.Gold + "　法力 " + party.TP + "/" + party.MaxTP, 17, Accent);
             Gfx.Rect(new Rect(r.x + lw, r.y + 24, 1, h - 48), new Color(1, 1, 1, 0.1f));
@@ -227,7 +230,13 @@ namespace LiuBeiRPG.Game
             if (menuPage != PagePeople) return;   // 刚点了返回
             pageMember = Mathf.Clamp(pageMember, 0, party.Members.Count - 1);
 
-            // 顶上一排人名页签
+            float top = r.y + 68;
+            Rect who, bag;
+            if (portrait) { who = new Rect(r.x, top, w, 420); bag = new Rect(r.x, top + 430, w, r.yMax - top - 430); }   // 装备两排六格，人物这块要 420 高
+            else { who = new Rect(r.x, top, 540, r.yMax - top); bag = new Rect(r.x + 550, top, w - 550, r.yMax - top); }
+            Gfx.Rect(portrait ? new Rect(r.x + 20, bag.y - 6, w - 40, 1) : new Rect(bag.x - 4, top, 1, bag.height - 16), new Color(1, 1, 1, 0.1f));
+            DrawCharacter(party.Members[pageMember], who);
+            // 顶上一排人名页签（画在立绘后面，长兵器不会盖住页签）
             for (int i = 0; i < party.Members.Count; i++)
             {
                 var tr = new Rect(r.x + 16 + i * 96, r.y + 12, 88, 44);
@@ -237,12 +246,6 @@ namespace LiuBeiRPG.Game
                 if (Gfx.Clicked(tr)) pageMember = i;
             }
 
-            float top = r.y + 68;
-            Rect who, bag;
-            if (portrait) { who = new Rect(r.x, top, w, 420); bag = new Rect(r.x, top + 430, w, r.yMax - top - 430); }   // 装备两排六格，人物这块要 420 高
-            else { who = new Rect(r.x, top, 540, r.yMax - top); bag = new Rect(r.x + 550, top, w - 550, r.yMax - top); }
-            Gfx.Rect(portrait ? new Rect(r.x + 20, bag.y - 6, w - 40, 1) : new Rect(bag.x - 4, top, 1, bag.height - 16), new Color(1, 1, 1, 0.1f));
-            DrawCharacter(party.Members[pageMember], who);
             // 右边三个页签：物品 / 法术 / 任务
             string[] tabs = { "物品", "法术", "任务" };
             for (int i = 0; i < tabs.Length; i++)
@@ -552,6 +555,7 @@ namespace LiuBeiRPG.Game
             if (!party.Strategist.Alive) { Note("军师" + party.Strategist.Name + "已经败走，放不了法术。", null); return; }
             var who = party.Members[pageMember];
             if (!t.TargetsAll && !who.Alive) { Note(who.Name + "已经败走，疗兵救不回来。", null); return; }
+            if (t.TargetsAll ? party.Members.TrueForAll(g => !g.Alive || g.Soldiers >= g.MaxSoldiers) : who.Soldiers >= who.MaxSoldiers) { Sfx.Play("ui_error"); Note(t.TargetsAll ? "全军兵力都是满的。" : who.Name + "兵力是满的。", null); return; }
             CastHeal(t, t.TargetsAll ? party.Members : new List<General> { who });
         }
 

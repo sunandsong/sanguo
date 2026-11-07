@@ -184,7 +184,7 @@ namespace LiuBeiRPG.World
                 }
             };
             m.DecorFile = "sishui";
-            m.Emitters.Add(new MapEmitter("fire", 9.2f, 5.45f));
+            m.Emitters.Add(new MapEmitter("fire", 8.3f, 5.45f));
             m.Critters.Add(new CritterSpawn("rabbit", 3));
             m.Critters.Add(new CritterSpawn("sparrow", 4));
             m.Critters.Add(new CritterSpawn("dragonfly", 2));

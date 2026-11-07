@@ -62,7 +62,7 @@ namespace LiuBeiRPG.Core
         public static readonly GeneralDef ZhangBao = new GeneralDef
         {
             Id = "zhangbao", Name = "张宝", Glyph = "宝", Color = "#d49cff",
-            Wu = 95, Zhi = 92, Tong = 78, Su = 60, BaseSoldiers = 850, IsBoss = true,   // 原 3400，开局那一仗太磨，砍到四分之一
+            Wu = 95, Zhi = 92, Tong = 78, Su = 60, BaseSoldiers = 1700, IsBoss = true,   // 原 3400；再乘 Formula.BossSoldiersMul，实际 850
             Tactics = new[] { "yaoshu", "luolei" }, Drop = "jiujiezhang", DropRate = 1
         };
         public static readonly GeneralDef ZhangLiang = new GeneralDef
@@ -114,14 +114,15 @@ namespace LiuBeiRPG.Core
         public static readonly GeneralDef XiaHouDun = new GeneralDef { Id = "xiahoudun", Name = "夏侯惇", Glyph = "惇", Color = "#6080c0", Wu = 115, Zhi = 58, Tong = 88, Su = 72, BaseSoldiers = 2400, IsBoss = true, Drop = "suozijia", DropRate = 1 };
         public static readonly GeneralDef CaoRen = new GeneralDef { Id = "caoren", Name = "曹仁", Glyph = "仁", Color = "#7090c8", Wu = 105, Zhi = 62, Tong = 92, Su = 66, BaseSoldiers = 2600, IsBoss = true, Tactics = new[] { "jianshou" }, Drop = "sanlue", DropRate = 1 };   // 八门金锁 = 坚守
 
-        /// <summary>所有武将表，读档按 Id 找人。</summary>
-        public static readonly GeneralDef[] All =
+        /// <summary>所有武将表，读档按 Id 找人。用到时才建：静态字段按书写顺序初始化，写成字段的话排在它后面的程远志、邓茂……都还是 null，读到赵云就崩。</summary>
+        static GeneralDef[] all;
+        public static GeneralDef[] All { get { return all ?? (all = new[]
         {
             LiuBei, GuanYu, ZhangFei, JianYong, HuangJinBing, HuangJinLiShi, HuangJinShuShi, HuangJinTouMu, ChengYuanZhi, DengMao, ZhangBao, ZhangLiang, ZhangJiao,
             ZhaoYun, SunQian, MiZhu, ChenDao, ZhouCang, GuanPing, ZhuGeLiang, XuShu, LiuFeng,
             XiLiangBing, XiLiangTieQi, FeiXiongJun, HuaiNanBing, CaoJunBuBing, CaoJunGongBing, QingZhouBing, HuBaoQi,
             HuaXiong, LvBu, GuanHai, JiLing, CheZhou, DianWei, XuChu, LiuPi, GongDu, CaiYang, XiaHouDun, CaoRen,
-        };
+        }); } }
 
         public static GeneralDef Find(string id) { return Array.Find(All, d => d.Id == id); }
 

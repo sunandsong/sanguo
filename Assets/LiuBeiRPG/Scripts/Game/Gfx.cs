@@ -301,8 +301,12 @@ namespace LiuBeiRPG.Game
         }
 
         /// <summary>检测在某个区域内的鼠标点击（已考虑缩放矩阵）。点中了响 sfx（null = 不响，调用方自己放）。</summary>
+        /// <summary>为 true 时 Clicked 一律不认（菜单上叠着对话框时，点击只给对话框）。</summary>
+        public static bool BlockClicks;
+
         public static bool Clicked(Rect r, string sfx = "ui_tap")
         {
+            if (BlockClicks) return false;
             var e = Event.current;
             if (e.type == EventType.MouseDown && e.button == 0 && r.Contains(e.mousePosition))
             {

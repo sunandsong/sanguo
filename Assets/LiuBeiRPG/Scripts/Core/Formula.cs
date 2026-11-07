@@ -13,6 +13,8 @@ namespace LiuBeiRPG.Core
         public const double EnemyDamageMul = 0.5;
         /// <summary>我方打敌人（普攻、策略）伤害乘这个数；1 = 原版。</summary>
         public const double PlayerDamageMul = 1.5;
+        /// <summary>首领兵力倍率；1 = 原版。</summary>
+        public const double BossSoldiersMul = 0.5;
         /// <summary>打怪经验倍率；1 = 原版。</summary>
         public const double ExpMul = 2.0;
 

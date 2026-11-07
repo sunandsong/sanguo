@@ -172,6 +172,8 @@ namespace LiuBeiRPG.Game
                     // 普通攻击：冲过去砍一刀，刀落下时才结算（UpdateStrike）
                     strike = e;
                     strikeStart = Time.time;
+                    AddLog(e.Text);   // 冲出去的那一刻就出字，不然底下还是上一条，看着像别人在砍
+                    strikeLogged = e;
                     strikeLanded = strikeSwung = strikeDashed = false;
                     nextEventTime = float.MaxValue;
                     return;
@@ -189,10 +191,17 @@ namespace LiuBeiRPG.Game
         }
 
         /// <summary>一条战报生效：出字、改兵力条、伤害数字、策略特效；挨打的闪白 + 受击 + 击退，被砍的再喷血、顿帧、震屏；敌人兵力打没当场打飞，我方败走倒地。</summary>
+        BattleEvent strikeLogged;   // 这一刀的战报已经在冲出去时出过字了，落刀结算时别再出一遍
+
+        void AddLog(string text)
+        {
+            log.Add(text);
+            if (log.Count > 50) log.RemoveAt(0);
+        }
+
         void ApplyEvent(BattleEvent e)
         {
-            log.Add(e.Text);
-            if (log.Count > 50) log.RemoveAt(0);
+            if (strikeLogged == e) strikeLogged = null; else AddLog(e.Text);
             Vector2 mp;
             if (e.Popup != null && e.Target != null && slots.TryGetValue(e.Target, out mp))   // 识破 / 无效 / 状态名
             {
@@ -609,7 +618,8 @@ namespace LiuBeiRPG.Game
         const float UnitH = 100f;   // 战场上一个人约 100 高（原图约 950 像素）
         const float BossScale = 1.35f;   // Boss 画大这么多
 
-        float HeightOf(General g) { return g != null && g.Def.IsBoss ? UnitH * BossScale : UnitH; }
+        float crowdScale = 1f;   // 一列人多、交错站时整体缩小，免得下一排的头压住上一排的名字（DrawField 每帧算）
+        float HeightOf(General g) { return (g != null && g.Def.IsBoss ? UnitH * BossScale : UnitH) * crowdScale; }
         const float OutlinePx = 1.8f;  // 人物描边粗细
 
         /// <summary>战场：敌人在左边竖排一列（脸朝右），我方在右边竖排一列（脸朝左），越靠下越近、越后画。</summary>
@@ -632,7 +642,7 @@ namespace LiuBeiRPG.Game
             float head = UnitH + 12f, name = 22f, avail = bh - MenuH - pad;
             float cx = bx + bw * 0.5f, cy = by + pad + avail * 0.5f + (head - name) * 0.5f;   // 脚底中线
             // 挤得上下会叠在一起时，隔一个往外让 70（横屏宽，让 110）交错站（outward = -1 往左，+1 往右）
-            float zig = Gfx.Portrait ? 70f : 110f;
+            float zig = Gfx.Portrait ? 70f : 160f;   // 横屏错开 160：名字（最长「首领 黄巾头目」约 130 宽）左右不再压在一起
             System.Action<List<General>, float, float> column = (gs, x, outward) =>
             {
                 float gap = gs.Count > 1 ? Mathf.Min(RowGap, (avail - head - name) / (gs.Count - 1)) : 0f;
@@ -642,6 +652,10 @@ namespace LiuBeiRPG.Game
                         new Vector2(x + (zigzag && i % 2 == 1 ? outward * zig : 0f), cy + (i - (gs.Count - 1) * 0.5f) * gap)));
             };
             var es = battle.Enemies;
+            // 交错站时同一竖线上的人隔两格：两格间距要放得下「头顶到脚 + 名字」，放不下就按比例缩人
+            int crowd = Mathf.Max(es.Count, battle.Players.Count);
+            float g2 = crowd > 1 ? 2f * Mathf.Min(RowGap, (avail - head - name) / (crowd - 1)) : 999f;
+            crowdScale = Mathf.Clamp((g2 - name - 24f) / UnitH, 0.7f, 1f);
             column(es, cx - ColGap * 0.5f, -1f);
             column(battle.Players, cx + ColGap * 0.5f, 1f);
             slots.Clear();
@@ -664,6 +678,7 @@ namespace LiuBeiRPG.Game
             }
             DrawBloodStains();   // 地上的血渍压在人底下
 
+            var overlays = new List<System.Action>();
             foreach (var u in units)
             {
                 var g = u.Key;
@@ -735,13 +750,23 @@ namespace LiuBeiRPG.Game
                 GUI.matrix = oldM;
 
                 if (enemy && dead) continue;   // 倒下的敌人不再画兵力条、名字
-                // 头顶兵力条、脚下名字
-                Gfx.Bar(new Rect(foot.x - 30, foot.y - h - 12, 60, 6), (float)shown / g.MaxSoldiers, c);
-                DrawBuffTags(g, new Vector2(foot.x, foot.y - h - 30));
-                if (scouting && enemy) DrawScoutInfo(g, foot, h);
-                var nameCol = g == cur ? Color.yellow : enemy ? new Color(0.55f, 1f, 0.55f) : Color.white;
-                Gfx.FxText(new Rect(foot.x - 80, foot.y + 2, 160, 26), (g.Def.IsBoss ? "首领 " : "") + g.Name, 19, nameCol, TextAnchor.UpperCenter);
+                // 头顶兵力条、脚下名字：等所有人都画完再画，下一排的头不会盖住上一排的名字
+                {
+                    var gg = g; var ff = foot; float hh = h; int sh = shown; var cc = c; bool en = enemy;
+                    overlays.Add(() =>
+                    {
+                Gfx.Bar(new Rect(ff.x - 30, ff.y - hh - 12, 60, 6), (float)sh / gg.MaxSoldiers, cc);
+                Gfx.FxText(new Rect(ff.x + 34, ff.y - hh - 20, 70, 20), Mathf.Max(0, sh).ToString(), 15, new Color(1, 1, 1, 0.9f), TextAnchor.MiddleLeft);   // 兵力数字跟在条右边
+                DrawBuffTags(gg, new Vector2(ff.x, ff.y - hh - 30));
+                if (scouting && en) DrawScoutInfo(gg, ff, hh);
+                var nameCol = gg == cur ? Color.yellow : en ? new Color(0.55f, 1f, 0.55f) : Color.white;
+                string label = (gg.Def.IsBoss ? "首领 " : "") + gg.Name;
+                float lw = label.Length * 19 + 14;
+                Gfx.RoundRect(new Rect(ff.x - lw * 0.5f, ff.y + 2, lw, 24), new Color(0, 0, 0, 0.45f));   // 暗底：排挤时名字压在下一排人脸上也看得清
+                Gfx.FxText(new Rect(ff.x - 80, ff.y + 2, 160, 26), label, 19, nameCol, TextAnchor.UpperCenter);
 
+                    });
+                }
                 if (g == target)   // 头顶上下跳的大箭头
                     Gfx.Text(new Rect(foot.x - 30, foot.y - h - 52 + Mathf.Abs(Mathf.Sin(Time.time * 6f)) * -8f, 60, 34), "▼", 30, new Color(1f, 0.35f, 0.25f), TextAnchor.MiddleCenter);
 
@@ -752,6 +777,7 @@ namespace LiuBeiRPG.Game
                     if (bstate == (enemy ? BState.TargetEnemy : BState.TargetAlly) && list.IndexOf(g) >= 0) { menuIndex = list.IndexOf(g); MenuConfirm(menuIndex); }
                 }
             }
+            foreach (var o in overlays) o();
             DrawSlash();
             DrawBlood();
             DrawSparks();
@@ -894,6 +920,7 @@ namespace LiuBeiRPG.Game
             {
                 var cur = list[menuIndex];
                 var info = new Rect(bx + 12, back.y, back.x - bx - 24, back.height);
+                Gfx.RoundRect(new Rect(info.x - 8, info.y - 10, Mathf.Min(info.width, 560f) + 16, info.height + 16), new Color(0, 0, 0, 0.6f));   // 垫一块暗底，字不再直接压在敌人身上
                 Gfx.FxText(new Rect(info.x, info.y - 6, info.width, 30), CurrentCommander.Name + "：" + cur.Name + "　" + cur.Desc, 21, Accent, TextAnchor.UpperLeft);
                 Gfx.FxText(new Rect(info.x, info.y + 26, info.width, 28), "剩余法力 " + tp, 20, new Color(0.7f, 0.88f, 1f), TextAnchor.UpperLeft);
             }

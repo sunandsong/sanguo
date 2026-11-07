@@ -86,7 +86,7 @@ namespace LiuBeiRPG.Core
         /// <summary>改等级：兵力上限跟着变，活着的人兵力同涨同跌。</summary>
         public void SetLevel(int level)
         {
-            int gain = (int)Math.Round(Def.BaseSoldiers * Formula.Growth(level)) - MaxSoldiers;
+            int gain = (int)Math.Round(Def.BaseSoldiers * Formula.Growth(level) * (Def.IsBoss ? Formula.BossSoldiersMul : 1)) - MaxSoldiers;
             Level = level;
             MaxSoldiers += gain;
             if (Alive) Soldiers = Math.Max(1, Math.Min(MaxSoldiers, Soldiers + gain));

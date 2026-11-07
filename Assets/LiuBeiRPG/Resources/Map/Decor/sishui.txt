@@ -17,7 +17,7 @@ tree_autumn_1 4.60 18.90 1.74 plant amp=0.03
 palisade 8.80 4.25 2.1
 flag_big_xl 9.40 4.27 2.1 flag amp=0.05 lift=1.0
 tent_small 10.30 5.35 2.2
-firepit 9.20 5.45 1.4
-fire 9.20 5.47 1.1 frames=6 fps=10 lift=0.34
+firepit 8.30 5.45 1.4
+fire 8.30 5.47 1.1 frames=6 fps=10 lift=0.34
 crates 8.60 5.90 1.6
 # 出口
