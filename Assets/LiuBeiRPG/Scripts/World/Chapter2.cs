@@ -152,7 +152,7 @@ namespace LiuBeiRPG.World
             {
                 if (m.At(x, y) == 't') { host.Warp(Town, 19, 26); return true; }
                 if (x == 29 && y == 8) { host.Warp(Guangzong, 1, 10); return true; }   // 东边大路 → 广宗
-                if (x == 15 && y == 19) { if (flags.Has(F_Boss)) host.StartChapter(3); else Say(L("关羽", "兄长，回涿郡的路远，青州的事还没了结。")); return true; }   // 打完张角从这条官道去洛阳 → 第三章
+                if (x == 15 && y == 19) { Say(L("关羽", flags.Has(F_Boss) ? "兄长，这是回涿郡的路。去洛阳得走广宗南边的大路。" : "兄长，回涿郡的路远，青州的事还没了结。")); return true; }
                 return false;
             };
             m.OnTouch = (x, y) =>
@@ -332,7 +332,7 @@ namespace LiuBeiRPG.World
         }
 
         // =====================================================================
-        // 广宗：西边进来，河上一座桥（张梁把守），河北岸黄巾大营（张角）
+        // 广宗：西边进来，河上一座桥（张梁把守），河北岸黄巾大营（张角）；桥头往南的大路出图去洛阳（第三章）
         // =====================================================================
         MapData BuildGuangzong()
         {
@@ -360,21 +360,21 @@ namespace LiuBeiRPG.World
                     "M~~~~~~~~~~~~~~~~~~~~~=~~~~~~~~M",
                     "M~~~~~~~~~~~~~~~~~~~~~=~~~~~~~~M",
                     "=======================,,,,,,,,M",
-                    "M,,,,,T,,,,,,,,,,,,,,,,,,,,,,,,M",
-                    "M,,,,,,,,,,,T,,,,,,,,,,,,,T,,,,M",
-                    "M,,MM,,,,,,,,,,,,,,,,,,,,,,,,,,M",
-                    "M,,MM,,,,,,T,,,,,,,,,,,,,,,,,,,M",
-                    "M,,,,,,,,,,,,,,,,,,T,,,,,,,,,,,M",
-                    "M,T,,,,,,,,,,,,,,,,,,,,,,,T,,,,M",
-                    "M,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,M",
-                    "M,,,,,,,,T,,,,,,,,,,,,,,,,,,,,,M",
-                    "M,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,M",
-                    "M,,,,T,,,,,,,,,,,,,,,,,,,,,,,,,M",
-                    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+                    "M,,,,,T,,,,,,,,,,,,,,,=,,,,,,,,M",
+                    "M,,,,,,,,,,,T,,,,,,,,,=,,,T,,,,M",
+                    "M,,MM,,,,,,,,,,,,,,,,,=,,,,,,,,M",
+                    "M,,MM,,,,,,T,,,,,,,,,,=,,,,,,,,M",
+                    "M,,,,,,,,,,,,,,,,,,T,,=,,,,,,,,M",
+                    "M,T,,,,,,,,,,,,,,,,,,,=,,,T,,,,M",
+                    "M,,,,,,,,,,,,,,,,,,,,,=,,,,,,,,M",
+                    "M,,,,,,,,T,,,,,,,,,,,,=,,,,,,,,M",
+                    "M,,,,,,,,,,,,,,,,,,,,,=,,,,,,,,M",
+                    "M,,,,T,,,,,,,,,,,,,,,,=,,,,,,,,M",
+                    "MMMMMMMMMMMMMMMMMMMMMM=MMMMMMMMM",
                 }
             };
             m.DecorFile = "guangzong";
-            m.Emitters.Add(new MapEmitter("fire", 26.1f, 3.1f));
+            m.Emitters.Add(new MapEmitter("fire", 26.62f, 3.1f));
             m.Critters.Add(new CritterSpawn("fish", 5));
             m.Critters.Add(new CritterSpawn("duck", 2));
             m.Critters.Add(new CritterSpawn("rabbit", 3));
@@ -394,6 +394,7 @@ namespace LiuBeiRPG.World
             m.OnStep = (x, y) =>
             {
                 if (x == 0 && y == 10) { host.Warp(Field, 28, 8); return true; }   // 西边回青州郊外
+                if (x == 22 && y == 21) { if (flags.Has(F_Boss)) host.StartChapter(3); else Say(L("关羽", "兄长，张角还在河北岸，贼还没灭。")); return true; }   // 南边大路去洛阳 → 第三章
                 return false;
             };
             m.OnTouch = (x, y) =>
@@ -442,7 +443,7 @@ namespace LiuBeiRPG.World
                     L("关羽", "兄长，朝廷论功行赏，咱们该去洛阳了。"),
                     L("张飞", "哼，就怕那些当官的不认账。"),
                     L("刘备", "尽人事，听天命。走吧。"),
-                    L(null, "（回青州郊外，沿南边的官道上路）"),
+                    L(null, "（过桥回南岸，沿桥头往南的大路去洛阳）"),
                 });
             }));
         }

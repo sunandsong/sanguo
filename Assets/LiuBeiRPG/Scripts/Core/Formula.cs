@@ -10,7 +10,9 @@ namespace LiuBeiRPG.Core
     {
         public const double CritRate = 0.08;
         /// <summary>难度：敌人打我方（普攻、策略）伤害乘这个数；1 = 原版。</summary>
-        public const double EnemyDamageMul = 0.7;
+        public const double EnemyDamageMul = 0.5;
+        /// <summary>我方打敌人（普攻、策略）伤害乘这个数；1 = 原版。</summary>
+        public const double PlayerDamageMul = 1.5;
         /// <summary>打怪经验倍率；1 = 原版。</summary>
         public const double ExpMul = 2.0;
 

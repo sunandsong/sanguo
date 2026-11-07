@@ -62,7 +62,7 @@ namespace LiuBeiRPG.Core
         public static readonly GeneralDef ZhangBao = new GeneralDef
         {
             Id = "zhangbao", Name = "张宝", Glyph = "宝", Color = "#d49cff",
-            Wu = 95, Zhi = 92, Tong = 78, Su = 60, BaseSoldiers = 3400, IsBoss = true,
+            Wu = 95, Zhi = 92, Tong = 78, Su = 60, BaseSoldiers = 850, IsBoss = true,   // 原 3400，开局那一仗太磨，砍到四分之一
             Tactics = new[] { "yaoshu", "luolei" }, Drop = "jiujiezhang", DropRate = 1
         };
         public static readonly GeneralDef ZhangLiang = new GeneralDef

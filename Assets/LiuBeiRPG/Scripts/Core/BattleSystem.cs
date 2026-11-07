@@ -206,7 +206,7 @@ namespace LiuBeiRPG.Core
             var target = forced ?? (cmd.Target != null && cmd.Target.Alive ? cmd.Target : PickRandom(foes));
             if (target == null) return;
             if (pursued && IsPlayer(target)) mul *= 1.5;
-            if (IsPlayer(target)) mul *= Formula.EnemyDamageMul;
+            mul *= IsPlayer(target) ? Formula.EnemyDamageMul : Formula.PlayerDamageMul;
 
             bool crit;
             int dmg = Formula.Attack(cmd.Actor, target, rng, out crit, mul);
@@ -324,7 +324,7 @@ namespace LiuBeiRPG.Core
                             break;
                         }
                         if (!Formula.TacticHits(caster, target, rng)) { events.Add(Resisted(target, t)); break; }
-                        int lost = target.TakeDamage((int)Math.Max(1, Math.Round(Formula.TacticDamage(caster, target, t, rng) * (IsPlayer(target) ? Formula.EnemyDamageMul : 1))));
+                        int lost = target.TakeDamage((int)Math.Max(1, Math.Round(Formula.TacticDamage(caster, target, t, rng) * (IsPlayer(target) ? Formula.EnemyDamageMul : Formula.PlayerDamageMul))));
                         events.Add(new BattleEvent(target.Name + " 损失兵力 " + lost) { Target = target, SoldiersAfter = target.Soldiers, IsDamage = true, Fx = t.Id });
                         if (!target.Alive) events.Add(new BattleEvent(target.Name + " 败走了！") { Target = target, SoldiersAfter = 0, IsDefeat = true });
                         break;
