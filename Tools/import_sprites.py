@@ -14,7 +14,8 @@ SHEETS = {
     'sheet10.png': (2, 1, ['shoumiankai', 'baguadaopao']),
     'sheet11.png': (2, 2, ['baima', 'junma', 'chitu', 'dilu']),
 }
-LIFE = ['pass_gate', 'tent_command', 'house_hut', 'bamboo_0', 'bamboo_1']
+LIFE = ['pass_gate', 'tent_command', 'house_hut', 'bamboo_0', 'bamboo_1',
+        'tent_big_cao', 'flag_big_cao', 'tent_big_xl', 'flag_big_xl', 'tent_big_hn', 'flag_big_hn']
 
 def key(img):
     a = np.asarray(img.convert('RGB')).astype(np.int32)

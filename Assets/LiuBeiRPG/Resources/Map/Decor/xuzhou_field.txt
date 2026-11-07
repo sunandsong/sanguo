@@ -14,8 +14,8 @@ tree_green_0 3.60 17.90 1.70 plant amp=0.03
 # 营地（C 块）
 palisade 5.80 14.25 2.1
 palisade 7.80 14.21 2.1
-flag_big 6.90 14.27 2.1 flag amp=0.05 lift=1.0
-tent_big 6.44 16.75 3.4
+flag_big_hn 6.90 14.27 2.1 flag amp=0.05 lift=1.0
+tent_big_hn 6.44 16.75 3.4
 tent_small 8.30 16.35 2.2
 firepit 6.70 16.45 1.4
 fire 6.70 16.47 1.1 frames=6 fps=10 lift=0.34
