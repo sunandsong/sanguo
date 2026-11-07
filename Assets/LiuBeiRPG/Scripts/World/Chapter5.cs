@@ -21,7 +21,7 @@ namespace LiuBeiRPG.World
         const string F_ChestF1 = "c5_chest_f1", F_ChestF2 = "c5_chest_f2", F_ChestF3 = "c5_chest_f3", F_ChestF4 = "c5_chest_f4";
 
         // 许都商店 = 徐州 + 鱼鳞甲、止血散
-        static readonly string[] ShopGoods = { "caoyao", "jinchuangyao", "zhixuesan", "qingjiu", "huanhundan", "langyan", "yanmudan", "nuqiwan", "feiniaoshan", "gangbian", "tiejian_bian", "qingfengjian", "langyabang", "fuchen", "suozijia", "yulinjia", "junma", "pikui", "buxue" };
+        static readonly string[] ShopGoods = { "caoyao", "jinchuangyao", "zhixuesan", "qingjiu", "huanhundan", "langyan", "yanmudan", "nuqiwan", "feiniaoshan", "diangangqiang", "liuxingchui", "zhanmadao", "jiuzhang", "suozijia", "yulinjia", "junma", "pikui", "buxue" };
         static readonly GeneralDef[] CaoJun = { GameDatabase.CaoJunBuBing, GameDatabase.CaoJunBuBing, GameDatabase.CaoJunGongBing, GameDatabase.QingZhouBing, GameDatabase.QingZhouBing, GameDatabase.HuBaoQi };
 
         public Chapter5(IGameHost host) : base(host)
@@ -295,7 +295,7 @@ namespace LiuBeiRPG.World
             var m = Chapter4.XuzhouTown();
             var flags = host.Flags;
             m.Npcs.Add(Person("xz_merchant2", "掌柜", "shangren", null, 25, 6, () =>
-                host.Say(new List<DialogueLine> { L("掌柜", "使君回来了！小店还是老样子，诸位看看。") }, () => host.OpenShop(Chapter4.ShopGoods))));
+                host.Say(new List<DialogueLine> { L("掌柜", "使君回来了！小店还是老样子，诸位看看。") }, () => host.OpenShop(ShopGoods))));
             m.Npcs.Add(Person("xz_guard2", "徐州兵", "shouwei", "qiang", 13, 18, () =>
                 Say(L("徐州兵", flags.Has(F_Boss) ? "车胄死了，徐州又是使君的了！" : "车刺史在州牧府……使君小心，他这几日调了好些兵进府。"))));
             m.Npcs.Add(Walker("xz_patrol2", "巡街兵", "shouwei", "qiang", 0.9f, new[] { 14, 15, 14, 9 }, new[] { 14, 18 },
@@ -307,7 +307,7 @@ namespace LiuBeiRPG.World
 
             m.OnStep = (x, y) =>
             {
-                if (m.At(x, y) == 'g') { host.Warp(Field, 28, 10); return true; }
+                if (m.At(x, y) == 'g') { if (flags.Has(F_Boss)) host.StartChapter(6); else host.Warp(Field, 28, 10); return true; }   // 杀车胄后出城北投袁绍 → 第六章
                 return false;
             };
             m.OnTouch = (x, y) =>
@@ -344,7 +344,8 @@ namespace LiuBeiRPG.World
                     L(null, "关羽困守下邳，为保刘备家眷，暂降曹操；张飞败走芒砀山，不知去向。"),
                     L("刘备", "两位贤弟……备对不住你们。"),
                     L("赵云", "主公，兄弟终有相会之日。此刻先保全性命，再图后计。"),
-                }, () => host.ChapterClear("第五章 许都 · 完", "第六章：古城会"));
+                    L(null, "（出徐州城门，北投袁绍）"),
+                });
             }));
         }
     }

@@ -21,7 +21,7 @@ namespace LiuBeiRPG.World
         const string F_ChestHl1 = "c3_chest_hl1", F_ChestHl2 = "c3_chest_hl2", F_ChestHl3 = "c3_chest_hl3", F_ChestHl4 = "c3_chest_hl4";
 
         // 随军货郎（设计文档 8.3「洛阳」那一行，洛阳被烧了，货郎跟着大营走）
-        static readonly string[] ShopGoods = { "caoyao", "aiye", "qingjiu", "langyan", "yanmudan", "nuqiwan", "feiniaoshan", "changji", "dakandao", "tiejia", "pikui", "buxue" };
+        static readonly string[] ShopGoods = { "caoyao", "aiye", "qingjiu", "langyan", "yanmudan", "nuqiwan", "feiniaoshan", "changji", "guitoudao", "kaishanfu", "tiejia", "pikui", "buxue" };
         static readonly GeneralDef[] XiLiang = { GameDatabase.XiLiangBing, GameDatabase.XiLiangBing, GameDatabase.XiLiangBing, GameDatabase.XiLiangTieQi, GameDatabase.FeiXiongJun };
         static readonly GeneralDef[] XiLiangElite = { GameDatabase.XiLiangBing, GameDatabase.XiLiangTieQi, GameDatabase.XiLiangTieQi, GameDatabase.FeiXiongJun, GameDatabase.FeiXiongJun };
 
@@ -128,7 +128,7 @@ namespace LiuBeiRPG.World
             m.Npcs.Add(Person("camp_guard", "守门军士", "shouwei", "qiang", 13, 1, () =>
                 Say(L("守门军士", "北面是虎牢关方向。汜水关的华雄还没除，盟主有令，不得分兵！")), () => !flags.Has(F_HuaXiong)));
             m.Npcs.Add(Person("camp_peddler", "随军货郎", "huolang", "biandan", 19, 14, () =>
-                host.Say(new List<DialogueLine> { L("随军货郎", "小的跟着大军走，洛阳城里的货都在这儿了。清酒、伤药、长戟、大砍刀，诸位看看？") }, () => host.OpenShop(ShopGoods))));
+                host.Say(new List<DialogueLine> { L("随军货郎", "小的跟着大军走，洛阳城里的货都在这儿了。清酒、伤药、长戟、开山大斧，诸位看看？") }, () => host.OpenShop(ShopGoods))));
             m.Npcs.Add(Walker("camp_soldier", "联军士卒", "shouwei", "qiang", 0.9f, new[] { 5, 11, 11, 11 }, null,
                 "华雄连斩了俞涉、潘凤两位将军，谁还敢出战？", "十八路诸侯，十八个心思。", "曹校尉倒是个明白人。"));
             m.Npcs.Add(Walker("camp_cook", "伙夫", "cunmin_nan", "chutou", 1.1f, new[] { 5, 16, 11, 16 }, null,
@@ -284,6 +284,7 @@ namespace LiuBeiRPG.World
             m.OnStep = (x, y) =>
             {
                 if (x == 14 && y == 19) { host.Warp(Camp, 13, 1); return true; }
+                if (x == 14 && y == 0 && flags.Has(F_Boss)) { host.StartChapter(4); return true; }   // 吕布退走后穿过虎牢关 → 第四章
                 return false;
             };
             m.OnTouch = (x, y) =>
@@ -314,7 +315,8 @@ namespace LiuBeiRPG.World
                     L("刘备", "汉室陵庙，尽成焦土……"),
                     L("关羽", "兄长，诸侯已散，公孙瓒也回了北平。咱们先回平原，再图后计。"),
                     L("张飞", "下回再碰上那三姓家奴，俺定要刺他个透心凉！"),
-                }, () => host.ChapterClear("第三章 讨伐董卓 · 完", "第四章：徐州风云"));
+                    L(null, "（穿过虎牢关，往北边关口外走）"),
+                });
             }, 10));
         }
     }

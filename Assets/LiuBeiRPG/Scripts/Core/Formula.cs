@@ -9,6 +9,10 @@ namespace LiuBeiRPG.Core
     public static class Formula
     {
         public const double CritRate = 0.08;
+        /// <summary>难度：敌人打我方（普攻、策略）伤害乘这个数；1 = 原版。</summary>
+        public const double EnemyDamageMul = 0.7;
+        /// <summary>打怪经验倍率；1 = 原版。</summary>
+        public const double ExpMul = 2.0;
 
         /// <summary>成长倍率 G(L)：兵力、攻、防、谋都乘它。1 级 1.00，5 级 1.35，10 级 1.88，99 级 28。</summary>
         public static double Growth(int level)
@@ -73,7 +77,7 @@ namespace LiuBeiRPG.Core
         }
 
         /// <summary>打倒一队敌人的经验：8 + 0.4 L²，精英 ×2，首领 ×10（设计文档 1.2）。</summary>
-        public static int ExpReward(General g) { return (int)Math.Round((8 + 0.4 * g.Level * g.Level) * (g.Def.IsBoss ? 10 : g.Def.IsElite ? 2 : 1)); }
+        public static int ExpReward(General g) { return (int)Math.Round((8 + 0.4 * g.Level * g.Level) * (g.Def.IsBoss ? 10 : g.Def.IsElite ? 2 : 1) * ExpMul); }
         /// <summary>打倒一队敌人的金钱：5 + 0.25 L²，精英 ×2，首领 ×10。</summary>
         public static int GoldReward(General g) { return (int)Math.Round((5 + 0.25 * g.Level * g.Level) * (g.Def.IsBoss ? 10 : g.Def.IsElite ? 2 : 1)); }
 

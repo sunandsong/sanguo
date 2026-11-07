@@ -27,7 +27,7 @@ namespace LiuBeiRPG.World
         public const string F_Boss = "c1_boss";
         const string F_Liutao = "c1_liutao";   // 母亲给了《六韬》
         const string F_ChestHome = "c1_chest_home", F_ChestInn = "c1_chest_inn2f";   // 宝箱开过了
-        const string F_ChestFieldNE = "c1_chest_field_ne", F_ChestFieldSW = "c1_chest_field_sw", F_ChestFieldE = "c1_chest_field_e";
+        const string F_ChestFieldNE = "c1_chest_field_ne", F_ChestFieldE = "c1_chest_field_e";
         // 支线：黄巾换赏（接了 / 交了）
         const string Q_HuangJin = "c1_q_huangjin", Q_HuangJinDone = "c1_q_huangjin_done";
         const int HuangJinNeed = 10;
@@ -497,9 +497,8 @@ namespace LiuBeiRPG.World
             m.Critters.Add(new CritterSpawn("sparrow", 5));
             m.Critters.Add(new CritterSpawn("butterfly", 3));
             m.Critters.Add(new CritterSpawn("butterfly2", 2));
-            // 宝箱：右上秋林尽头、河南岸西边、东边草地
+            // 宝箱：右上秋林尽头、东边草地
             m.Npcs.Add(Chest(F_ChestFieldNE, 34, 1, 0, "pijia"));
-            m.Npcs.Add(Chest(F_ChestFieldSW, 5, 21, 0, "caoyao", 3));
             m.Npcs.Add(Chest(F_ChestFieldE, 35, 10, 120));
             // 路口的小村子：村妇在井边转悠，老人在农舍门口
             m.Npcs.Add(Walker("field_villager", "村妇", "cunmin_nv", null, 1.0f, new[] { 15, 12, 17, 12, 17, 13, 15, 13 }, new[] { 18, 9 },   // 东边大农舍
@@ -577,7 +576,8 @@ namespace LiuBeiRPG.World
                         L("刘备", "初战告捷，全赖两位贤弟！"),
                         L("关羽", "兄长，听说青州被黄巾围困，太守龚景求援。"),
                         L("张飞", "那还等什么，杀过去！"),
-                    }, () => host.ChapterClear("第一章 桃园结义 · 完", "第二章：黄巾之乱"));
+                        L(null, "（青州在南边，沿郊外南面的官道走过去）"),
+                    });   // 不弹结算图，玩家自己走到官道口 (19,23) 进第二章（见 BuildField 的 OnStep）
                 });
             });
         }

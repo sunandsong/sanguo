@@ -531,9 +531,10 @@ namespace LiuBeiRPG.Game
             var old = GUI.color;
             GUI.color = new Color(1, 1, 1, a);
             Gfx.RoundRect(new Rect(r.x + slide, r.y, r.width, r.height), new Color(1, 1, 1, 0.06f));
-            Gfx.Text(new Rect(r.x + 14 + slide, r.y, 70, r.height), name, 17, new Color(1, 1, 1, 0.75f), TextAnchor.MiddleLeft);
+            float nameW = NameColumn(17, 66);
+            Gfx.Text(new Rect(r.x + 14 + slide, r.y, nameW, r.height), name, 17, new Color(1, 1, 1, 0.75f), TextAnchor.MiddleLeft);
             float rollK = Mathf.Clamp01((k - 0.1f) / 0.4f);
-            float x0 = r.x + 80 + slide, cw = (r.xMax - 8 - x0) / from.Length;
+            float x0 = r.x + 14 + nameW + slide, cw = (r.xMax - 8 - x0) / from.Length;
             for (int i = 0; i < from.Length; i++)
             {
                 float cx = x0 + i * cw;

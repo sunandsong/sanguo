@@ -140,13 +140,14 @@ namespace LiuBeiRPG.Core
         };
 
         /// <summary>野外随机遇敌。mapPool 是这张图的兵种表（空 = 第一章的黄巾表，等级越高越容易遇到头目）。敌人等级 = 地图等级随机 ±1。</summary>
-        public static List<General> RandomEncounter(Random rng, int partyLevel, int mapLevel, GeneralDef[] mapPool = null)
+        public static List<General> RandomEncounter(Random rng, int partyLevel, int partySize, int mapLevel, GeneralDef[] mapPool = null)
         {
             var pool = mapPool != null ? new List<GeneralDef>(mapPool) : new List<GeneralDef> { HuangJinBing, HuangJinBing, HuangJinBing, HuangJinLiShi, HuangJinShuShi };
             if (mapPool == null && partyLevel >= 2) pool.Add(HuangJinLiShi);
             if (mapPool == null && partyLevel >= 3) pool.Add(HuangJinTouMu);
 
             int count = 1 + rng.Next(partyLevel >= 2 ? 5 : 3);   // 和吞食天地一样最多 5 队：1级 1~3 队，2级起 1~5 队
+            count = Math.Min(count, Math.Max(1, partySize));   // 野外敌人队数不超过我方人数
             var list = new List<General>();
             for (int i = 0; i < count; i++) list.Add(new General(pool[rng.Next(pool.Count)], Math.Max(1, mapLevel + rng.Next(-1, 2))));
             return list;
@@ -166,7 +167,7 @@ namespace LiuBeiRPG.Core
 
         public static List<General> Chapter2Siege()
         {
-            return new List<General> { new General(HuangJinTouMu, 10), new General(HuangJinShuShi, 10), new General(ZhangBao, 10), new General(HuangJinShuShi, 10), new General(HuangJinTouMu, 10) };
+            return Line(6, HuangJinTouMu, HuangJinShuShi, ZhangBao, HuangJinShuShi, HuangJinTouMu);   // 开局就堵在官道上，只比郊外野怪（5 级）高 1 级
         }
 
         public static List<General> Chapter2Bridge()

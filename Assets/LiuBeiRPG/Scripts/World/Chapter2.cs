@@ -152,7 +152,7 @@ namespace LiuBeiRPG.World
             {
                 if (m.At(x, y) == 't') { host.Warp(Town, 19, 26); return true; }
                 if (x == 29 && y == 8) { host.Warp(Guangzong, 1, 10); return true; }   // 东边大路 → 广宗
-                if (x == 15 && y == 19) { Say(L("关羽", "兄长，回涿郡的路远，青州的事还没了结。")); return true; }
+                if (x == 15 && y == 19) { if (flags.Has(F_Boss)) host.StartChapter(3); else Say(L("关羽", "兄长，回涿郡的路远，青州的事还没了结。")); return true; }   // 打完张角从这条官道去洛阳 → 第三章
                 return false;
             };
             m.OnTouch = (x, y) =>
@@ -442,7 +442,8 @@ namespace LiuBeiRPG.World
                     L("关羽", "兄长，朝廷论功行赏，咱们该去洛阳了。"),
                     L("张飞", "哼，就怕那些当官的不认账。"),
                     L("刘备", "尽人事，听天命。走吧。"),
-                }, () => host.ChapterClear("第二章 黄巾之乱 · 完", "第三章：讨伐董卓"));
+                    L(null, "（回青州郊外，沿南边的官道上路）"),
+                });
             }));
         }
     }

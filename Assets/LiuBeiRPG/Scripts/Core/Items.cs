@@ -54,10 +54,11 @@ namespace LiuBeiRPG.Core
             new ItemDef { Id = "changqiang",  Name = "长枪",   Kind = ItemKind.Weapon, Sprite = "qiang",  Power = 10, Price = 120, Desc = "白蜡杆长枪。武力 +10。" },
             new ItemDef { Id = "shoufu",      Name = "手斧",   Kind = ItemKind.Weapon, Sprite = "shoufu", Power = 12, Price = 150, Desc = "短柄阔刃斧。武力 +12。" },
             // 第二章（青州）
-            new ItemDef { Id = "gangcha",   Name = "钢叉",   Kind = ItemKind.Weapon, Sprite = "cha",    Power = 7,  Price = 300, Desc = "精钢打的三股叉。武力 +7。" },
-            new ItemDef { Id = "tongchui",  Name = "铜锤",   Kind = ItemKind.Weapon, Sprite = "chui",   Power = 8,  Price = 400, Desc = "沉甸甸的铜锤。武力 +8。" },
-            new ItemDef { Id = "podao",     Name = "朴刀",   Kind = ItemKind.Weapon, Sprite = "podao",  Power = 10, Price = 600, Desc = "长柄阔刃的朴刀。武力 +10。" },
-            new ItemDef { Id = "tieqiang",  Name = "铁枪",   Kind = ItemKind.Weapon, Sprite = "qiang",  Power = 12, Price = 750, Desc = "通体精铁的长枪。武力 +12。" },
+            // 商店兵器：每章一批不重样，最差的也比前一章能买到、开箱拿到的强（Boss 掉的名器不算）
+            new ItemDef { Id = "gangcha",   Name = "钢叉",   Kind = ItemKind.Weapon, Sprite = "cha",    Power = 14, Price = 300, Desc = "精钢打的三股叉。武力 +14。" },
+            new ItemDef { Id = "tongchui",  Name = "铜锤",   Kind = ItemKind.Weapon, Sprite = "chui",   Power = 15, Price = 400, Desc = "沉甸甸的铜锤。武力 +15。" },
+            new ItemDef { Id = "podao",     Name = "朴刀",   Kind = ItemKind.Weapon, Sprite = "podao",  Power = 16, Price = 600, Desc = "长柄阔刃的朴刀。武力 +16。" },
+            new ItemDef { Id = "tieqiang",  Name = "铁枪",   Kind = ItemKind.Weapon, Sprite = "qiang",  Power = 18, Price = 750, Desc = "通体精铁的长枪。武力 +18。" },
             new ItemDef { Id = "langyabang", Name = "狼牙棒", Kind = ItemKind.Weapon, Sprite = "langya", Power = 16, Price = 1500, Desc = "张梁的铁棒，布满倒刺。武力 +16。" },
             new ItemDef { Id = "jiujiezhang", Name = "九节杖", Kind = ItemKind.Weapon, Sprite = "jiujie", Power = 15, Magic = true, Desc = "张宝作法用的九节铜杖。法器，智力 +15。" },
             // ponytail: 名器先固定 +5，设计文档里的随等级成长（5 + 0.5×(Lv−1)）等第 2 章再做
@@ -80,13 +81,31 @@ namespace LiuBeiRPG.Core
             new ItemDef { Id = "sunzibingfa",  Name = "孙子兵法", Kind = ItemKind.Book, Teaches = "shuiji", Desc = "兵圣孙武所著。研读后全军习得「水计」。" },
             new ItemDef { Id = "sanlue",       Name = "三略",   Kind = ItemKind.Book, Teaches = "shanbeng", Desc = "黄石公所传兵书。研读后全军习得「山崩」。" },
             // 兵器
-            new ItemDef { Id = "changji",      Name = "长戟",   Kind = ItemKind.Weapon, Sprite = "ji",     Power = 9,  Price = 350,  Desc = "枪头旁伸出一道横刃，能刺能钩。" },
-            new ItemDef { Id = "dakandao",     Name = "大砍刀", Kind = ItemKind.Weapon, Sprite = "podao",  Power = 18, Price = 1500, Desc = "华雄用过的宽背大刀，分量极足。" },
-            new ItemDef { Id = "gangbian",     Name = "钢鞭",   Kind = ItemKind.Weapon, Sprite = "bian",   Power = 12, Price = 600,  Desc = "一节节的钢鞭，专破甲胄。" },
-            new ItemDef { Id = "tiejian_bian", Name = "铁锏",   Kind = ItemKind.Weapon, Sprite = "tiejian", Power = 12, Price = 700, Desc = "四棱铁锏，沉重无锋，砸在甲上一样要命。" },
-            new ItemDef { Id = "qingfengjian", Name = "青锋剑", Kind = ItemKind.Weapon, Sprite = "jian",   Power = 14, Price = 900,  Desc = "剑身泛着青光的好剑。" },
-            new ItemDef { Id = "fuchen",       Name = "拂尘",   Kind = ItemKind.Weapon, Sprite = "fuchen", Power = 6,  Price = 500,  Magic = true, Desc = "道士拿的拂尘，法器。智力 +6。" },
-            new ItemDef { Id = "liangyinqiang", Name = "亮银枪", Kind = ItemKind.Weapon, Sprite = "qiang", Power = 24, Price = 2500, Desc = "枪杆缠银丝，枪头亮得晃眼。" },
+            // 第三章（洛阳）
+            new ItemDef { Id = "changji",      Name = "长戟",   Kind = ItemKind.Weapon, Sprite = "ji",     Power = 20, Price = 900,  Desc = "枪头旁伸出一道横刃，能刺能钩。武力 +20。" },
+            new ItemDef { Id = "guitoudao",    Name = "鬼头刀", Kind = ItemKind.Weapon, Sprite = "dao",    Power = 21, Price = 1000, Desc = "刀背铸着鬼头的阔刀。武力 +21。" },
+            new ItemDef { Id = "kaishanfu",    Name = "开山大斧", Kind = ItemKind.Weapon, Sprite = "dafu", Power = 23, Price = 1300, Desc = "斧刃半月形，一斧能劈开山石。武力 +23。" },
+            new ItemDef { Id = "dakandao",     Name = "大砍刀", Kind = ItemKind.Weapon, Sprite = "podao",  Power = 18, Price = 1500, Desc = "华雄用过的宽背大刀，分量极足。武力 +18。" },
+            // 第四章（徐州）
+            new ItemDef { Id = "gangbian",     Name = "钢鞭",   Kind = ItemKind.Weapon, Sprite = "bian",   Power = 25, Price = 1500, Desc = "一节节的钢鞭，专破甲胄。武力 +25。" },
+            new ItemDef { Id = "tiejian_bian", Name = "铁锏",   Kind = ItemKind.Weapon, Sprite = "tiejian", Power = 26, Price = 1700, Desc = "四棱铁锏，沉重无锋，砸在甲上一样要命。武力 +26。" },
+            new ItemDef { Id = "qingfengjian", Name = "青锋剑", Kind = ItemKind.Weapon, Sprite = "jian",   Power = 28, Price = 2000, Desc = "剑身泛着青光的好剑。武力 +28。" },
+            new ItemDef { Id = "fuchen",       Name = "拂尘",   Kind = ItemKind.Weapon, Sprite = "fuchen", Power = 18, Price = 1500, Magic = true, Desc = "道士拿的拂尘，法器。智力 +18。" },
+            // 第五章（许都）
+            new ItemDef { Id = "diangangqiang", Name = "点钢枪", Kind = ItemKind.Weapon, Sprite = "qiang",  Power = 32, Price = 3000, Desc = "枪头点过钢火，刺甲如纸。武力 +32。" },
+            new ItemDef { Id = "liuxingchui",  Name = "流星锤", Kind = ItemKind.Weapon, Sprite = "liuxing", Power = 33, Price = 3300, Desc = "铁链拴着的铁锤，抡开了近不得身。武力 +33。" },
+            new ItemDef { Id = "zhanmadao",    Name = "斩马刀", Kind = ItemKind.Weapon, Sprite = "dao",    Power = 34, Price = 3800, Desc = "专砍马腿的长刀。武力 +34。" },
+            new ItemDef { Id = "jiuzhang",     Name = "鸠杖",   Kind = ItemKind.Weapon, Sprite = "guaizhang", Power = 22, Price = 3000, Magic = true, Desc = "杖头雕着斑鸠的老藤杖，法器。智力 +22。" },
+            // 第六章（古城）
+            new ItemDef { Id = "sangucha",     Name = "三股叉", Kind = ItemKind.Weapon, Sprite = "cha",    Power = 36, Price = 4500, Desc = "三股精钢叉头，叉住了就挣不脱。武力 +36。" },
+            new ItemDef { Id = "bintiechui",   Name = "镔铁锤", Kind = ItemKind.Weapon, Sprite = "chui",   Power = 37, Price = 4800, Desc = "镔铁铸的大锤。武力 +37。" },
+            new ItemDef { Id = "xuanhuafu",    Name = "宣花大斧", Kind = ItemKind.Weapon, Sprite = "dafu", Power = 38, Price = 5000, Desc = "斧面錾着花纹的大斧。武力 +38。" },
+            new ItemDef { Id = "qixingzhang",  Name = "七星杖", Kind = ItemKind.Weapon, Sprite = "guaizhang", Power = 26, Price = 4500, Magic = true, Desc = "杖身嵌着七颗铜星，法器。智力 +26。" },
+            // 第七章（新野）
+            new ItemDef { Id = "liangyinqiang", Name = "亮银枪", Kind = ItemKind.Weapon, Sprite = "qiang", Power = 42, Price = 6000, Desc = "枪杆缠银丝，枪头亮得晃眼。武力 +42。" },
+            new ItemDef { Id = "gudingdao",    Name = "古锭刀", Kind = ItemKind.Weapon, Sprite = "dao",    Power = 44, Price = 7000, Desc = "古锭精铁打的宝刀。武力 +44。" },
+            new ItemDef { Id = "fengzuidao",   Name = "凤嘴刀", Kind = ItemKind.Weapon, Sprite = "podao",  Power = 45, Price = 7500, Desc = "刀头弯如凤嘴的长柄大刀。武力 +45。" },
+            new ItemDef { Id = "longtouzhang", Name = "龙头杖", Kind = ItemKind.Weapon, Sprite = "guaizhang", Power = 32, Price = 6000, Magic = true, Desc = "杖头盘着一条木雕青龙，法器。智力 +32。" },
             new ItemDef { Id = "sanjiandao",   Name = "三尖刀", Kind = ItemKind.Weapon, Sprite = "cha",    Power = 30, Desc = "纪灵的三尖两刃刀，重五十斤。" },
             new ItemDef { Id = "zhanchui",     Name = "战锤",   Kind = ItemKind.Weapon, Sprite = "zhanchui", Power = 36, Desc = "许褚的大铁锤，一锤能砸碎石磨。" },
             new ItemDef { Id = "shuangtieji",  Name = "双铁戟", Kind = ItemKind.Weapon, Sprite = "ji",     Power = 38, Desc = "典韦的双戟，一支就有四十斤。" },

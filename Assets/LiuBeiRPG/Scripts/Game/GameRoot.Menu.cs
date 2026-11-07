@@ -193,11 +193,11 @@ namespace LiuBeiRPG.Game
             if (leader != null) leader.DrawGUI(foot, 180 / 950f);
 
             // 左下：每人一条兵力
-            float y = foot.y + 40;
+            float y = foot.y + 40, nameW = NameColumn(18, 60);
             foreach (var m in party.Members)
             {
-                Gfx.Text(new Rect(r.x + 24, y, 60, 26), m.Name, 18, m.Alive ? Color.white : Color.gray);
-                Gfx.Bar(new Rect(r.x + 84, y + 8, lw - 160, 10), m.MaxSoldiers > 0 ? (float)m.Soldiers / m.MaxSoldiers : 0, new Color(0.4f, 0.8f, 0.45f));
+                Gfx.Text(new Rect(r.x + 24, y, nameW, 26), m.Name, 18, m.Alive ? Color.white : Color.gray);
+                Gfx.Bar(new Rect(r.x + 24 + nameW, y + 8, lw - 100 - nameW, 10), m.MaxSoldiers > 0 ? (float)m.Soldiers / m.MaxSoldiers : 0, new Color(0.4f, 0.8f, 0.45f));
                 Gfx.Text(new Rect(r.x + lw - 72, y, 60, 26), m.Soldiers.ToString(), 15, new Color(1, 1, 1, 0.75f), TextAnchor.UpperRight);
                 y += 32;
             }
@@ -534,6 +534,14 @@ namespace LiuBeiRPG.Game
             Gfx.RoundRect(use, Accent);
             Gfx.Text(use, cur.TargetsAll ? "使用（全队）" : "使用（" + who.Name + "）", 19, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
             if (Gfx.Clicked(use)) UseTactic(cur);
+        }
+
+        /// <summary>名字那一列的宽度：按队里最长的名字算，四个字的「黄巾头目」不会压到后面的兵力。</summary>
+        float NameColumn(int fontSize, float min)
+        {
+            int n = 0;
+            foreach (var m in party.Members) n = Mathf.Max(n, m.Name.Length);
+            return Mathf.Max(min, n * fontSize + 10);
         }
 
         void UseTactic(TacticDef t)

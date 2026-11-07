@@ -21,7 +21,7 @@ namespace LiuBeiRPG.World
         const string F_ChestF1 = "c4_chest_f1", F_ChestF2 = "c4_chest_f2", F_ChestF3 = "c4_chest_f3", F_ChestF4 = "c4_chest_f4";
 
         // 徐州商店（设计文档 8.3）
-        public static readonly string[] ShopGoods = { "caoyao", "jinchuangyao", "qingjiu", "huanhundan", "langyan", "yanmudan", "nuqiwan", "feiniaoshan", "gangbian", "tiejian_bian", "qingfengjian", "langyabang", "fuchen", "suozijia", "junma", "pikui", "buxue" };
+        public static readonly string[] ShopGoods = { "caoyao", "jinchuangyao", "qingjiu", "huanhundan", "langyan", "yanmudan", "nuqiwan", "feiniaoshan", "gangbian", "tiejian_bian", "qingfengjian", "fuchen", "suozijia", "junma", "pikui", "buxue" };
         static readonly GeneralDef[] HuangJinRemnant = { GameDatabase.HuangJinBing, GameDatabase.HuangJinLiShi, GameDatabase.HuangJinLiShi, GameDatabase.HuangJinShuShi, GameDatabase.HuangJinTouMu };
         static readonly GeneralDef[] HuaiNan = { GameDatabase.HuaiNanBing, GameDatabase.HuaiNanBing, GameDatabase.HuaiNanBing, GameDatabase.XiLiangTieQi, GameDatabase.FeiXiongJun };
 
@@ -344,7 +344,7 @@ namespace LiuBeiRPG.World
             m.OnStep = (x, y) =>
             {
                 if (m.At(x, y) == 't') { host.Warp(Town, 14, 18); return true; }
-                if (m.At(x, y) == 'g') { Say(L(null, "下邳城门紧闭。")); return true; }
+                if (m.At(x, y) == 'g') { if (flags.Has(F_Boss)) host.StartChapter(5); else Say(L(null, "下邳城门紧闭。")); return true; }   // 吕布败后进下邳，随曹操回许都 → 第五章
                 return false;
             };
             m.OnTouch = (x, y) =>
@@ -394,7 +394,8 @@ namespace LiuBeiRPG.World
                     L("曹操", "玄德公，此番讨平吕布，功劳不小。随我回许都，奏请天子封赏！"),
                     L("刘备", "……备遵命。"),
                     L("关羽", "兄长，曹操此人，不可不防。"),
-                }, () => host.ChapterClear("第四章 徐州风云 · 完", "第五章：许都"));
+                    L(null, "（进东边的下邳城，随曹操回许都）"),
+                });
             }));
         }
     }

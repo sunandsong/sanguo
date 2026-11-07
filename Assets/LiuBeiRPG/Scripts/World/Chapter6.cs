@@ -20,7 +20,7 @@ namespace LiuBeiRPG.World
         const string F_ChestTown1 = "c6_chest_town1", F_ChestTown2 = "c6_chest_town2", F_ChestInn = "c6_chest_inn2f";
 
         // 古城是张飞占的小城，货不多（设计文档 8.3 没排古城，按许都减掉最贵的）
-        static readonly string[] ShopGoods = { "caoyao", "jinchuangyao", "zhixuesan", "qingjiu", "huanhundan", "langyan", "yanmudan", "nuqiwan", "feiniaoshan", "qingfengjian", "langyabang", "fuchen", "suozijia", "yulinjia", "junma" };
+        static readonly string[] ShopGoods = { "caoyao", "jinchuangyao", "zhixuesan", "qingjiu", "huanhundan", "langyan", "yanmudan", "nuqiwan", "feiniaoshan", "sangucha", "bintiechui", "xuanhuafu", "qixingzhang", "suozijia", "yulinjia", "junma" };
         static readonly GeneralDef[] RunanPool = { GameDatabase.HuangJinTouMu, GameDatabase.CaoJunBuBing, GameDatabase.CaoJunBuBing, GameDatabase.CaoJunGongBing, GameDatabase.QingZhouBing, GameDatabase.HuBaoQi };
 
         public Chapter6(IGameHost host) : base(host)
@@ -156,7 +156,7 @@ namespace LiuBeiRPG.World
                     else Say(L("孙乾", "主公，汝南的刘辟、龚都扎营在西边，不先去打个招呼，怕他们从背后捅刀子。"));
                     return true;
                 }
-                if (x == 15 && y == 19) { Say(L("关羽", "兄长，往北才是古城。")); return true; }
+                if (x == 15 && y == 19) { if (flags.Has(F_Boss)) host.StartChapter(7); else Say(L("关羽", "兄长，往北才是古城。")); return true; }   // 古城会后南下投刘表 → 第七章
                 return false;
             };
             m.OnTouch = (x, y) =>
@@ -207,7 +207,8 @@ namespace LiuBeiRPG.World
                     L(null, "刘备、关羽、张飞，古城相会。赵云、孙乾、糜竺、简雍、周仓、关平都在，兄弟重聚，大宴三日。"),
                     L("刘备", "备飘零半生，今日方知，得兄弟者得天下。"),
                     L("赵云", "主公，曹操势大，袁绍将败，汝南不可久留。荆州刘表是主公同宗，可往投之。"),
-                }, () => host.ChapterClear("第六章 古城会 · 完", "第七章：三顾茅庐"));
+                    L(null, "（沿汝南郊外南边的官道南下荆州）"),
+                });
             }));
         }
 

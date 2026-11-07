@@ -22,7 +22,7 @@ namespace LiuBeiRPG.World
         const string F_ChestLz1 = "c7_chest_lz1", F_ChestLz2 = "c7_chest_lz2", F_ChestBw1 = "c7_chest_bw1", F_ChestBw2 = "c7_chest_bw2";
 
         // 新野商店（设计文档 8.3）
-        static readonly string[] ShopGoods = { "caoyao", "jinchuangyao", "zhixuesan", "qingjiu", "huanhundan", "langyan", "yanmudan", "nuqiwan", "feiniaoshan", "qingfengjian", "langyabang", "liangyinqiang", "fuchen", "suozijia", "yulinjia", "junma" };
+        static readonly string[] ShopGoods = { "caoyao", "jinchuangyao", "zhixuesan", "qingjiu", "huanhundan", "langyan", "yanmudan", "nuqiwan", "feiniaoshan", "liangyinqiang", "gudingdao", "fengzuidao", "longtouzhang", "suozijia", "yulinjia", "junma" };
         static readonly GeneralDef[] CaoJun = { GameDatabase.CaoJunBuBing, GameDatabase.CaoJunGongBing, GameDatabase.QingZhouBing, GameDatabase.QingZhouBing, GameDatabase.HuBaoQi, GameDatabase.HuBaoQi };
 
         public Chapter7(IGameHost host) : base(host)
