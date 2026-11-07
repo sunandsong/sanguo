@@ -64,10 +64,8 @@ tree_green_3 0.60 17.90 1.79 plant amp=0.03
 tree_green_1 29.60 17.90 1.75 plant amp=0.03
 tree_green_0 0.60 18.90 1.67 plant amp=0.03
 tree_green_3 29.60 18.90 1.75 plant amp=0.03
-# 房子（H 地皮），图比地皮高，屋顶往上伸
-house_inn 7.50 8.98 5.5
-lantern 5.60 8.87 0.42 hang amp=0.22 lift=0.85
-lantern 9.40 8.87 0.42 hang amp=0.22 lift=0.85
+# 客帐（H 地皮，碰 (7,8) 进客栈）：军营里不放房子，用帐篷
+tent_small 7.50 8.95 5.0
 # 营地（C 块）
 tent_small 5.00 3.95 4.2
 tent_small 22.00 3.95 4.2
