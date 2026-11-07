@@ -1,0 +1,86 @@
+# 许都（30×20）：由 Rows 生成，底图只有地面
+# 树（Rows 里的 T）
+tree_green_3 0.60 0.90 1.65 plant amp=0.03
+tree_green_3 1.60 0.90 1.66 plant amp=0.03
+tree_green_2 2.60 0.90 1.84 plant amp=0.03
+tree_green_0 3.60 0.90 1.79 plant amp=0.03
+tree_green_1 4.60 0.90 1.84 plant amp=0.03
+tree_green_0 5.60 0.90 1.57 plant amp=0.03
+tree_green_3 6.60 0.90 1.70 plant amp=0.03
+tree_green_1 7.60 0.90 1.68 plant amp=0.03
+tree_green_3 8.60 0.90 1.56 plant amp=0.03
+tree_green_0 9.60 0.90 1.82 plant amp=0.03
+tree_green_1 10.60 0.90 1.68 plant amp=0.03
+tree_green_2 11.60 0.90 1.86 plant amp=0.03
+tree_green_2 12.60 0.90 1.69 plant amp=0.03
+tree_green_0 13.60 0.90 1.75 plant amp=0.03
+tree_green_3 14.60 0.90 1.83 plant amp=0.03
+tree_green_0 15.60 0.90 1.63 plant amp=0.03
+tree_green_3 16.60 0.90 1.87 plant amp=0.03
+tree_green_1 17.60 0.90 1.63 plant amp=0.03
+tree_green_2 18.60 0.90 1.68 plant amp=0.03
+tree_green_3 19.60 0.90 1.59 plant amp=0.03
+tree_green_0 20.60 0.90 1.85 plant amp=0.03
+tree_green_3 21.60 0.90 1.85 plant amp=0.03
+tree_green_2 22.60 0.90 1.70 plant amp=0.03
+tree_green_3 23.60 0.90 1.84 plant amp=0.03
+tree_green_3 24.60 0.90 1.72 plant amp=0.03
+tree_green_3 25.60 0.90 1.76 plant amp=0.03
+tree_green_3 26.60 0.90 1.55 plant amp=0.03
+tree_green_1 27.60 0.90 1.85 plant amp=0.03
+tree_green_1 28.60 0.90 1.67 plant amp=0.03
+tree_green_3 29.60 0.90 1.80 plant amp=0.03
+tree_green_1 0.60 1.90 1.79 plant amp=0.03
+tree_green_1 29.60 1.90 1.63 plant amp=0.03
+tree_green_1 0.60 2.90 1.87 plant amp=0.03
+tree_green_3 29.60 2.90 1.75 plant amp=0.03
+tree_green_1 0.60 3.90 1.89 plant amp=0.03
+tree_green_2 29.60 3.90 1.77 plant amp=0.03
+tree_green_3 0.60 4.90 1.85 plant amp=0.03
+tree_green_3 29.60 4.90 1.77 plant amp=0.03
+tree_green_3 0.60 5.90 1.77 plant amp=0.03
+tree_green_3 29.60 5.90 1.79 plant amp=0.03
+tree_green_3 0.60 6.90 1.57 plant amp=0.03
+tree_green_1 29.60 6.90 1.55 plant amp=0.03
+tree_green_2 0.60 7.90 1.57 plant amp=0.03
+tree_green_0 29.60 7.90 1.86 plant amp=0.03
+tree_green_0 0.60 8.90 1.89 plant amp=0.03
+tree_green_3 29.60 8.90 1.57 plant amp=0.03
+tree_green_0 0.60 9.90 1.64 plant amp=0.03
+tree_green_3 29.60 9.90 1.77 plant amp=0.03
+tree_green_0 0.60 10.90 1.81 plant amp=0.03
+tree_green_1 29.60 10.90 1.74 plant amp=0.03
+tree_green_3 0.60 11.90 1.76 plant amp=0.03
+tree_green_1 29.60 11.90 1.85 plant amp=0.03
+tree_green_0 0.60 12.90 1.89 plant amp=0.03
+tree_green_1 29.60 12.90 1.77 plant amp=0.03
+tree_green_0 0.60 13.90 1.77 plant amp=0.03
+tree_green_1 29.60 13.90 1.86 plant amp=0.03
+tree_green_2 0.60 14.90 1.71 plant amp=0.03
+tree_green_3 29.60 14.90 1.81 plant amp=0.03
+tree_green_0 0.60 15.90 1.72 plant amp=0.03
+tree_green_1 29.60 15.90 1.90 plant amp=0.03
+tree_green_1 0.60 16.90 1.88 plant amp=0.03
+tree_green_2 29.60 16.90 1.82 plant amp=0.03
+tree_green_3 0.60 17.90 1.80 plant amp=0.03
+tree_green_2 29.60 17.90 1.83 plant amp=0.03
+tree_green_0 0.60 18.90 1.70 plant amp=0.03
+tree_green_2 29.60 18.90 1.69 plant amp=0.03
+# 房子（H 地皮），图比地皮高，屋顶往上伸
+house_fu 16.00 5.98 11.6
+flag_big 10.50 5.61 1.3 flag amp=0.05 lift=0.6
+flag_big 21.50 5.61 1.3 flag amp=0.05 lift=0.6
+house_inn 4.00 6.98 3.9
+lantern 2.60 6.87 0.42 hang amp=0.22 lift=0.85
+lantern 5.40 6.87 0.42 hang amp=0.22 lift=0.85
+house_shop 27.50 5.98 2.9
+cottage_1 8.00 12.98 6.4
+cottage_1 22.00 12.98 6.4
+cottage_0 5.50 18.98 5.1
+cottage_0 24.50 18.98 5.1
+crates 10.50 16.90 0.9
+crates 12.50 16.90 0.9
+crates 17.50 16.90 0.9
+crates 19.50 16.90 0.9
+# 出口
+city_gate 15.00 20.00 4.8

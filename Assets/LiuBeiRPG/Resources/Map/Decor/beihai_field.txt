@@ -1,0 +1,33 @@
+# 北海郊外（30×20）：由 Rows 生成，底图只有地面
+# 树（Rows 里的 T）
+tree_green_2 3.60 2.90 1.77 plant amp=0.03
+tree_green_0 26.60 2.90 1.63 plant amp=0.03
+tree_green_3 5.60 5.90 1.59 plant amp=0.03
+tree_green_3 22.60 6.90 1.88 plant amp=0.03
+tree_green_1 8.60 8.90 1.60 plant amp=0.03
+tree_green_3 26.60 8.90 1.80 plant amp=0.03
+tree_green_0 21.60 12.90 1.74 plant amp=0.03
+tree_green_2 2.60 15.90 1.90 plant amp=0.03
+tree_green_1 9.60 16.90 1.59 plant amp=0.03
+tree_green_0 18.60 16.90 1.68 plant amp=0.03
+tree_green_2 25.60 18.90 1.76 plant amp=0.03
+# 营地（C 块）
+palisade 8.80 2.25 2.1 gone=c4_guanhai
+palisade 10.80 2.21 2.1 gone=c4_guanhai
+flag_big 9.90 2.27 2.1 flag amp=0.05 lift=1.0 gone=c4_guanhai
+tent_big 9.44 4.75 3.4 gone=c4_guanhai
+tent_small 11.30 4.35 2.2 gone=c4_guanhai
+firepit 9.70 4.45 1.4 gone=c4_guanhai
+fire 9.70 4.47 1.1 frames=6 fps=10 lift=0.34 gone=c4_guanhai
+crates 8.60 4.90 1.6 gone=c4_guanhai
+palisade 19.80 2.25 2.1 gone=c4_guanhai
+palisade 21.80 2.21 2.1 gone=c4_guanhai
+flag_big 20.90 2.27 2.1 flag amp=0.05 lift=1.0 gone=c4_guanhai
+tent_big 20.44 4.75 3.4 gone=c4_guanhai
+tent_small 22.30 4.35 2.2 gone=c4_guanhai
+firepit 20.70 4.45 1.4 gone=c4_guanhai
+fire 20.70 4.47 1.1 frames=6 fps=10 lift=0.34 gone=c4_guanhai
+crates 19.60 4.90 1.6 gone=c4_guanhai
+# 出口
+flag_small 14.40 1.20 0.8 flag amp=0.05 lift=0.9
+flag_small 16.60 1.20 0.8 flag amp=0.05 lift=0.9

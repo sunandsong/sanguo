@@ -76,9 +76,9 @@ namespace LiuBeiRPG.Game
             return battlePuppets[g] = a;
         }
 
-        public void StartBattle(List<General> enemies, bool isBoss, Action onVictory = null)
+        public void StartBattle(List<General> enemies, bool isBoss, Action onVictory = null, int turnLimit = 0)
         {
-            battle = new BattleSystem(party, enemies, isBoss, rng);
+            battle = new BattleSystem(party, enemies, isBoss, rng) { TurnLimit = turnLimit };
             onBattleVictory = onVictory;
             mode = Mode.Battle;
             battleEnter = Time.time;

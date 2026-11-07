@@ -1,0 +1,15 @@
+# 隆中（30×18）：由 Rows 生成，底图只有地面
+# 树（Rows 里的 T）
+bamboo_0 12.50 1.90 1.21 plant amp=0.05
+bamboo_1 23.50 1.90 1.29 plant amp=0.05
+bamboo_1 15.50 3.90 1.37 plant amp=0.05
+bamboo_0 26.50 3.90 1.42 plant amp=0.05
+bamboo_0 4.50 6.90 1.47 plant amp=0.05
+bamboo_1 24.50 6.90 1.40 plant amp=0.05
+bamboo_1 4.50 12.90 1.54 plant amp=0.05
+bamboo_0 20.50 12.90 1.26 plant amp=0.05
+bamboo_0 24.50 14.90 1.27 plant amp=0.05
+bamboo_0 14.50 15.90 1.42 plant amp=0.05
+# 房子（H 地皮），图比地皮高，屋顶往上伸
+house_hut 8.50 4.98 4.4
+# 出口

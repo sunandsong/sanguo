@@ -1,0 +1,23 @@
+# 新野郊外（30×20）：由 Rows 生成，底图只有地面
+# 树（Rows 里的 T）
+tree_green_2 3.60 2.90 1.61 plant amp=0.03
+tree_green_0 23.60 2.90 1.77 plant amp=0.03
+tree_green_3 26.60 4.90 1.83 plant amp=0.03
+tree_green_1 8.60 5.90 1.75 plant amp=0.03
+tree_green_1 3.60 13.90 1.90 plant amp=0.03
+tree_green_3 24.60 13.90 1.83 plant amp=0.03
+tree_green_3 18.60 17.90 1.61 plant amp=0.03
+tree_green_1 2.60 18.90 1.89 plant amp=0.03
+# 营地（C 块）
+palisade 12.00 12.25 2.6
+palisade 14.50 12.21 2.6
+flag_big 14.90 12.27 2.6 flag amp=0.05 lift=1.2
+tent_big 12.80 14.75 4.2
+tent_small 18.30 14.35 2.8
+firepit 12.70 14.45 1.8
+fire 12.70 14.47 1.4 frames=6 fps=10 lift=0.42
+weapon_rack 18.60 13.75 1.7
+crates 11.60 14.90 2.0
+# 出口
+flag_small 14.40 1.20 0.8 flag amp=0.05 lift=0.9
+flag_small 16.60 1.20 0.8 flag amp=0.05 lift=0.9

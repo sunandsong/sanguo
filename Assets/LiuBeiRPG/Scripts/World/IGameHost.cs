@@ -34,7 +34,7 @@ namespace LiuBeiRPG.World
 
         void Say(List<DialogueLine> lines, Action onDone = null);
         void Choose(string question, string[] options, Action<int> onChoose);
-        void StartBattle(List<General> enemies, bool isBoss, Action onVictory = null);
+        void StartBattle(List<General> enemies, bool isBoss, Action onVictory = null, int turnLimit = 0);   // turnLimit > 0：撑过这么多回合算胜（虎牢关战吕布）
         void Warp(MapData map, int x, int y);
         void ChapterClear(string title, string nextHint);
         bool StartChapter(int number);   // 开始第 n 章（队伍、物品、flags 都带着）；没有这一章返回 false 回标题

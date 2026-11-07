@@ -1,0 +1,27 @@
+# 汝南郊外（30×20）：由 Rows 生成，底图只有地面
+# 树（Rows 里的 T）
+tree_green_1 21.60 2.90 1.78 plant amp=0.03
+tree_green_0 11.60 3.90 1.82 plant amp=0.03
+tree_green_3 24.60 4.90 1.81 plant amp=0.03
+tree_green_1 5.60 11.90 1.60 plant amp=0.03
+tree_green_1 23.60 11.90 1.83 plant amp=0.03
+tree_green_1 11.60 15.90 1.62 plant amp=0.03
+tree_green_3 19.60 16.90 1.75 plant amp=0.03
+tree_green_3 2.60 17.90 1.81 plant amp=0.03
+tree_green_2 26.60 18.90 1.58 plant amp=0.03
+# 房子（H 地皮），图比地皮高，屋顶往上伸
+cottage_1 24.00 8.98 4.4
+haystack 21.40 8.90 1.1
+fence 26.40 8.95 1.2
+# 营地（C 块）
+palisade 9.80 10.25 2.1
+palisade 11.80 10.21 2.1
+flag_big 10.90 10.27 2.1 flag amp=0.05 lift=1.0
+tent_big 10.44 11.75 3.4
+tent_small 12.30 11.35 2.2
+firepit 10.70 11.45 1.4
+fire 10.70 11.47 1.1 frames=6 fps=10 lift=0.34
+crates 9.60 11.90 1.6
+# 出口
+flag_small 14.40 1.20 0.8 flag amp=0.05 lift=0.9
+flag_small 16.60 1.20 0.8 flag amp=0.05 lift=0.9

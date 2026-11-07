@@ -79,7 +79,20 @@ namespace LiuBeiRPG.Game
         const int DevLevel = 10;
         const int DevChapter = 2;
 
-        Chapter MakeChapter(int n) { return n == 1 ? new Chapter1(this) : n == 2 ? (Chapter)new Chapter2(this) : null; }
+        Chapter MakeChapter(int n)
+        {
+            switch (n)
+            {
+                case 1: return new Chapter1(this);
+                case 2: return new Chapter2(this);
+                case 3: return new Chapter3(this);
+                case 4: return new Chapter4(this);
+                case 5: return new Chapter5(this);
+                case 6: return new Chapter6(this);
+                case 7: return new Chapter7(this);
+                default: return null;
+            }
+        }
 
         /// <summary>开始第 n 章：队伍、物品、flags 都带着，只换剧情和地图。没有这一章就回标题。</summary>
         public bool StartChapter(int n)
@@ -255,6 +268,12 @@ namespace LiuBeiRPG.Game
             { "刘备", "liubei" }, { "关羽", "guanyu" }, { "张飞", "zhangfei" }, { "母亲", "muqin" },
             { "守卫", "shouwei" }, { "张世平", "huolang" }, { "店小二", "xiaoer" }, { "逃难村民", "nanmin" },
             { "简雍", "jianyong" }, { "龚景", "gongjing" }, { "张宝", "zhangbao" }, { "张梁", "zhangliang" }, { "张角", "zhangjiao" },
+            // 第三～七章：角色做好后放进引擎就有头像；还没做的借现成的（和 GameDatabase 里的 Skin 一致），见 ArtTask/出图任务-第三到七章.md
+            { "赵云", "shouwei" }, { "孙乾", "jianyong" }, { "糜竺", "shangren" }, { "陈到", "shouwei" }, { "周仓", "hjtm" }, { "关平", "shouwei" },
+            { "诸葛亮", "jianyong" }, { "徐庶", "jianyong" }, { "刘封", "shouwei" },
+            { "华雄", "zhangliang" }, { "吕布", "chengyuanzhi" }, { "管亥", "hjtm" }, { "纪灵", "chengyuanzhi" }, { "车胄", "shouwei" }, { "典韦", "zhangliang" }, { "许褚", "zhangliang" },
+            { "刘辟", "hjtm" }, { "龚都", "hjtm" }, { "蔡阳", "chengyuanzhi" }, { "夏侯惇", "chengyuanzhi" }, { "曹仁", "dengmao" },
+            { "曹操", "gongjing" }, { "袁绍", "gongjing" }, { "公孙瓒", "shouwei" }, { "孔融", "gongjing" }, { "太史慈", "shouwei" }, { "陶谦", "gongjing" }, { "刘表", "gongjing" }, { "童子", "xiaohai" }, { "诸葛均", "jianyong" }, { "掌柜", "shangren" }, { "随军货郎", "huolang" },
         };
         readonly Dictionary<string, PuppetActor> portraits = new Dictionary<string, PuppetActor>();
         DialogueLine shownLine;   // 正在打字的那句

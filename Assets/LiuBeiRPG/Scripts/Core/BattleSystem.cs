@@ -45,6 +45,8 @@ namespace LiuBeiRPG.Core
         public readonly List<General> Enemies;
         public readonly bool IsBoss;
         public BattleResult Result = BattleResult.None;
+        /// <summary>>0：撑过这么多回合就算胜（虎牢关战吕布，打满 10 回合即胜）。</summary>
+        public int TurnLimit;
         public int Turn = 1;
 
         readonly Random rng;
@@ -163,6 +165,11 @@ namespace LiuBeiRPG.Core
                 foreach (var b in g.TickBuffs())
                     if (g.Alive && TacticDef.IsBad(b)) events.Add(new BattleEvent(g.Name + " 恢复了神智。") { Target = g, Popup = "解" });
             Turn++;
+            if (TurnLimit > 0 && Result == BattleResult.None)
+            {
+                if (Turn > TurnLimit) { CheckEnd(); events.Add(new BattleEvent("敌军力竭，鸣金收兵！")); }
+                else events.Add(new BattleEvent("再撑 " + (TurnLimit - Turn + 1) + " 回合！"));
+            }
             return events;
         }
 
@@ -350,6 +357,7 @@ namespace LiuBeiRPG.Core
             if (Result != BattleResult.None) return;
             if (AliveEnemies.Count == 0) Result = BattleResult.Victory;
             else if (AlivePlayers.Count == 0) Result = BattleResult.Defeat;
+            else if (TurnLimit > 0 && Turn > TurnLimit) Result = BattleResult.Victory;
         }
 
         /// <summary>胜利后发放经验和金钱。</summary>

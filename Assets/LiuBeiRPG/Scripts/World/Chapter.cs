@@ -70,6 +70,39 @@ namespace LiuBeiRPG.World
             return n;
         }
 
+        /// <summary>武将入队：按全队等级补足，gear 是自带的专属装备（直接穿上）。</summary>
+        protected General Join(GeneralDef def, params string[] gear)
+        {
+            var g = new General(def);
+            host.Party.Add(g);
+            foreach (var id in gear) g.Gear[ItemDb.Get(id).Slot] = id;
+            return g;
+        }
+
+        /// <summary>给一件东西：放得下就进行囊并返回 true，放不下提示。</summary>
+        protected bool Give(string item, int count = 1)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                if (!host.Party.CanHold(item)) { Say(L(null, "行囊满了，" + ItemDb.Get(item).Name + "没拿下。")); return false; }
+                host.Party.Items.Add(item);
+            }
+            return true;
+        }
+
+        /// <summary>官府正堂（12×8，内景图沿用青州太守府 fu_qz）：主位 (5,3) 站主人，从最下面走出去回 leave。每章的府都长一样，只换人。</summary>
+        protected MapData BuildHall(string id, string name, System.Action leave, params Npc[] people)
+        {
+            var m = new MapData
+            {
+                Id = id, Name = name, Art = "fu_qz", Grade = "#fff0dc", Light = "#e8d6c0", ArtMargin = 0,
+                Rows = new[] { "HHHHHHHHHHHH", "HHHHHHHHHHHH", "HHHHHHHHHHHH", "H..........H", "H..........H", "H..........H", "H..........H", "H..........H" }
+            };
+            foreach (var p in people) m.Npcs.Add(p);
+            m.OnTouch = (x, y) => { if (y >= m.Height) { leave(); return true; } return false; };
+            return m;
+        }
+
         /// <summary>客栈一楼 + 二楼（每章一套；art 是内景图名，默认涿县那套 inn / inn_2f，青州的出好后传 inn_qz）。cost 住一晚多少钱，leave 从一楼下边走出去干什么，chest2F 二楼放的宝箱（可空）。</summary>
         protected MapData[] BuildInn(string id, int cost, Action leave, Npc chest2F, string art = "inn")
         {

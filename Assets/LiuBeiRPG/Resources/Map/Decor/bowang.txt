@@ -1,0 +1,22 @@
+# 博望坡（30×20）：由 Rows 生成，底图只有地面
+# 树（Rows 里的 T）
+tree_autumn_2 5.60 1.90 1.73 plant amp=0.03
+tree_autumn_1 2.60 3.90 1.62 plant amp=0.03
+tree_autumn_2 7.60 6.90 1.72 plant amp=0.03
+tree_autumn_1 25.60 6.90 1.69 plant amp=0.03
+tree_autumn_1 3.60 14.90 1.60 plant amp=0.03
+tree_autumn_1 24.60 14.90 1.59 plant amp=0.03
+tree_autumn_0 11.60 16.90 1.87 plant amp=0.03
+tree_autumn_2 2.60 18.90 1.66 plant amp=0.03
+tree_autumn_0 26.60 18.90 1.75 plant amp=0.03
+# 营地（C 块）
+palisade 23.80 2.25 2.1
+palisade 25.80 2.21 2.1
+flag_big 24.90 2.27 2.1 flag amp=0.05 lift=1.0
+tent_big 24.44 4.75 3.4
+tent_small 26.30 4.35 2.2
+firepit 25.70 4.45 1.4
+fire 25.70 4.47 1.1 frames=6 fps=10 lift=0.34
+weapon_rack 26.60 3.75 1.4
+crates 23.60 4.90 1.6
+# 出口

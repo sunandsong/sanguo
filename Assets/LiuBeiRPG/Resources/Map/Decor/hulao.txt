@@ -1,0 +1,33 @@
+# 虎牢关（30×20）：由 Rows 生成，底图只有地面
+# 树（Rows 里的 T）
+tree_autumn_2 5.60 3.90 1.90 plant amp=0.03
+tree_autumn_2 27.60 3.90 1.63 plant amp=0.03
+tree_autumn_0 3.60 5.90 1.85 plant amp=0.03
+tree_autumn_2 25.60 5.90 1.64 plant amp=0.03
+tree_autumn_1 6.60 7.90 1.79 plant amp=0.03
+tree_autumn_0 8.60 11.90 1.58 plant amp=0.03
+tree_autumn_2 19.60 11.90 1.89 plant amp=0.03
+tree_autumn_0 18.60 14.90 1.84 plant amp=0.03
+tree_autumn_0 11.60 15.90 1.66 plant amp=0.03
+tree_autumn_1 2.60 16.90 1.78 plant amp=0.03
+tree_autumn_1 26.60 16.90 1.80 plant amp=0.03
+tree_autumn_0 24.60 17.90 1.81 plant amp=0.03
+# 营地（C 块）
+palisade 9.80 3.25 2.1
+flag_big 10.40 3.27 2.1 flag amp=0.05 lift=1.0
+tent_big 10.44 5.75 3.4
+tent_small 11.30 5.35 2.2
+firepit 9.20 5.45 1.4
+fire 9.20 5.47 1.1 frames=6 fps=10 lift=0.34
+weapon_rack 11.60 4.75 1.4
+crates 9.60 5.90 1.6
+palisade 19.80 3.25 2.1
+flag_big 20.40 3.27 2.1 flag amp=0.05 lift=1.0
+tent_big 20.44 5.75 3.4
+tent_small 21.30 5.35 2.2
+firepit 20.40 4.60 1.4
+fire 20.40 4.62 1.1 frames=6 fps=10 lift=0.34
+weapon_rack 21.60 4.75 1.4
+crates 19.60 5.90 1.6
+# 出口
+pass_gate 14.50 1.00 4.0

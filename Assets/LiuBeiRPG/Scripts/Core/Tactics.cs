@@ -96,6 +96,7 @@ namespace LiuBeiRPG.Core
             Status("qixi",    "奇袭", "我方全体 3 回合抢先出手",    16, 66, 80, TacticTarget.AllAllies, Buff.First),
             // ---- 敌方专用 ----
             new TacticDef { Id = "yaoshu", Name = "妖术", Desc = "黄巾妖术，攻击全体", Cost = 0, MinLevel = 99, Kind = TacticKind.Damage, Target = TacticTarget.AllFoes, Power = 0.45, PlayerUsable = false },
+            new TacticDef { Id = "jianyu", Name = "箭雨", Desc = "曹军弓兵齐射，攻击全体", Cost = 0, MinLevel = 99, Kind = TacticKind.Damage, Target = TacticTarget.AllFoes, Power = 0.5, PlayerUsable = false },
         };
 
         public static TacticDef Get(string id)

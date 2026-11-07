@@ -1,0 +1,20 @@
+# 许都郊外（30×20）：由 Rows 生成，底图只有地面
+# 树（Rows 里的 T）
+tree_autumn_1 3.60 2.90 1.58 plant amp=0.03
+tree_autumn_2 22.60 2.90 1.77 plant amp=0.03
+tree_autumn_0 11.60 4.90 1.76 plant amp=0.03
+tree_autumn_2 25.60 4.90 1.64 plant amp=0.03
+tree_autumn_2 3.60 9.90 1.66 plant amp=0.03
+tree_autumn_0 2.60 12.90 1.56 plant amp=0.03
+tree_autumn_0 12.60 12.90 1.87 plant amp=0.03
+tree_autumn_2 17.60 14.90 1.76 plant amp=0.03
+tree_autumn_2 12.60 16.90 1.72 plant amp=0.03
+tree_autumn_0 24.60 16.90 1.77 plant amp=0.03
+tree_autumn_1 8.60 18.90 1.78 plant amp=0.03
+# 营地（C 块）
+weapon_rack 5.90 6.00 1.6
+weapon_rack 8.10 6.00 1.6
+flag_big 7.00 5.40 2.0 flag amp=0.05 lift=1.0
+# 出口
+flag_small 14.40 1.20 0.8 flag amp=0.05 lift=0.9
+flag_small 16.60 1.20 0.8 flag amp=0.05 lift=0.9

@@ -71,6 +71,37 @@ namespace LiuBeiRPG.Core
             new ItemDef { Id = "buxue", Name = "布靴", Kind = ItemKind.Boots, Power = 2, Price = 60, Desc = "千层底的布靴，走得轻快。速度 +2。" },
             new ItemDef { Id = "numa",  Name = "驽马", Kind = ItemKind.Horse, Power = 3, Price = 200, Desc = "脚力平平的乘马。速度 +3。" },
             new ItemDef { Id = "yupei", Name = "玉佩", Kind = ItemKind.Trinket, Power = 5, Price = 150, Desc = "温润的青玉佩，佩之静心。智力 +5。" },
+
+            // ---------- 第三～七章（设计文档 5、7 节）。图标见 ArtSrc/物品图标提示词.md 第八～十张；兵器用引擎贴图 ----------
+            new ItemDef { Id = "jinchuangyao", Name = "金创药", Kind = ItemKind.Heal, Power = 1000, Price = 120, Desc = "军中常备的伤药，敷上立刻止血。一人兵力 +1000。" },
+            new ItemDef { Id = "zhixuesan",    Name = "止血散", Kind = ItemKind.Heal, Power = 2500, Price = 400, Desc = "名医调配的药散。一人兵力 +2500。" },
+            new ItemDef { Id = "qingjiu",      Name = "清酒",   Kind = ItemKind.Wine, Power = 30,   Price = 120, Desc = "洛阳酿的清酒，入口绵软。法力 +30。" },
+            new ItemDef { Id = "pojia",        Name = "破甲片", Kind = ItemKind.Material, Price = 10, Desc = "从官军身上扯下来的甲片，卖给铁匠能换几个钱。" },
+            new ItemDef { Id = "sunzibingfa",  Name = "孙子兵法", Kind = ItemKind.Book, Teaches = "shuiji", Desc = "兵圣孙武所著。研读后全军习得「水计」。" },
+            new ItemDef { Id = "sanlue",       Name = "三略",   Kind = ItemKind.Book, Teaches = "shanbeng", Desc = "黄石公所传兵书。研读后全军习得「山崩」。" },
+            // 兵器
+            new ItemDef { Id = "changji",      Name = "长戟",   Kind = ItemKind.Weapon, Sprite = "ji",     Power = 9,  Price = 350,  Desc = "枪头旁伸出一道横刃，能刺能钩。" },
+            new ItemDef { Id = "dakandao",     Name = "大砍刀", Kind = ItemKind.Weapon, Sprite = "podao",  Power = 18, Price = 1500, Desc = "华雄用过的宽背大刀，分量极足。" },
+            new ItemDef { Id = "gangbian",     Name = "钢鞭",   Kind = ItemKind.Weapon, Sprite = "bian",   Power = 12, Price = 600,  Desc = "一节节的钢鞭，专破甲胄。" },
+            new ItemDef { Id = "tiejian_bian", Name = "铁锏",   Kind = ItemKind.Weapon, Sprite = "tiejian", Power = 12, Price = 700, Desc = "四棱铁锏，沉重无锋，砸在甲上一样要命。" },
+            new ItemDef { Id = "qingfengjian", Name = "青锋剑", Kind = ItemKind.Weapon, Sprite = "jian",   Power = 14, Price = 900,  Desc = "剑身泛着青光的好剑。" },
+            new ItemDef { Id = "fuchen",       Name = "拂尘",   Kind = ItemKind.Weapon, Sprite = "fuchen", Power = 6,  Price = 500,  Magic = true, Desc = "道士拿的拂尘，法器。智力 +6。" },
+            new ItemDef { Id = "liangyinqiang", Name = "亮银枪", Kind = ItemKind.Weapon, Sprite = "qiang", Power = 24, Price = 2500, Desc = "枪杆缠银丝，枪头亮得晃眼。" },
+            new ItemDef { Id = "sanjiandao",   Name = "三尖刀", Kind = ItemKind.Weapon, Sprite = "cha",    Power = 30, Desc = "纪灵的三尖两刃刀，重五十斤。" },
+            new ItemDef { Id = "zhanchui",     Name = "战锤",   Kind = ItemKind.Weapon, Sprite = "zhanchui", Power = 36, Desc = "许褚的大铁锤，一锤能砸碎石磨。" },
+            new ItemDef { Id = "shuangtieji",  Name = "双铁戟", Kind = ItemKind.Weapon, Sprite = "ji",     Power = 38, Desc = "典韦的双戟，一支就有四十斤。" },
+            new ItemDef { Id = "fangtianhuaji", Name = "方天画戟", Kind = ItemKind.Weapon, Sprite = "huaji", Power = 60, Desc = "吕布的方天画戟，天下无双。" },
+            new ItemDef { Id = "yajiaoqiang",  Name = "涯角枪", Kind = ItemKind.Weapon, Sprite = "qiang",  Power = 46, Owner = "zhaoyun", Desc = "赵云的长枪，取「海角天涯无对」之意。赵云专属。" },
+            new ItemDef { Id = "yushan",       Name = "羽扇",   Kind = ItemKind.Weapon, Sprite = "yushan", Power = 25, Magic = true, Owner = "zhugeliang", Desc = "诸葛亮的白羽扇，法器。诸葛亮专属。智力 +25。" },
+            // 防具、坐骑
+            new ItemDef { Id = "suozijia",     Name = "锁子甲", Kind = ItemKind.Armor, Power = 48,  Price = 1800, Desc = "铁环套成的软甲，刀砍不透。" },
+            new ItemDef { Id = "yulinjia",     Name = "鱼鳞甲", Kind = ItemKind.Armor, Power = 66,  Price = 4500, Desc = "甲片像鱼鳞一样层层叠叠，将官才穿得起。" },
+            new ItemDef { Id = "shoumiankai",  Name = "兽面吞头铠", Kind = ItemKind.Armor, Power = 126, Desc = "吕布的铠甲，肩上两只兽头吞口，威风无比。" },
+            new ItemDef { Id = "baguadaopao",  Name = "八卦道袍", Kind = ItemKind.Armor, Power = 36, Owner = "zhugeliang", Desc = "诸葛亮的鹤氅道袍，绣着八卦。诸葛亮专属。" },
+            new ItemDef { Id = "baima",        Name = "白马",   Kind = ItemKind.Horse, Power = 8,  Desc = "公孙瓒白马义从的坐骑，通身雪白。" },
+            new ItemDef { Id = "junma",        Name = "骏马",   Kind = ItemKind.Horse, Power = 10, Price = 1200, Desc = "脚力不错的好马。" },
+            new ItemDef { Id = "chitu",        Name = "赤兔",   Kind = ItemKind.Horse, Power = 30, Owner = "guanyu", Desc = "吕布的赤兔马，日行千里。曹操赠与关羽。关羽专属。" },
+            new ItemDef { Id = "dilu",         Name = "的卢",   Kind = ItemKind.Horse, Power = 20, Owner = "liubei", Desc = "眼下有泪槽的名马，檀溪一跃三丈。刘备专属。" },
         };
 
         public static ItemDef Get(string id)
