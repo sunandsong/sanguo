@@ -164,7 +164,7 @@ namespace LiuBeiRPG.Game
 
             // 随机遇敌
             var tile = Tiles.Get(map.At(px, py));
-            if (tile.Encounter && stepsSinceBattle >= 4 && smokeSteps == 0 && rng.NextDouble() < map.EncounterRate)
+            if (!DevWalkOn && tile.Encounter && stepsSinceBattle >= 4 && smokeSteps == 0 && rng.NextDouble() < map.EncounterRate)
             {
                 stepsSinceBattle = 0;
                 StartBattle(GameDatabase.RandomEncounter(rng, party.Level, party.Fighters().Count, map.EnemyLevel, map.EnemyPool), false, null);

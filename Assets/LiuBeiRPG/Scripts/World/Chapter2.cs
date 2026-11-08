@@ -152,7 +152,7 @@ namespace LiuBeiRPG.World
             {
                 if (m.At(x, y) == 't') { host.Warp(Town, 19, 26); return true; }
                 if (x == 29 && y == 8) { host.Warp(Guangzong, 1, 10); return true; }   // 东边大路 → 广宗
-                if (x == 15 && y == 19) { Say(L("关羽", flags.Has(F_Boss) ? "兄长，这是回涿郡的路。去洛阳得走广宗南边的大路。" : "兄长，回涿郡的路远，青州的事还没了结。")); return true; }
+                if (x == 15 && y == 19) { host.GoChapter(1, "zhuojun_field", 19, 22); return true; }   // 南口 ↔ 涿郡郊外官道口（第一章）
                 return false;
             };
             m.OnTouch = (x, y) =>
@@ -394,7 +394,7 @@ namespace LiuBeiRPG.World
             m.OnStep = (x, y) =>
             {
                 if (x == 0 && y == 10) { host.Warp(Field, 28, 8); return true; }   // 西边回青州郊外
-                if (x == 22 && y == 21) { if (flags.Has(F_Boss)) host.StartChapter(3); else Say(L("关羽", "兄长，张角还在河北岸，贼还没灭。")); return true; }   // 南边大路去洛阳 → 第三章
+                if (x == 22 && y == 21) { if (flags.Has(F_Boss)) Cross(3, "lianjun_out", 6, 1); else Say(L("关羽", "兄长，张角还在河北岸，贼还没灭。")); return true; }   // 南边大路 → 第三章联军大营外（第三章开过头就直接走过去，不重放开场）
                 return false;
             };
             m.OnTouch = (x, y) =>

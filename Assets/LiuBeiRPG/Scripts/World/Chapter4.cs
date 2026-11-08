@@ -148,7 +148,7 @@ namespace LiuBeiRPG.World
                     else Say(L("关羽", "兄长，先解北海之围，再东去徐州。"));
                     return true;
                 }
-                if (x == 15 && y == 19) { Say(L("赵云", "主公，回平原的路远，北海的事还没了结。")); return true; }
+                if (x == 15 && y == 19) { host.GoChapter(3, "hulao", 28, 8); return true; }   // 南口 ↔ 虎牢关东口（第三章）
                 return false;
             };
             m.OnTouch = (x, y) =>
@@ -293,7 +293,8 @@ namespace LiuBeiRPG.World
         // =====================================================================
         // 徐州郊外：北边回城，西南角纪灵的淮南军大营，东头山口是下邳城门（吕布）
         // =====================================================================
-        MapData BuildField()
+        /// <summary>徐州郊外底板（第四、五章共用）：地形、物件、小动物；NPC 和出口各章自己加。南边底口第五章通汝南（第六章）。</summary>
+        public static MapData XuzhouFieldBase()
         {
             var m = new MapData
             {
@@ -321,7 +322,7 @@ namespace LiuBeiRPG.World
                     "M,,,,CCCC,,,,,,=T,,,,,,,,,,,,M",
                     "M,,T,,,,,,,,,,,=,,,,,,,,,,,,,M",
                     "M,,,,,,,,,,,,,,=,,,,,,,,,,,,,M",
-                    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+                    "MMMMMMMMMMMMMMM=MMMMMMMMMMMMMM",
                 }
             };
             m.DecorFile = "xuzhou_field";
@@ -330,6 +331,12 @@ namespace LiuBeiRPG.World
             m.Critters.Add(new CritterSpawn("sparrow", 4));
             m.Critters.Add(new CritterSpawn("fish", 3));
             m.Critters.Add(new CritterSpawn("duck", 2));
+            return m;
+        }
+
+        MapData BuildField()
+        {
+            var m = XuzhouFieldBase();
             var flags = host.Flags;
 
             m.Npcs.Add(Chest(F_ChestF1, 27, 2, 0, "qingjiu", 2));
@@ -349,7 +356,8 @@ namespace LiuBeiRPG.World
             {
                 if (m.At(x, y) == 't') { host.Warp(Town, 14, 18); return true; }
                 if (x == 0 && y == 10) { host.Warp(Beihai, 28, 10); return true; }   // 西口 ↔ 北海东口
-                if (m.At(x, y) == 'g') { if (flags.Has(F_Boss)) host.StartChapter(5); else Say(L(null, "下邳城门紧闭。")); return true; }   // 吕布败后进下邳，随曹操回许都 → 第五章
+                if (x == 15 && y == 19) { Say(L("关羽", "兄长，南边的路通汝南，眼下不必去。")); return true; }
+                if (m.At(x, y) == 'g') { if (flags.Has(F_Boss)) Cross(5, "xudu_field", 15, 18); else Say(L(null, "下邳城门紧闭。")); return true; }   // 吕布败后进下邳，随曹操回许都 → 第五章
                 return false;
             };
             m.OnTouch = (x, y) =>

@@ -18,7 +18,8 @@ namespace LiuBeiRPG.World
     public class StoryFlags
     {
         readonly HashSet<string> set = new HashSet<string>();
-        public bool Has(string f) { return set.Contains(f); }
+        public static bool DevAll;   // 测试用：所有剧情都算走完（出口全通、boss 不在）
+        public bool Has(string f) { return DevAll || set.Contains(f); }
         public void Set(string f) { set.Add(f); }
         public IEnumerable<string> All { get { return set; } }
     }
@@ -37,7 +38,8 @@ namespace LiuBeiRPG.World
         void StartBattle(List<General> enemies, bool isBoss, Action onVictory = null, int turnLimit = 0);   // turnLimit > 0：撑过这么多回合算胜（虎牢关战吕布）
         void Warp(MapData map, int x, int y);
         void ChapterClear(string title, string nextHint);
-        bool StartChapter(int number);   // 开始第 n 章（队伍、物品、flags 都带着）；没有这一章返回 false 回标题
+        bool StartChapter(int number);
+        void GoChapter(int number, string mapId, int x, int y);   // 回到/跳到第 n 章的某张图，不放开场剧情（跨章节走地图用）   // 开始第 n 章（队伍、物品、flags 都带着）；没有这一章返回 false 回标题
         void OpenShop(string[] goods);   // 商店：goods 是卖的物品 Id
         void PlaceFollowers(string facing, params int[] cells);   // 剧情站位：队友（第 2、3… 人）站到 x0,y0, x1,y1…，朝 facing（front/back/left/side）
         void SetHour(float hour);        // 跳到某个时辰（住店睡一晚 → 清晨）

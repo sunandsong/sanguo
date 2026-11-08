@@ -28,6 +28,12 @@ namespace LiuBeiRPG.World
         /// <summary>调试：跳过开头剧情直接到野外。</summary>
         public virtual void SkipToField() { }
 
+        /// <summary>走到章节交界：第 n 章开过头就直接走过去（不重放开场），没开过就开始第 n 章。(x,y) 要和第 n 章 Begin 站的位置一致。</summary>
+        protected void Cross(int n, string mapId, int x, int y)
+        {
+            if (host.Flags.Has("c" + n + "_begun")) host.GoChapter(n, mapId, x, y); else host.StartChapter(n);
+        }
+
         protected static DialogueLine L(string speaker, string text) { return new DialogueLine(speaker, text); }
         protected void Say(params DialogueLine[] lines) { host.Say(new List<DialogueLine>(lines)); }
 

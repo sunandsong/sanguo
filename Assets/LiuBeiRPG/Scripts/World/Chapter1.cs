@@ -538,7 +538,7 @@ namespace LiuBeiRPG.World
                 // 官道口：第一章打完了就去青州（第二章）
                 if (x == 19 && y == 23)
                 {
-                    if (flags.Has(F_Boss)) host.StartChapter(2);
+                    if (flags.Has(F_Boss)) Cross(2, "qingzhou_field", 15, 18);
                     else Say(L("关羽", "兄长，往南便是去青州的官道。"));
                     return true;
                 }

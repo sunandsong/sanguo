@@ -62,6 +62,7 @@ namespace LiuBeiRPG.Game
             choice = null;
             chestFx = null;
             smokeSteps = 0;
+            StoryFlags.DevAll = DevWalkOn;
             StartChapter(1);
             if (Application.isEditor && DevStartAtField)
             {
@@ -71,13 +72,19 @@ namespace LiuBeiRPG.Game
                 while (party.Level < DevLevel) party.GainExp(party.ExpToNext - party.Exp);
                 party.FullRestore();
                 if (DevChapter > 1) { flags.Set(Chapter1.F_Boss); StartChapter(DevChapter); dialogueQueue.Clear(); currentDialogue = null; chapter.SkipToField(); }
+                if (DevMap != null) GoChapter(DevChapter, DevMap, DevX, DevY);
             }
         }
 
         // ponytail: 调试开关，编辑器里新游戏直接从城外开始（城内剧情算走完）、直接到 DevLevel 级、直接进第 DevChapter 章；测完改回 false
         const bool DevStartAtField = true;
         const int DevLevel = 10;
-        const int DevChapter = 2;
+        const int DevChapter = 6;
+        const string DevMap = "runan_field";   // 新游戏直接站到这张图（null = 按章节默认）
+        const int DevX = 2, DevY = 9;
+        // ponytail: 测试逛图开关：不遇敌、所有剧情 flag 算已完成（出口全通、boss 和宝箱都没了）；测完改回 false
+        const bool DevWalk = true;
+        static bool DevWalkOn { get { return Application.isEditor && DevWalk; } }
 
         Chapter MakeChapter(int n)
         {
@@ -104,8 +111,17 @@ namespace LiuBeiRPG.Game
             chapter = MakeChapter(n);
             if (chapter == null) { mode = Mode.Title; return false; }
             mode = Mode.Map;
+            flags.Set("c" + n + "_begun");   // 以后走回这一章就不重放开场（Chapter.Cross）
             chapter.Begin();
             return true;
+        }
+
+        /// <summary>跨章节走地图：换到第 n 章的某张图，不放开场剧情。</summary>
+        public void GoChapter(int n, string mapId, int x, int y)
+        {
+            chapter = MakeChapter(n);
+            mode = Mode.Map;
+            Warp(Array.Find(chapter.Maps, m => m.Id == mapId) ?? chapter.Maps[0], x, y);
         }
 
         void Update()
@@ -226,7 +242,7 @@ namespace LiuBeiRPG.Game
 
         public void Say(List<DialogueLine> lines, Action onDone = null)
         {
-            if (lines == null || lines.Count == 0) { if (onDone != null) onDone(); return; }
+            if (lines == null || lines.Count == 0 || DevWalkOn) { if (onDone != null) onDone(); return; }   // 逛图模式不放对话
             var b = new DialogueBatch { Lines = lines, OnDone = onDone };
             if (currentDialogue == null) currentDialogue = b;
             else dialogueQueue.Enqueue(b);

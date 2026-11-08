@@ -43,7 +43,7 @@ namespace LiuBeiRPG.World
         public override void Begin()
         {
             host.Party.FullRestore();
-            host.Warp(Town, 14, 18);
+            host.Warp(Field, 28, 9);   // 从东口进新野郊外（来路通汝南郊外西口）
             host.Say(new List<DialogueLine>
             {
                 L(null, "刘备投荆州刘表。刘表待之甚厚，拨新野一县给刘备屯兵。"),
@@ -134,7 +134,7 @@ namespace LiuBeiRPG.World
                 }, () => Join(GameDatabase.XuShu));
             }, () => !flags.Has(F_XuShu)));
             m.Npcs.Add(Person("xy_guard", "新野兵", "shouwei", "qiang", 13, 18, () =>
-                Say(L("新野兵", !flags.Has(F_CaoRen) ? "曹仁的大军在城外北边扎营，摆了个怪阵。" : !flags.Has(F_Kongming) ? "隆中在城外西边山里，卧龙先生就住那儿。" : "博望坡在城外东边，夏侯惇的十万大军到了！"))));
+                Say(L("新野兵", !flags.Has(F_CaoRen) ? "曹仁的大军在城外北边扎营，摆了个怪阵。" : !flags.Has(F_Kongming) ? "隆中在城外西边山里，卧龙先生就住那儿。" : "博望坡在城外南边，夏侯惇的十万大军到了！"))));
             m.Npcs.Add(Walker("xy_patrol", "巡街兵", "shouwei", "qiang", 0.9f, new[] { 15, 14, 15, 8 }, new[] { 14, 18 },
                 "刘皇叔来了，新野的日子好过多了。", "单先生摆的阵，咱们看都看不懂。", "听说皇叔去隆中，一连去了好几趟。"));
             m.Npcs.Add(Walker("xy_woman", "村妇", "cunmin_nv", null, 1.0f, new[] { 3, 12, 10, 12 }, new[] { 5, 12 },
@@ -203,14 +203,14 @@ namespace LiuBeiRPG.World
                     "M,,,,,,,,,,,,,,===============",
                     "================,,,,,,,,,,,,,M",
                     "M,,,,,,,,,,,,,,=,,,,,,,,,,,,,M",
-                    "M,,,,,,,,,,CCCCCCCC,,,,,,,,,,M",
-                    "M,,T,,,,,,,CCCCCCCC,,,,,T,,,,M",
-                    "M,,,,,,,,,,CCCCCCCC,,,,,,,,,,M",
-                    "M,,,,~~~,,,,,,,,,,,,,,,,,,,,,M",
-                    "M,,,~~~~~,,,,,,,,,,,,,,,,MM,,M",
-                    "M,,,,~~~,,,,,,,,,,T,,,,,,MM,,M",
-                    "M,T,,,,,,,,,,,,,,,,,,,,,,,,,,M",
-                    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+                    "M,,,,,,,,,,CCCC=CCC,,,,,,,,,,M",
+                    "M,,T,,,,,,,CCCC=CCC,,,,,T,,,,M",
+                    "M,,,,,,,,,,CCCC=CCC,,,,,,,,,,M",
+                    "M,,,,~~~,,,,,,,=,,,,,,,,,,,,,M",
+                    "M,,,~~~~~,,,,,,=,,,,,,,,,MM,,M",
+                    "M,,,,~~~,,,,,,,=,,T,,,,,,MM,,M",
+                    "M,T,,,,,,,,,,,,=,,,,,,,,,,,,,M",
+                    "MMMMMMMMMMMMMMM=MMMMMMMMMMMMMM",
                 }
             };
             m.DecorFile = "xinye_field";
@@ -229,18 +229,19 @@ namespace LiuBeiRPG.World
             m.OnStep = (x, y) =>
             {
                 if (m.At(x, y) == 't') { host.Warp(Town, 14, 18); return true; }
+                if (x == 15 && y == 19)   // 南边大路（穿过营地中心）↔ 博望坡西口
+                {
+                    if (flags.Has(F_Kongming)) host.Warp(Bowang, 1, 10);
+                    else Say(L("赵云", "主公，南边是去博望坡的路，眼下还没有敌情。"));
+                    return true;
+                }
                 if (x == 0 && y == 10)
                 {
                     if (flags.Has(F_XuShuGone)) host.Warp(Longzhong, 28, 10);
                     else Say(L("关羽", "兄长，曹仁的大军就在城外，先退了敌兵再说。"));
                     return true;
                 }
-                if (x == 29 && y == 9)   // 东边大路（底图上这段路比西边高一格）
-                {
-                    if (flags.Has(F_Kongming)) host.Warp(Bowang, 1, 10);
-                    else Say(L("赵云", "主公，东边是博望坡，眼下还没有敌情。"));
-                    return true;
-                }
+                if (x == 29 && y == 9) { host.GoChapter(6, "runan_field", 1, 9); return true; }   // 东边大路 ↔ 汝南郊外西口（第六章）
                 return false;
             };
             m.OnTouch = (x, y) =>
@@ -390,7 +391,7 @@ namespace LiuBeiRPG.World
             {
                 Join(GameDatabase.ZhuGeLiang, "yushan", "baguadaopao");
                 host.Warp(Town, 14, 18);
-                Say(L("诸葛亮", "主公，探马来报，夏侯惇引兵十万，已到博望坡。出城往东便是。亮自有安排。"));
+                Say(L("诸葛亮", "主公，探马来报，夏侯惇引兵十万，已到博望坡。出城往南便是。亮自有安排。"));
             });
         }
 
@@ -441,7 +442,7 @@ namespace LiuBeiRPG.World
 
             m.OnStep = (x, y) =>
             {
-                if (x == 0 && y == 10) { host.Warp(Field, 28, 9); return true; }
+                if (x == 0 && y == 10) { host.Warp(Field, 15, 18); return true; }   // 西口 ↔ 新野郊外南口
                 return false;
             };
             m.OnTouch = (x, y) =>

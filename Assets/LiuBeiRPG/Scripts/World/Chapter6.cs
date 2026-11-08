@@ -157,8 +157,8 @@ namespace LiuBeiRPG.World
                     else Say(L("孙乾", "主公，汝南的刘辟、龚都扎营在西边，不先去打个招呼，怕他们从背后捅刀子。"));
                     return true;
                 }
-                if (x == 15 && y == 19) { Say(L("关羽", flags.Has(F_Boss) ? "兄长，这是来时的路。去荆州得走西边的官道。" : "兄长，往北才是古城。")); return true; }   // 南口 = 来时的路，不换图
-                if (x == 0 && y == 9) { if (flags.Has(F_Boss)) host.StartChapter(7); else Say(L("孙乾", "主公，西边官道通荆州。古城的事还没了结，先往北去。")); return true; }   // 古城会后走西边官道南下投刘表 → 第七章
+                if (x == 15 && y == 19) { host.GoChapter(5, "xuzhou_field", 15, 18); return true; }   // 南口 ↔ 徐州郊外南边大路（第五章）
+                if (x == 0 && y == 9) { if (flags.Has(F_Boss)) Cross(7, "xinye_field", 28, 9); else Say(L("孙乾", "主公，西边官道通荆州。古城的事还没了结，先往北去。")); return true; }   // 古城会后走西边官道南下投刘表 → 第七章
                 return false;
             };
             m.OnTouch = (x, y) =>

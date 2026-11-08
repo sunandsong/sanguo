@@ -13,7 +13,7 @@ namespace LiuBeiRPG.World
     {
         public const int InnCost = 250;
 
-        public readonly MapData Town, Fu, Inn, Inn2F, Field, Xuzhou, XuzhouFu;
+        public readonly MapData Town, Fu, Inn, Inn2F, Field, XuzhouField, Xuzhou, XuzhouFu;
 
         const string F_MeiJiu = "c5_meijiu", F_ChenDao = "c5_chendao", F_DianWei = "c5_dianwei", F_Leave = "c5_leave", F_XuChu = "c5_xuchu";
         public const string F_Boss = "c5_boss";
@@ -31,18 +31,19 @@ namespace LiuBeiRPG.World
             var inn = BuildInn("xudu_inn", InnCost, () => host.Warp(Town, 4, 7), Chest(F_ChestInn, 3, 3, 0, "qingjiu", 3));
             Inn = inn[0]; Inn2F = inn[1];
             Field = BuildField();
+            XuzhouField = BuildXuzhouField();
             Xuzhou = BuildXuzhou();
             XuzhouFu = BuildXuzhouFu();
         }
 
         public override int Number { get { return 5; } }
-        public override MapData[] Maps { get { return new[] { Town, Fu, Inn, Inn2F, Field, Xuzhou, XuzhouFu }; } }
+        public override MapData[] Maps { get { return new[] { Town, Fu, Inn, Inn2F, Field, XuzhouField, Xuzhou, XuzhouFu }; } }
         public override List<TownSpot> Towns { get { return new List<TownSpot> { new TownSpot { Map = Town, X = 14, Y = 18 }, new TownSpot { Map = Xuzhou, X = 14, Y = 18 } }; } }
 
         public override void Begin()
         {
             host.Party.FullRestore();
-            host.Warp(Town, 14, 18);
+            host.Warp(Field, 15, 18);   // 从南口进许都郊外（来路通徐州郊外下邳门）
             host.Say(new List<DialogueLine>
             {
                 L(null, "刘备随曹操回到许都。曹操表奏天子，封刘备为左将军、宜城亭侯。"),
@@ -217,15 +218,15 @@ namespace LiuBeiRPG.World
                     "M,,,,,,,,,,,,,,=,,,,~~~,,,,,,M",
                     "M,,T,,,,,,,,,,,=,,,,,,,,,MMMMM",
                     "M,,,,,,,,,,,,,,===============",
-                    "M,,,,,,,,,,,,,,,,,,,,,,,,MMMMM",
-                    "M,T,,,,,,,,,T,,,,,,,,,,,,,,,,M",
-                    "M,,,,,,,,,,,,,,,,,,,,,,,,,,,,M",
-                    "M,,,,,,,,,,,,,,,,T,,,,,,,,,,,M",
-                    "M,,,MM,,,,,,,,,,,,,,,,,,,,,,,M",
-                    "M,,,MM,,,,,,T,,,,,,,,,,,T,,,,M",
-                    "M,,,,,,,,,,,,,,,,,,,,,,,,,,,,M",
-                    "M,,,,,,,T,,,,,,,,,,,,,,,,,,,,M",
-                    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+                    "M,,,,,,,,,,,,,,=,,,,,,,,,MMMMM",
+                    "M,T,,,,,,,,,T,,=,,,,,,,,,,,,,M",
+                    "M,,,,,,,,,,,,,,=,,,,,,,,,,,,,M",
+                    "M,,,,,,,,,,,,,,=,T,,,,,,,,,,,M",
+                    "M,,,MM,,,,,,,,,=,,,,,,,,,,,,,M",
+                    "M,,,MM,,,,,,T,,=,,,,,,,,T,,,,M",
+                    "M,,,,,,,,,,,,,,=,,,,,,,,,,,,,M",
+                    "M,,,,,,,T,,,,,,=,,,,,,,,,,,,,M",
+                    "MMMMMMMMMMMMMMM=MMMMMMMMMMMMMM",
                 }
             };
             m.DecorFile = "xudu_field";
@@ -244,7 +245,8 @@ namespace LiuBeiRPG.World
             m.OnStep = (x, y) =>
             {
                 if (m.At(x, y) == 't') { host.Warp(Town, 14, 18); return true; }
-                if (x == 29 && y == 10) { host.Warp(Xuzhou, 14, 18); return true; }
+                if (x == 29 && y == 10) { Say(L("关羽", "兄长，东边是山间小道。去徐州走南边大路。")); return true; }
+                if (x == 15 && y == 19) { host.Warp(XuzhouField, 27, 10); return true; }   // 南口 ↔ 徐州郊外下邳门
                 return false;
             };
             m.OnTouch = (x, y) =>
@@ -288,6 +290,32 @@ namespace LiuBeiRPG.World
         }
 
         // =====================================================================
+        // 徐州郊外（第五章）：和第四章同一张图。北口进徐州城，西口回北海（第四章），下邳门通许都郊外南口，
+        // 南边大路杀车胄后离开徐州 → 第六章汝南郊外
+        // =====================================================================
+        MapData BuildXuzhouField()
+        {
+            var m = Chapter4.XuzhouFieldBase();
+            m.EnemyLevel = 28;   // 第五章的等级段（袁术残兵）
+            var flags = host.Flags;
+            m.OnStep = (x, y) =>
+            {
+                if (m.At(x, y) == 't') { host.Warp(Xuzhou, 14, 18); return true; }
+                if (x == 0 && y == 10) { host.GoChapter(4, "beihai_field", 28, 10); return true; }   // 西口 ↔ 北海东口（第四章）
+                if (m.At(x, y) == 'g') { host.Warp(Field, 15, 18); return true; }   // 下邳门 ↔ 许都郊外南口
+                if (x == 15 && y == 19) { if (flags.Has(F_Boss)) Cross(6, "runan_field", 15, 18); else Say(L("关羽", "兄长，先进徐州城，车胄那厮还在州牧府。")); return true; }   // 南边大路 → 第六章
+                return false;
+            };
+            m.OnTouch = (x, y) =>
+            {
+                if (m.At(x, y) != 'C') return false;
+                Say(L(null, "淮南军留下的空营，栅栏倒了一半。"));
+                return true;
+            };
+            return m;
+        }
+
+        // =====================================================================
         // 徐州（第五章）：车胄暗受曹操之命，在州牧府等刘备自投罗网
         // =====================================================================
         MapData BuildXuzhou()
@@ -307,7 +335,7 @@ namespace LiuBeiRPG.World
 
             m.OnStep = (x, y) =>
             {
-                if (m.At(x, y) == 'g') { if (flags.Has(F_Boss)) host.StartChapter(6); else host.Warp(Field, 28, 10); return true; }   // 杀车胄后出城北投袁绍 → 第六章
+                if (m.At(x, y) == 'g') { host.Warp(XuzhouField, 15, 1); return true; }   // 城门 ↔ 徐州郊外北口
                 return false;
             };
             m.OnTouch = (x, y) =>
@@ -344,7 +372,7 @@ namespace LiuBeiRPG.World
                     L(null, "关羽困守下邳，为保刘备家眷，暂降曹操；张飞败走芒砀山，不知去向。"),
                     L("刘备", "两位贤弟……备对不住你们。"),
                     L("赵云", "主公，兄弟终有相会之日。此刻先保全性命，再图后计。"),
-                    L(null, "（出徐州城门，北投袁绍）"),
+                    L(null, "（出徐州城，从徐州郊外南边的大路离开）"),
                 });
             }));
         }

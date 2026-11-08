@@ -681,6 +681,7 @@ namespace LiuBeiRPG.Game
                 party.TP = Math.Min(s.TP, party.MaxTP);
                 flags = new StoryFlags();
                 foreach (var f in s.Flags) flags.Set(f);
+                StoryFlags.DevAll = DevWalkOn;
                 dialogueQueue.Clear();
                 currentDialogue = null;
                 smokeSteps = 0;
