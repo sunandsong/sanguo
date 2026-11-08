@@ -77,13 +77,13 @@ namespace LiuBeiRPG.Game
         }
 
         // ponytail: 调试开关，编辑器里新游戏直接从城外开始（城内剧情算走完）、直接到 DevLevel 级、直接进第 DevChapter 章；测完改回 false
-        const bool DevStartAtField = true;
+        const bool DevStartAtField = false;
         const int DevLevel = 10;
         const int DevChapter = 6;
-        const string DevMap = "runan_field";   // 新游戏直接站到这张图（null = 按章节默认）
+        const string DevMap = null;   // 新游戏直接站到这张图（null = 按章节默认）
         const int DevX = 2, DevY = 9;
         // ponytail: 测试逛图开关：不遇敌、所有剧情 flag 算已完成（出口全通、boss 和宝箱都没了）；测完改回 false
-        const bool DevWalk = true;
+        const bool DevWalk = false;
         static bool DevWalkOn { get { return Application.isEditor && DevWalk; } }
 
         Chapter MakeChapter(int n)
