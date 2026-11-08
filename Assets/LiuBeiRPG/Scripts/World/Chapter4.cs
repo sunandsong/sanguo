@@ -254,7 +254,7 @@ namespace LiuBeiRPG.World
             m.OnTouch = (x, y) =>
             {
                 if (x == 5 && y == 6) { host.Warp(Inn, 4, 5); return true; }
-                if (x == 15 && y == 5) { host.Warp(Fu, 5, 7); return true; }
+                if (x >= 14 && x <= 16 && y == 5) { host.Warp(Fu, 5, 7); return true; }   // 台阶三格宽，站哪格往上走都能进
                 return false;
             };
             return m;

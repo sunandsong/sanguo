@@ -68,22 +68,47 @@ namespace LiuBeiRPG.Game
             {
                 dialogueQueue.Clear();
                 currentDialogue = null;
+                comicPages = null;
                 chapter.SkipToField();   // 第一章：结义、受赠都算完成，站到城外
                 while (party.Level < DevLevel) party.GainExp(party.ExpToNext - party.Exp);
                 party.FullRestore();
                 if (DevChapter > 1) { flags.Set(Chapter1.F_Boss); StartChapter(DevChapter); dialogueQueue.Clear(); currentDialogue = null; chapter.SkipToField(); }
                 if (DevMap != null) GoChapter(DevChapter, DevMap, DevX, DevY);
             }
+            if (Application.isEditor && DevTenBattle)   // 看 10 人上阵的站位：队伍凑满 10 人，直接开一场 5 个敌人（带首领）的仗
+            {
+                dialogueQueue.Clear();
+                currentDialogue = null;
+                comicPages = null;
+                while (party.Level < 30) party.GainExp(party.ExpToNext - party.Exp);
+                var extra = new[] { GameDatabase.GuanYu, GameDatabase.ZhangFei, GameDatabase.JianYong, GameDatabase.ZhaoYun, GameDatabase.SunQian, GameDatabase.MiZhu,
+                                    GameDatabase.ChenDao, GameDatabase.ZhouCang, GameDatabase.GuanPing, GameDatabase.ZhuGeLiang, GameDatabase.XuShu };
+                foreach (var d in extra) if (party.Members.Count < Party.MaxMembers && !party.Has(d)) party.Add(new General(d, party.Level));
+                party.FullRestore();
+                StartBattle(GameDatabase.Chapter5XuChu(), false);
+            }
+            if (Application.isEditor && DevEnding)   // 直接看「未完待续」
+            {
+                StartChapter(7);
+                dialogueQueue.Clear();
+                currentDialogue = null;
+                ChapterClear("第七章 三顾茅庐 · 完", "第八章：长坂·赤壁");
+            }
         }
+
+        // ponytail: 调试开关，编辑器里点「新游戏」直接跳到最后的「未完待续」页；看完改回 false
+        const bool DevEnding = false;
 
         // ponytail: 调试开关，编辑器里新游戏直接从城外开始（城内剧情算走完）、直接到 DevLevel 级、直接进第 DevChapter 章；测完改回 false
         const bool DevStartAtField = false;
         const int DevLevel = 10;
-        const int DevChapter = 6;
+        const int DevChapter = 5;
         const string DevMap = null;   // 新游戏直接站到这张图（null = 按章节默认）
-        const int DevX = 2, DevY = 9;
+        const int DevX = 15, DevY = 17;
         // ponytail: 测试逛图开关：不遇敌、所有剧情 flag 算已完成（出口全通、boss 和宝箱都没了）；测完改回 false
         const bool DevWalk = false;
+        // ponytail: 调试开关，编辑器里新游戏直接凑满 10 人开一仗，看战斗站位；看完改回 false
+        const bool DevTenBattle = false;
         static bool DevWalkOn { get { return Application.isEditor && DevWalk; } }
 
         Chapter MakeChapter(int n)
@@ -108,8 +133,9 @@ namespace LiuBeiRPG.Game
             currentDialogue = null;
             choice = null;
             chestFx = null;
+            comicPages = null;
             chapter = MakeChapter(n);
-            if (chapter == null) { mode = Mode.Title; return false; }
+            if (chapter == null) { mode = Mode.Title; titleShownAt = -1; return false; }
             mode = Mode.Map;
             flags.Set("c" + n + "_begun");   // 以后走回这一章就不重放开场（Chapter.Cross）
             chapter.Begin();
@@ -167,6 +193,12 @@ namespace LiuBeiRPG.Game
         {
             InputKey key;
             if (e.type == EventType.KeyDown && e.keyCode == KeyCode.G) { showGrid = !showGrid; e.Use(); return; }
+            // Delete / Backspace：队伍页放生选中的人，人物页物品栏扔掉选中的东西
+            if (e.type == EventType.KeyDown && (e.keyCode == KeyCode.Delete || e.keyCode == KeyCode.Backspace) && choice == null && currentDialogue == null)
+            {
+                if (menuPage == PageTeam) { TeamRelease(teamSel); e.Use(); return; }
+                if (menuPage == PagePeople && bagTab == 0) { DiscardItem(); e.Use(); return; }
+            }
             if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Tab && menuPage == PagePeople) { bagTab = (bagTab + 1) % 3; e.Use(); return; }   // 人物页切 物品 / 法术 / 任务
             if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Tab && mode == Mode.Battle && menuPage == 0) { scouting = !scouting; e.Use(); return; }   // 战斗里开关侦察
             if (e.type == EventType.KeyDown && e.keyCode != KeyCode.None && MapKey(e.keyCode, out key))
@@ -187,6 +219,7 @@ namespace LiuBeiRPG.Game
         {
             if (ChestPlaying) return;   // 开箱演出时不吃按键
             KeySfx(key);
+            if (comicPages != null) { ComicKey(key); return; }   // 开场漫画盖在最上面
             // 对话 / 选项优先
             if (choice != null) { ChoiceKey(key); return; }
             if (currentDialogue != null)
@@ -199,8 +232,8 @@ namespace LiuBeiRPG.Game
             switch (mode)
             {
                 case Mode.Title:
-                    if (key == InputKey.Confirm) NewGame();
-                    else if (key == InputKey.Cancel && HasSave) ContinueGame();
+                    if ((key == InputKey.Up || key == InputKey.Down) && HasSave) { titleSel = 1 - titleSel; Sfx.Play("ui_tap"); }
+                    else if (key == InputKey.Confirm) TitlePick(HasSave ? titleSel : 0);
                     break;
                 case Mode.Map:
                     MapKeyDown(key);
@@ -260,7 +293,7 @@ namespace LiuBeiRPG.Game
             if (b.OnDone != null) b.OnDone();
         }
 
-        bool UiBusy { get { return currentDialogue != null || choice != null || menuPage != 0 || ChestPlaying; } }
+        bool UiBusy { get { return currentDialogue != null || choice != null || menuPage != 0 || ChestPlaying || comicPages != null; } }
 
         /// <summary>对话框贴在安全区域底部居中（最宽 900），横竖屏使用不同高度。</summary>
         static Rect DialogRect
@@ -416,11 +449,13 @@ namespace LiuBeiRPG.Game
         {
             clearTitle = title;
             clearHint = nextHint;
+            clearShownAt = Time.time;
             mode = Mode.ChapterClear;
             Sfx.Play("chapter_clear");
         }
 
         string clearTitle, clearHint;
+        float clearShownAt;
 
         // ---------------- 绘制 ----------------
 
@@ -451,6 +486,7 @@ namespace LiuBeiRPG.Game
             DrawMapTitle();
             DrawTouchUi();
             DrawMenuPage();
+            if (comicPages != null) DrawComic();
             if (choice != null) DrawChoice();
             else DrawDialogue();
             DrawNote();
@@ -469,31 +505,98 @@ namespace LiuBeiRPG.Game
         void DrawTitle()
         {
             float oy = (Gfx.VH - 540f) * 0.5f;   // 内容按 540 高排版，竖屏时垂直居中
-            Gfx.Rect(new Rect(0, 0, Gfx.VW, Gfx.VH), new Color(0.06f, 0.04f, 0.08f));
-            // 简单的“桃花”点缀
+            if (titleShownAt < 0) titleShownAt = Time.time;   // 每次回到首页重新播一遍入场
+            float t = Time.time - titleShownAt;
+            bool hasSave = HasSave;
+            if (!hasSave) titleSel = 0;
+
+            // 背景：等比铺满（竖屏裁两边），慢慢推近一点点
+            Gfx.Rect(new Rect(0, 0, Gfx.VW, Gfx.VH), new Color(0.1f, 0.08f, 0.2f));
+            var bg = Gfx.Tex("Art/title_bg");
+            if (bg != null)
+            {
+                float s = Mathf.Max(Gfx.VW / bg.width, Gfx.VH / bg.height) * (1.02f + 0.02f * Mathf.Sin(Time.time * 0.15f));
+                float w = bg.width * s, h = bg.height * s;
+                Gfx.Image(new Rect((Gfx.VW - w) * 0.5f, (Gfx.VH - h) * 0.5f, w, h), bg);
+            }
+            // 底部压暗，按钮和提示字更清楚
+            for (int i = 0; i < 24; i++)
+                Gfx.Rect(new Rect(0, Gfx.VH * (0.55f + i * 0.45f / 24), Gfx.VW, Gfx.VH * 0.45f / 24 + 1), new Color(0.05f, 0.03f, 0.12f, 0.025f * i));
+
+            TitlePetals();
+
+            // 标题字：从上方落下回弹，之后轻轻浮动
+            var logo = Gfx.Tex("Art/title_logo");
+            if (logo != null)
+            {
+                float lw = Mathf.Min(620, Gfx.VW - 40), lh = lw * logo.height / logo.width;
+                float a = Mathf.Clamp01(t / 0.6f), drop = (1 - EaseOutBack(a)) * -60;
+                float bob = Mathf.Sin(Time.time * 1.6f) * 4;
+                GUI.color = new Color(1, 1, 1, a);
+                Gfx.Image(new Rect((Gfx.VW - lw) * 0.5f, oy + 30 + drop + bob, lw, lh), logo);
+                GUI.color = Color.white;
+            }
+
+            // 菜单：新游戏 / 读档，竖排，晚一点淡入
+            string[] items = { "新游戏", "读档" };
+            for (int i = 0; i < 2; i++)
+            {
+                float a = Mathf.Clamp01((t - 0.5f - i * 0.12f) / 0.4f);
+                if (a <= 0) continue;
+                bool enabled = i == 0 || hasSave, sel = i == titleSel;
+                // Q 版扁平胶囊：深色粗描边 + 实心投影 + 底下一道深色“唇边”，和标题字一个画风
+                float bw = 230, bh = 56, slide = (1 - a) * 30;
+                float lift = sel ? 3 + Mathf.Abs(Mathf.Sin(Time.time * 4)) * 3 : 0;   // 选中的一蹦一蹦
+                var r = new Rect((Gfx.VW - bw) * 0.5f, oy + 335 + i * 78 + slide - lift, bw, bh);
+                var ink = new Color(0.13f, 0.1f, 0.28f, a);
+                Color top, lip, tc;
+                if (!enabled) { top = new Color(0.84f, 0.82f, 0.88f, a); lip = new Color(0.68f, 0.66f, 0.75f, a); tc = new Color(0.52f, 0.5f, 0.6f, a); }
+                else if (sel) { top = new Color(1f, 0.83f, 0.25f, a); lip = new Color(1f, 0.58f, 0.12f, a); tc = ink; }
+                else { top = new Color(1f, 0.97f, 0.9f, a); lip = new Color(0.9f, 0.82f, 0.72f, a); tc = ink; }
+                var o = new Rect(r.x - 4, r.y - 4, r.width + 8, r.height + 8);
+                Gfx.Pill(new Rect(o.x, o.y + 5 + lift, o.width, o.height), new Color(0.1f, 0.07f, 0.2f, 0.45f * a));   // 投影，蹦起来时离得远
+                Gfx.Pill(o, ink);
+                Gfx.Pill(r, lip);
+                Gfx.Pill(new Rect(r.x + 3, r.y + 2, r.width - 6, r.height - 9), top);
+                Gfx.Pill(new Rect(r.x + 20, r.y + 8, 24, 8), new Color(1, 1, 1, 0.85f * a));   // 左上角的小高光
+                Gfx.Pill(new Rect(r.x + 48, r.y + 8, 8, 8), new Color(1, 1, 1, 0.85f * a));
+                Gfx.Text(new Rect(r.x, r.y - 3, r.width, r.height), items[i], 28, tc, TextAnchor.MiddleCenter, false, false);
+                if (a >= 1 && enabled && Gfx.Clicked(o)) { titleSel = i; TitlePick(i); }
+            }
+            float ha = Mathf.Clamp01((t - 1.2f) / 0.5f) * 0.75f;
+            Gfx.Text(new Rect(0, Gfx.VH - 36, Gfx.VW, 24), "泉都发科技有限公司出品", 15, new Color(1, 1, 1, ha), TextAnchor.MiddleCenter);
+        }
+
+        int titleSel;
+        float titleShownAt = -1;   // < 0 = 下一帧画首页时重新计时
+
+        void TitlePick(int i)
+        {
+            if (i == 1 && HasSave) ContinueGame(); else NewGame();
+        }
+
+        static float EaseOutBack(float x) { const float c = 1.7f; x -= 1; return 1 + (c + 1) * x * x * x + c * x * x; }
+
+        /// <summary>首页飘的桃花瓣：和地图天气同一张软边椭圆贴图，染粉色，边落边转。</summary>
+        void TitlePetals()
+        {
+            var tex = PetalTex();
             var prng = new System.Random(7);
-            for (int i = 0; i < 60; i++)
+            float tt = Time.time;
+            var old = GUI.matrix;
+            for (int i = 0; i < 40; i++)
             {
-                float x = (float)prng.NextDouble() * Gfx.VW;
-                float y = (float)((prng.NextDouble() * Gfx.VH + Time.time * (12 + i % 7 * 4)) % Gfx.VH);
-                float s = 3 + i % 4;
-                Gfx.Rect(new Rect(x, y, s, s), new Color(0.95f, 0.55f, 0.7f, 0.5f));
+                float bx = (float)prng.NextDouble(), phase = (float)prng.NextDouble();
+                float speed = 30 + (float)prng.NextDouble() * 40, size = 8 + (float)prng.NextDouble() * 8;
+                float y = Mathf.Repeat(phase * (Gfx.VH + 40) + tt * speed, Gfx.VH + 40) - 20;
+                float x = Mathf.Repeat(bx * Gfx.VW + Mathf.Sin(tt * (0.8f + phase) + i) * 30 + tt * 20, Gfx.VW + 40) - 20;
+                var c = new Vector3(x, y);
+                GUI.matrix = old * Matrix4x4.TRS(c, Quaternion.Euler(0, 0, (tt * (60 + i % 5 * 25) + i * 47) % 360f), Vector3.one) * Matrix4x4.TRS(-c, Quaternion.identity, Vector3.one);
+                GUI.color = new Color(1f, 0.75f, 0.85f, 0.85f);
+                Gfx.Image(new Rect(x - size * 0.5f, y - size * 0.33f, size, size * 0.66f), tex);
             }
-            Gfx.Text(new Rect(0, oy + 140, Gfx.VW, 70), "汉末英雄传", 56, new Color(1f, 0.85f, 0.35f), TextAnchor.MiddleCenter);
-            Gfx.Text(new Rect(0, oy + 215, Gfx.VW, 40), "—— 刘备篇 · 第一章 桃园结义 ——", 24, Color.white, TextAnchor.MiddleCenter);
-            // 有存档就给两个按钮：新游戏 / 读档；没有就点哪都是新游戏
-            if (HasSave)
-            {
-                var bNew = new Rect(Gfx.VW * 0.5f - 230, oy + 320, 200, 60);
-                var bLoad = new Rect(Gfx.VW * 0.5f + 30, oy + 320, 200, 60);
-                Gfx.RoundRect(bNew, new Color(1, 1, 1, 0.12f));
-                Gfx.RoundRect(bLoad, new Color(1f, 0.85f, 0.35f, 0.9f));
-                Gfx.Text(bNew, "新游戏（Z）", 22, Color.white, TextAnchor.MiddleCenter);
-                Gfx.Text(bLoad, "读档（X）", 22, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
-                if (Gfx.Clicked(bNew)) NewGame();
-                else if (Gfx.Clicked(bLoad)) ContinueGame();
-            }
-            else if (Gfx.Clicked(new Rect(0, 0, Gfx.VW, Gfx.VH))) NewGame();
+            GUI.matrix = old;
+            GUI.color = Color.white;
         }
 
         static bool HasSave { get { return PlayerPrefs.HasKey("save1") || PlayerPrefs.HasKey("save2") || PlayerPrefs.HasKey("save3"); } }
@@ -504,6 +607,7 @@ namespace LiuBeiRPG.Game
             NewGame();
             dialogueQueue.Clear();
             currentDialogue = null;
+            comicPages = null;   // 开场漫画也跳过
             LoadGame();
         }
 
@@ -518,6 +622,7 @@ namespace LiuBeiRPG.Game
 
         void DrawChapterClear()
         {
+            if (MakeChapter(chapter.Number + 1) == null) { DrawToBeContinued(); return; }
             float oy = (Gfx.VH - 540f) * 0.5f;   // 内容按 540 高排版，竖屏时垂直居中
             Gfx.Rect(new Rect(0, 0, Gfx.VW, Gfx.VH), new Color(0.04f, 0.05f, 0.1f));
             Gfx.Text(new Rect(0, oy + 150, Gfx.VW, 60), clearTitle, 42, new Color(1f, 0.85f, 0.35f), TextAnchor.MiddleCenter);
@@ -527,6 +632,98 @@ namespace LiuBeiRPG.Game
             Gfx.Text(new Rect(0, oy + 280, Gfx.VW, 30), clearHint + (hasNext ? "" : "（敬请期待）"), 22, new Color(0.7f, 0.85f, 1f), TextAnchor.MiddleCenter);
             Gfx.Text(new Rect(0, oy + 400, Gfx.VW, 30), hasNext ? "按确认键继续" : "按确认键回到标题", 18, new Color(1, 1, 1, 0.7f), TextAnchor.MiddleCenter);
             if (Gfx.Clicked(new Rect(0, 0, Gfx.VW, Gfx.VH))) StartChapter(chapter.Number + 1);
+        }
+
+        /// <summary>最后一章打完：雪夜卧龙岗背景（Art/end_bg），右边竖排章名，盖「未完待续」印章（Art/seal_weiwan）。
+        /// clearTitle 形如「第七章 三顾茅庐 · 完」，clearHint 是下一章名。</summary>
+        void DrawToBeContinued()
+        {
+            float t = Time.time - clearShownAt;
+            float oy = (Gfx.VH - 540f) * 0.5f;
+            var ink = new Color(0.13f, 0.1f, 0.28f);
+
+            // 背景：从黑场淡入，慢慢推近
+            Gfx.Rect(new Rect(0, 0, Gfx.VW, Gfx.VH), Color.black);
+            var bg = Gfx.Tex("Art/end_bg");
+            if (bg != null)
+            {
+                float s = Mathf.Max(Gfx.VW / bg.width, Gfx.VH / bg.height) * (1.0f + 0.04f * Mathf.Clamp01(t / 20f));
+                float w = bg.width * s, h = bg.height * s;
+                GUI.color = new Color(1, 1, 1, Mathf.Clamp01(t / 1.2f));
+                Gfx.Image(new Rect((Gfx.VW - w) * 0.5f, (Gfx.VH - h) * 0.5f, w, h), bg);
+                GUI.color = Color.white;
+            }
+            // 雪：和花瓣同一张软边贴图，白色、慢、几乎不转
+            var flake = PetalTex();
+            var prng = new System.Random(3);
+            for (int i = 0; i < 50; i++)
+            {
+                float bx = (float)prng.NextDouble(), ph = (float)prng.NextDouble(), sz = 4 + (float)prng.NextDouble() * 6;
+                float y = Mathf.Repeat(ph * (Gfx.VH + 20) + Time.time * (18 + sz * 3), Gfx.VH + 20) - 10;
+                float x = Mathf.Repeat(bx * Gfx.VW + Mathf.Sin(Time.time * 0.7f + i) * 18, Gfx.VW);
+                GUI.color = new Color(1, 1, 1, 0.8f * Mathf.Clamp01(t / 1.2f));
+                Gfx.Image(new Rect(x, y, sz, sz), flake);
+            }
+            GUI.color = Color.white;
+
+            // 章名竖排，从右往左两列：「第七章」小字，「三顾茅庐」大字，一个字一个字落下
+            string label = clearTitle, name = "";
+            int sp = clearTitle.IndexOf(' ');
+            if (sp > 0) { label = clearTitle.Substring(0, sp); name = clearTitle.Substring(sp + 1).Replace(" · 完", "").Trim(); }
+            float colX = Gfx.VW - 70, top = oy + 50;
+            float t0 = 1.0f;
+            t0 = VerticalText(label, colX, top + 8, 26, new Color(1f, 0.88f, 0.5f), ink, t, t0);
+            float bigX = colX - 78;
+            t0 = VerticalText(name, bigX, top, 56, new Color(1f, 0.97f, 0.9f), ink, t, t0 + 0.1f);
+
+            // 印章：章名写完后从大往小砸下来，带一点歪
+            var seal = Gfx.Tex("Art/seal_weiwan");
+            float st = t - (t0 + 0.2f);
+            if (seal != null && st > 0)
+            {
+                float k = Mathf.Clamp01(st / 0.25f), scale = Mathf.Lerp(2.4f, 1f, k * k) + (k >= 1 ? 0.08f * Mathf.Exp(-(st - 0.25f) * 10) * Mathf.Sin((st - 0.25f) * 40) : 0);
+                float size = 120 * scale;
+                var c = new Vector2(bigX - 90, top + name.Length * 56 * 1.12f - 30);
+                var old = GUI.matrix;
+                GUI.matrix = old * Matrix4x4.TRS(c, Quaternion.Euler(0, 0, -8), Vector3.one) * Matrix4x4.TRS(-c, Quaternion.identity, Vector3.one);
+                GUI.color = new Color(1, 1, 1, Mathf.Clamp01(k * 2));
+                Gfx.Image(new Rect(c.x - size * 0.5f, c.y - size * 0.5f, size, size), seal);
+                GUI.color = Color.white;
+                GUI.matrix = old;
+            }
+
+            // 下回预告：右下一枚深色胶囊
+            float pa = Mathf.Clamp01((st - 0.6f) / 0.5f);
+            if (pa > 0)
+            {
+                string next = "下回　" + clearHint.Replace("（未完待续）", "").Replace("：", "　");
+                var pr = new Rect(Gfx.VW - 320 - 28, oy + 380 + (1 - pa) * 20, 320, 40);   // 右下，避开画面中下方骑马的三人
+                Gfx.Pill(new Rect(pr.x - 3, pr.y - 3, pr.width + 6, pr.height + 6), new Color(1f, 0.83f, 0.25f, 0.9f * pa));
+                Gfx.Pill(pr, new Color(ink.r, ink.g, ink.b, 0.9f * pa));
+                Gfx.Text(pr, next, 20, new Color(1f, 0.92f, 0.65f, pa), TextAnchor.MiddleCenter, false, false);
+                Gfx.Text(new Rect(16, Gfx.VH - 30, 300, 22), "全军等级 " + party.Level + "　金钱 " + party.Gold, 14, new Color(1, 1, 1, 0.55f * pa));
+                float ha = pa * (0.5f + 0.3f * Mathf.Sin(Time.time * 2.5f));
+                Gfx.Text(new Rect(0, Gfx.VH - 30, Gfx.VW - 16, 22), "按确认键回到标题", 14, new Color(1, 1, 1, ha), TextAnchor.MiddleRight);
+            }
+            if (t > 1f && Gfx.Clicked(new Rect(0, 0, Gfx.VW, Gfx.VH))) StartChapter(chapter.Number + 1);
+        }
+
+        /// <summary>竖排一列字，从 t0 起每 0.12 秒落下一个；深色粗描边（Q 版）。返回最后一个字落完的时刻。</summary>
+        static float VerticalText(string text, float cx, float top, int size, Color fill, Color ink, float t, float t0)
+        {
+            for (int i = 0; i < text.Length; i++)
+            {
+                float a = Mathf.Clamp01((t - t0 - i * 0.12f) / 0.25f);
+                if (a <= 0) break;
+                var r = new Rect(cx - size, top + i * size * 1.12f - (1 - a) * 16, size * 2, size * 1.12f);
+                string ch = text.Substring(i, 1);
+                var ic = new Color(ink.r, ink.g, ink.b, a);
+                for (int dx = -1; dx <= 1; dx++)
+                    for (int dy = -1; dy <= 1; dy++)
+                        if (dx != 0 || dy != 0) Gfx.Text(new Rect(r.x + dx * 3, r.y + dy * 3, r.width, r.height), ch, size, ic, TextAnchor.MiddleCenter, false, false);
+                Gfx.Text(r, ch, size, new Color(fill.r, fill.g, fill.b, a), TextAnchor.MiddleCenter, false, false);
+            }
+            return t0 + text.Length * 0.12f + 0.25f;
         }
     }
 }

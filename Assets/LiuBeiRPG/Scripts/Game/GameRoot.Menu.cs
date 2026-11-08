@@ -89,6 +89,47 @@ namespace LiuBeiRPG.Game
             else if (key == InputKey.Cancel) CloseMenuPage();
         }
 
+        /// <summary>放生第 i 个（队里的在前，后方的在后）：先问一句，确认了才走。只有招降来的能放。</summary>
+        void TeamRelease(int i)
+        {
+            int m = party.Members.Count;
+            if (i < 0 || i >= m + party.Stored.Count) return;
+            var g = i < m ? party.Members[i] : party.Stored[i - m];
+            if (!g.Def.Recruitable) { Note(g.Name + "不是招降来的，不能放生。", null); Sfx.Play("ui_error"); return; }
+            menuPage = 0;   // 选项框弹在地图上，选完回队伍页（免得点穿到底下的按钮）
+            Choose("放生" + g.Name + "？放走了就不会再回来，身上的装备会卸回行囊。", new[] { "放生", "取消" }, k =>
+            {
+                menuPage = PageTeam;
+                if (k != 0) return;
+                string msg = party.Release(g);
+                if (msg != null) { Note(msg, null); Sfx.Play("ui_error"); return; }
+                Sfx.Play("equip");
+                Note(g.Name + "拜别而去。", null);
+                teamSel = Mathf.Clamp(teamSel, 0, party.Members.Count + party.Stored.Count - 1);
+            });
+        }
+
+        /// <summary>扔掉行囊里选中的东西：一格多个时问扔一个还是全扔。剧情物品不能扔。</summary>
+        void DiscardItem()
+        {
+            var slots = party.Slots();
+            if (itemSel >= slots.Count) return;
+            string id = slots[itemSel];
+            var item = ItemDb.Get(id);
+            if (!Party.CanDiscard(id)) { Note("「" + item.Name + "」是要紧的东西，不能扔。", null); Sfx.Play("ui_error"); return; }
+            int n = party.Count(id);
+            var opts = n > 1 ? new[] { "扔一个", "全部扔掉（× " + n + "）", "取消" } : new[] { "扔掉", "取消" };
+            menuPage = 0;
+            Choose("扔掉「" + item.Name + "」？扔了就找不回来了。", opts, k =>
+            {
+                menuPage = PagePeople;
+                if (k == opts.Length - 1) return;
+                Note(party.Discard(id, n > 1 && k == 1), null);
+                Sfx.Play("ui_tap");
+                itemSel = Mathf.Clamp(itemSel, 0, Mathf.Max(0, party.Slots().Count - 1));
+            });
+        }
+
         /// <summary>队里的调去后方，后方的调回队里。</summary>
         void TeamToggle(int i)
         {
@@ -106,10 +147,10 @@ namespace LiuBeiRPG.Game
             if (menuPage != PageTeam) return;
             var fighters = party.Fighters();
             Gfx.Text(new Rect(r.x + 24, r.y + 18, w - 160, 30), "队伍　上场 " + fighters.Count + " 人 · 队里 " + party.Members.Count + "/" + Party.MaxMembers + " · 后方 " + party.Stored.Count, 20, Accent);
-            Gfx.Text(new Rect(r.x + 24, r.y + 50, w - 48, 24), "活着的前 5 人上场，后面的后备；超过 5 人时军师留在后备供法术。前面有人败走，下一仗后备顶上。", 14, new Color(1, 1, 1, 0.55f));
+            Gfx.Text(new Rect(r.x + 24, r.y + 50, w - 48, 24), "队里活着的最多 " + Party.MaxFighters + " 人都上场；再多的放在后方，城里调进调出。", 14, new Color(1, 1, 1, 0.55f));
             float x0 = r.x + 24, rw = w - 48, y = r.y + 84;
-            const float rowH = 46;
             int m = party.Members.Count;
+            float rowH = Mathf.Clamp((r.yMax - 12 - y - 34) / Mathf.Max(1, m + Mathf.Max(1, party.Stored.Count)), 34, 46);   // 人多时压紧行高，10 人也排得下
             for (int i = 0; i < m + party.Stored.Count; i++)
             {
                 bool stored = i >= m;
@@ -131,7 +172,7 @@ namespace LiuBeiRPG.Game
                 Gfx.RoundRect(tag, role == "军师" ? new Color(Accent.r, Accent.g, Accent.b, 0.25f) : new Color(1, 1, 1, 0.08f));
                 Gfx.Text(tag, role, 14, role == "军师" ? Accent : role == "上场" ? Color.white : new Color(1, 1, 1, 0.5f), TextAnchor.MiddleCenter, false, false);
                 Gfx.Text(new Rect(row.x + 72, row.y + 6, 110, 28), g.Name, 19, g.Alive ? Color.white : Color.gray);
-                Gfx.Bar(new Rect(row.x + 184, row.y + 16, Mathf.Max(60, rw - 184 - 250), 8), g.MaxSoldiers > 0 ? (float)g.Soldiers / g.MaxSoldiers : 0, new Color(0.4f, 0.8f, 0.45f));
+                Gfx.Bar(new Rect(row.x + 184, row.y + 16, Mathf.Max(40, rw - 184 - 290), 8), g.MaxSoldiers > 0 ? (float)g.Soldiers / g.MaxSoldiers : 0, new Color(0.4f, 0.8f, 0.45f));
                 // 右边的按钮：队里的 ▲ ▼ 后方，后方的 调回
                 float bxr = row.xMax - 8;
                 if (!stored)
@@ -148,6 +189,7 @@ namespace LiuBeiRPG.Game
                     if (i > 0 && Gfx.Clicked(up)) { party.Swap(i, -1); teamSel = i - 1; return; }
                     if (i < m - 1 && Gfx.Clicked(down)) { party.Swap(i, 1); teamSel = i + 1; return; }
                     if (Gfx.Clicked(toBack)) { TeamToggle(i); return; }
+                    if (g.Def.Recruitable && ReleaseButton(new Rect(up.x - 70, row.y + 5, 62, 30))) { TeamRelease(i); return; }
                 }
                 else
                 {
@@ -155,10 +197,19 @@ namespace LiuBeiRPG.Game
                     Gfx.RoundRect(back, Accent);
                     Gfx.Text(back, "调回", 15, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
                     if (Gfx.Clicked(back)) { TeamToggle(i); return; }
+                    if (g.Def.Recruitable && ReleaseButton(new Rect(back.x - 70, row.y + 5, 62, 30))) { TeamRelease(i); return; }
                 }
                 if (Gfx.Clicked(row)) teamSel = i;   // 放在按钮后面：先判了整行，▲▼ 就永远点不到
                 y += rowH;
             }
+        }
+
+        /// <summary>队伍页「放生」按钮：暗红底，只给招降来的人画。</summary>
+        static bool ReleaseButton(Rect r)
+        {
+            Gfx.RoundRect(r, new Color(0.75f, 0.25f, 0.2f, 0.55f));
+            Gfx.Text(r, "放生", 15, Color.white, TextAnchor.MiddleCenter, false, false);
+            return Gfx.Clicked(r);
         }
 
         /// <summary>面板 + 右上角“返回”。点返回关掉这一页。</summary>
@@ -199,7 +250,8 @@ namespace LiuBeiRPG.Game
             float rowStep = Mathf.Min(32, (r.yMax - 46 - y) / Mathf.Max(1, party.Members.Count));   // 人多时压紧，不盖住底下那行
             foreach (var m in party.Members)
             {
-                Gfx.Text(new Rect(r.x + 24, y, nameW, 26), m.Name, 18, m.Alive ? Color.white : Color.gray);
+                int fs = Mathf.Clamp(Mathf.FloorToInt(rowStep) - 2, 12, 18);   // 10 个人时字跟着行距缩小
+                Gfx.Text(new Rect(r.x + 24, y, nameW, 26), m.Name, fs, m.Alive ? Color.white : Color.gray);
                 Gfx.Bar(new Rect(r.x + 24 + nameW, y + 8, lw - 100 - nameW, 10), m.MaxSoldiers > 0 ? (float)m.Soldiers / m.MaxSoldiers : 0, new Color(0.4f, 0.8f, 0.45f));
                 Gfx.Text(new Rect(r.x + lw - 72, y, 60, 26), m.Soldiers.ToString(), 15, new Color(1, 1, 1, 0.75f), TextAnchor.UpperRight);
                 y += rowStep;
@@ -454,9 +506,18 @@ namespace LiuBeiRPG.Game
             if (itemSel >= slotsList.Count) return;
             var item = ItemDb.Get(slotsList[itemSel]);
             var use = new Rect(area.x + area.width - 16 - 96, y + 16, 96, 48);
-            Gfx.Text(new Rect(x0, y, use.x - x0 - 10, 24), item.Kind == ItemKind.Book ? "《" + item.Name + "》" : item.Name, 18, Accent);
-            Gfx.Text(new Rect(x0, y + 26, use.x - x0 - 10, 60), item.Desc, 15, new Color(1, 1, 1, 0.8f), TextAnchor.UpperLeft, true);
-            if (item.Kind == ItemKind.Material) return;   // 材料只能卖，没有使用按钮
+            bool canDrop = Party.CanDiscard(slotsList[itemSel]), canUse = item.Kind != ItemKind.Material;   // 材料只能卖、能扔，没有使用按钮
+            var drop = new Rect(canUse ? use.x - 8 - 72 : use.xMax - 72, use.y, 72, 48);
+            float textR = canDrop ? drop.x : canUse ? use.x : use.xMax;
+            Gfx.Text(new Rect(x0, y, textR - x0 - 10, 24), item.Kind == ItemKind.Book ? "《" + item.Name + "》" : item.Name, 18, Accent);
+            Gfx.Text(new Rect(x0, y + 26, textR - x0 - 10, 60), item.Desc, 15, new Color(1, 1, 1, 0.8f), TextAnchor.UpperLeft, true);
+            if (canDrop)
+            {
+                Gfx.RoundRect(drop, new Color(1, 1, 1, 0.12f));
+                Gfx.Text(drop, "扔掉", 18, new Color(1, 1, 1, 0.85f), TextAnchor.MiddleCenter, false, false);
+                if (Gfx.Clicked(drop)) { DiscardItem(); return; }
+            }
+            if (!canUse) return;
             Gfx.RoundRect(use, Accent);
             Gfx.Text(use, UseLabel(item), 20, new Color(0.12f, 0.09f, 0.04f), TextAnchor.MiddleCenter, false, false);
             if (Gfx.Clicked(use)) UseItem();
@@ -607,7 +668,7 @@ namespace LiuBeiRPG.Game
         {
             public int Level, Exp, Gold, TP, TPBonus, Chapter;
             public string Strategist;
-            public List<SavedMember> Members = new List<SavedMember>(), Stored = new List<SavedMember>();
+            public List<SavedMember> Members = new List<SavedMember>(), Stored = new List<SavedMember>(), Away = new List<SavedMember>();
             public List<string> Flags = new List<string>();
             public List<string> Items = new List<string>(), Learned = new List<string>();
             public string Map;
@@ -638,6 +699,7 @@ namespace LiuBeiRPG.Game
                 var s = new SaveData { Level = party.Level, Exp = party.Exp, Gold = party.Gold, TP = party.TP, TPBonus = party.TPBonus, Chapter = chapter.Number, Map = map.Name, X = px, Y = py };
                 foreach (var m in party.Members) s.Members.Add(new SavedMember { Id = m.Def.Id, Soldiers = m.Soldiers, Gear = m.Gear });
                 foreach (var m in party.Stored) s.Stored.Add(new SavedMember { Id = m.Def.Id, Soldiers = m.Soldiers, Gear = m.Gear });
+                foreach (var m in party.Away) s.Away.Add(new SavedMember { Id = m.Def.Id, Soldiers = m.Soldiers, Gear = m.Gear });
                 s.Flags.AddRange(flags.All);
                 s.Items.AddRange(party.Items);
                 s.Learned.AddRange(party.Learned);
@@ -675,6 +737,7 @@ namespace LiuBeiRPG.Game
                 party.Learned.UnionWith(s.Learned);
                 foreach (var sm in s.Members) { var g = LoadMember(sm, s.Level); if (g != null) party.Members.Add(g); }
                 foreach (var sm in s.Stored) { var g = LoadMember(sm, s.Level); if (g != null) party.Stored.Add(g); }
+                if (s.Away != null) foreach (var sm in s.Away) { var g = LoadMember(sm, s.Level); if (g != null) party.Away.Add(g); }
                 party.Strategist = party.Members.Find(m => m.Def.Id == s.Strategist);
                 party.LearnByLevel();   // 旧档：升级学的法术以前不记在 Learned 里，这里补上
                 party.RecalcMaxTP();

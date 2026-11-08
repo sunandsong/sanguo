@@ -344,24 +344,25 @@ namespace LiuBeiRPG.Game
             foreach (var m in party.Members) m.ClearBuffs();
             mode = Mode.Map;
             stepsSinceBattle = 0;
-            if (victory && cb != null) cb();
-            if (victory && recruit != null) OfferRecruit(recruit.Def);
+            // 先问收编、问完再接剧情：反过来的话剧情对话还在排队，收编选项就先弹出来，顺序全乱
+            if (victory && recruit != null) OfferRecruit(recruit.Def, cb);
+            else if (victory && cb != null) cb();
         }
 
         /// <summary>战后收编（吞食天地）：败将愿意归降就问收不收；要名马的先问送不送马。</summary>
-        void OfferRecruit(GeneralDef def)
+        void OfferRecruit(GeneralDef def, Action then = null)
         {
             Action join = () =>
             {
                 party.Add(new General(def));
                 bool front = party.Members.Count <= Party.MaxMembers && party.Members[party.Members.Count - 1].Def == def;
-                Say(new List<DialogueLine> { new DialogueLine(null, def.Name + " 加入队伍！" + (front ? "" : "队伍已满，先在后方待命。（城里 菜单 → 队伍 可调整）")) });
+                Say(new List<DialogueLine> { new DialogueLine(null, def.Name + " 加入队伍！" + (front ? "" : "队伍已满，先在后方待命。（城里 菜单 → 队伍 可调整）")) }, then);
             };
             var horse = ItemDb.Get(def.WantsHorse);
             if (horse != null)
                 Choose(def.Name + "：「久闻将军有" + horse.Name + "。若肯相赠，我便归降。」送吗？", new[] { "送" + horse.Name, "不送" }, i =>
                 {
-                    if (i != 0) { Say(new List<DialogueLine> { new DialogueLine(def.Name, "那便告辞了。") }); return; }
+                    if (i != 0) { Say(new List<DialogueLine> { new DialogueLine(def.Name, "那便告辞了。") }, then); return; }
                     party.Items.Remove(horse.Id);
                     join();
                 });
@@ -369,7 +370,7 @@ namespace LiuBeiRPG.Game
                 Choose(def.Name + " 愿意归降，收入麾下吗？", new[] { "收下", "放他走" }, i =>
                 {
                     if (i == 0) join();
-                    else Say(new List<DialogueLine> { new DialogueLine(def.Name, "多谢将军不杀之恩！") });
+                    else Say(new List<DialogueLine> { new DialogueLine(def.Name, "多谢将军不杀之恩！") }, then);
                 });
         }
 
@@ -643,8 +644,23 @@ namespace LiuBeiRPG.Game
             float cx = bx + bw * 0.5f, cy = by + pad + avail * 0.5f + (head - name) * 0.5f;   // 脚底中线
             // 挤得上下会叠在一起时，隔一个往外让 70（横屏宽，让 110）交错站（outward = -1 往左，+1 往右）
             float zig = Gfx.Portrait ? 70f : 160f;   // 横屏错开 160：名字（最长「首领 黄巾头目」约 130 宽）左右不再压在一起
+            // 横屏一边超过 5 人（我方最多 10）：分前后两排，后排往外让 150、上下错开半格，不再一列硬挤
+            System.Func<int, bool> twoRows = n => !Gfx.Portrait && n > 5;
+            System.Func<int, int> perCol = n => twoRows(n) ? (n + 1) / 2 : n;
             System.Action<List<General>, float, float> column = (gs, x, outward) =>
             {
+                if (twoRows(gs.Count))
+                {
+                    int rows = perCol(gs.Count);
+                    float g = rows > 1 ? Mathf.Min(RowGap, (avail - head - name) / (rows - 0.5f)) : 0f;
+                    for (int i = 0; i < gs.Count; i++)
+                    {
+                        int back = i % 2, row = i / 2;   // 0,2,4… 前排；1,3,5… 后排
+                        units.Add(new KeyValuePair<General, Vector2>(gs[i],
+                            new Vector2(x + back * outward * 150f, cy + (row - (rows - 1) * 0.5f) * g + (back - 0.5f) * g * 0.5f)));
+                    }
+                    return;
+                }
                 float gap = gs.Count > 1 ? Mathf.Min(RowGap, (avail - head - name) / (gs.Count - 1)) : 0f;
                 bool zigzag = gap < head + name;
                 for (int i = 0; i < gs.Count; i++)
@@ -653,9 +669,12 @@ namespace LiuBeiRPG.Game
             };
             var es = battle.Enemies;
             // 交错站时同一竖线上的人隔两格：两格间距要放得下「头顶到脚 + 名字」，放不下就按比例缩人
-            int crowd = Mathf.Max(es.Count, battle.Players.Count);
+            int crowd = Mathf.Max(perCol(es.Count), perCol(battle.Players.Count));
             float g2 = crowd > 1 ? 2f * Mathf.Min(RowGap, (avail - head - name) / (crowd - 1)) : 999f;
-            crowdScale = Mathf.Clamp((g2 - name - 24f) / UnitH, 0.7f, 1f);
+            if (twoRows(es.Count) || twoRows(battle.Players.Count))   // 分前后排时同一竖线上相邻的只隔一格
+                g2 = Mathf.Min(g2, Mathf.Min(RowGap, (avail - head - name) / (crowd - 0.5f)));
+            bool hasBoss = es.Exists(e => e.Def.IsBoss);
+            crowdScale = Mathf.Clamp((g2 - name - 24f) / (UnitH * (hasBoss ? BossScale : 1f)), 0.6f, 1f);   // 有首领时按首领的大个子算，免得首领压住上下两人
             column(es, cx - ColGap * 0.5f, -1f);
             column(battle.Players, cx + ColGap * 0.5f, 1f);
             slots.Clear();

@@ -12,7 +12,7 @@ namespace LiuBeiRPG.World
     {
         public const int InnCost = 80;
 
-        public readonly MapData Out, Camp, Inn, Inn2F, Sishui, Hulao;
+        public readonly MapData Out, Camp, Sishui, Hulao;
 
         const string F_HuaXiong = "c3_huaxiong", F_Baima = "c3_baima";
         public const string F_Boss = "c3_boss", F_Begun = "c3_begun";
@@ -29,14 +29,12 @@ namespace LiuBeiRPG.World
         {
             Out = BuildOut();
             Camp = BuildCamp();
-            var inn = BuildInn("camp_inn", InnCost, () => host.Warp(Camp, 7, 9), Chest(F_ChestInn, 3, 3, 0, "qingjiu", 2));
-            Inn = inn[0]; Inn2F = inn[1];
             Sishui = BuildSishui();
             Hulao = BuildHulao();
         }
 
         public override int Number { get { return 3; } }
-        public override MapData[] Maps { get { return new[] { Out, Camp, Inn, Inn2F, Sishui, Hulao }; } }
+        public override MapData[] Maps { get { return new[] { Out, Camp, Sishui, Hulao }; } }
         public override List<TownSpot> Towns { get { return new List<TownSpot> { new TownSpot { Map = Camp, X = 13, Y = 11 } }; } }
 
         public override void Begin()
@@ -166,6 +164,7 @@ namespace LiuBeiRPG.World
             var flags = host.Flags;
 
             m.Npcs.Add(Chest(F_ChestCamp, 27, 2, 150));
+            m.Npcs.Add(Chest(F_ChestInn, 4, 9, 0, "qingjiu", 2));   // 原来在客帐二楼，客帐不进去了，箱子挪到帐外（flag 不变，开过的不会再开）
             m.Npcs.Add(Person("caocao", "曹操", "caocao", "jian", 20, 9, () =>
             {
                 if (flags.Has(F_Boss)) Say(L("曹操", "董卓西逃，诸侯却只顾饮宴。竖子不足与谋！玄德，你我日后再会。"));
@@ -197,7 +196,7 @@ namespace LiuBeiRPG.World
             };
             m.OnTouch = (x, y) =>
             {
-                if (x == 7 && y == 8) { host.Warp(Inn, 4, 5); return true; }
+                if (x == 7 && y == 8) { OfferRest(InnCost, "军需官", "客帐歇一晚 " + InnCost + " 金，兵马都能休整好。歇下吗？", "将军慢走。", "将军，这点钱……不够啊。"); return true; }   // 客帐门口直接歇，不进内景
                 if (m.At(x, y) == 'C') { Say(L(null, y <= 8 && x >= 18 ? "中军大帐，帐前立着各路诸侯的旗号。" : "联军的营帐，帐里堆着兵器甲胄。")); return true; }
                 return false;
             };

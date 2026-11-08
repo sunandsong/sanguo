@@ -152,7 +152,7 @@ namespace LiuBeiRPG.World
             m.OnTouch = (x, y) =>
             {
                 if (x == 5 && y == 5) { host.Warp(Inn, 4, 5); return true; }
-                if (x == 15 && y == 5) { host.Warp(Yamen, 5, 7); return true; }
+                if (x >= 14 && x <= 16 && y == 5) { host.Warp(Yamen, 5, 7); return true; }   // 台阶三格宽，站哪格往上走都能进
                 return false;
             };
             return m;
@@ -214,8 +214,11 @@ namespace LiuBeiRPG.World
                 }
             };
             m.DecorFile = "xinye_field";
-            m.Emitters.Add(new MapEmitter("fire", 12.7f, 14.45f));
-            m.Emitters.Add(new MapEmitter("fire", 17.7f, 14.45f));
+            if (!host.Flags.Has(F_CaoRen))   // 营里的火，破阵后就灭了
+            {
+                m.Emitters.Add(new MapEmitter("fire", 12.7f, 14.45f));
+                m.Emitters.Add(new MapEmitter("fire", 17.7f, 14.45f));
+            }
             m.Critters.Add(new CritterSpawn("rabbit", 3));
             m.Critters.Add(new CritterSpawn("sparrow", 4));
             m.Critters.Add(new CritterSpawn("fish", 3));
@@ -224,11 +227,16 @@ namespace LiuBeiRPG.World
             m.Npcs.Add(Chest(F_ChestF1, 28, 1, 0, "zhixuesan", 2));
             m.Npcs.Add(Chest(F_ChestF2, 2, 17, 0, "yulinjia"));
             m.Npcs.Add(Chest(F_ChestF3, 22, 18, 1000));
-            m.Npcs.Add(Person("caoren_npc", "曹仁", "caoren", "dao", 15, 11, CaoRenFight, () => !flags.Has(F_CaoRen)));
+            m.Npcs.Add(Person("caoren_npc", "曹仁", "caoren", "dao", 15, 11, () =>
+            {
+                // 没收单福就去打，后面「徐庶走马荐诸葛」那段就对不上了：先回城把人请来
+                if (!flags.Has(F_XuShu)) { Say(L("曹仁", "刘备，你可识得我这八门金锁阵？"), L("关羽", "兄长，这阵势看不透，硬闯怕要吃亏。"), L("刘备", "城里近日有个高歌的狂士，或许懂兵法……先回新野城看看。")); return; }
+                CaoRenFight();
+            }, () => !flags.Has(F_CaoRen)));
 
             m.OnStep = (x, y) =>
             {
-                if (m.At(x, y) == 't') { host.Warp(Town, 14, 18); return true; }
+                if (m.At(x, y) == 't') { host.Warp(Town, 15, 16); return true; }
                 if (x == 15 && y == 19)   // 南边大路（穿过营地中心）↔ 博望坡西口
                 {
                     if (flags.Has(F_Kongming)) host.Warp(Bowang, 1, 10);
@@ -266,6 +274,8 @@ namespace LiuBeiRPG.World
             {
                 host.Flags.Set(F_CaoRen);
                 host.Flags.Set(F_XuShuGone);
+                Field.Decor.RemoveAll(d => d.Gone == F_CaoRen);   // 营地当场拆掉（下次进图由 gone= 标记处理）
+                Field.Emitters.RemoveAll(e => e.Kind == "fire");
                 RemoveFromParty(GameDatabase.XuShu);
                 host.Say(new List<DialogueLine>
                 {
@@ -354,7 +364,7 @@ namespace LiuBeiRPG.World
                     L("童子", "我记不得许多名字。先生今早出去了，踪迹不定，不知几时回来。"),
                     L("张飞", "既不见，自去罢了。"),
                     L(null, "刘备怏怏而回。"),
-                }, () => host.Warp(Town, 14, 18));
+                }, () => host.Warp(Town, 15, 16));
                 return;
             }
             if (!flags.Has(F_Visit2))
@@ -368,7 +378,7 @@ namespace LiuBeiRPG.World
                     L("童子", "先生昨日被崔州平邀去闲游了。屋里这位是先生的弟弟。"),
                     L("诸葛均", "家兄不在，皇叔请回吧。"),
                     L(null, "刘备留书一封，冒雪而回。"),
-                }, () => host.Warp(Town, 14, 18));
+                }, () => host.Warp(Town, 15, 16));
                 return;
             }
             flags.Set(F_Kongming);
@@ -389,8 +399,16 @@ namespace LiuBeiRPG.World
                 L(null, "（提示：可在人物页把诸葛亮任命为军师。）"),
             }, () =>
             {
-                Join(GameDatabase.ZhuGeLiang, "yushan", "baguadaopao");
-                host.Warp(Town, 14, 18);
+                var kongming = Join(GameDatabase.ZhuGeLiang, "yushan", "baguadaopao");
+                var party = host.Party;
+                if (party.Stored.Contains(kongming))   // 三顾请来的军师不能坐冷板凳：队伍满了就把最后一位换下去
+                {
+                    var bench = party.Members[party.Members.Count - 1];
+                    party.ToStored(bench);
+                    party.ToMembers(kongming);
+                    Say(L(null, bench.Name + "调往后方，诸葛亮入列。"));
+                }
+                host.Warp(Town, 15, 16);
                 Say(L("诸葛亮", "主公，探马来报，夏侯惇引兵十万，已到博望坡。出城往南便是。亮自有安排。"));
             });
         }
@@ -430,7 +448,7 @@ namespace LiuBeiRPG.World
                 }
             };
             m.DecorFile = "bowang";
-            m.Emitters.Add(new MapEmitter("fire", 25.7f, 4.45f));
+            m.Emitters.Add(new MapEmitter("fire", 27.3f, 5.6f));   // 火盆挪到营地右前方空地，不再夹在两顶帐篷中间
             m.Critters.Add(new CritterSpawn("sparrow", 3));
             m.Critters.Add(new CritterSpawn("rabbit", 2));
             m.Critters.Add(new CritterSpawn("dragonfly", 2));
@@ -471,7 +489,7 @@ namespace LiuBeiRPG.World
                     L("诸葛亮", "此不过小胜。曹操必亲率大军南下，新野小县，不可久居。"),
                     L("刘备", "百姓随我多年，备怎忍弃之……"),
                     L("诸葛亮", "那便带着百姓走。往南，过长坂，去江陵。"),
-                }, () => host.ChapterClear("第七章 三顾茅庐 · 完", "第八章：长坂·赤壁（未完待续）"));
+                }, () => host.ChapterClear("第七章 三顾茅庐 · 完", "第八章：长坂·赤壁"));
             }));
         }
     }

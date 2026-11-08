@@ -41,7 +41,7 @@ namespace LiuBeiRPG.Core
     public class BattleSystem
     {
         public readonly Party Party;
-        public readonly List<General> Players;   // 这一仗上场的（开打时活着的前 5 个），后备不参战
+        public readonly List<General> Players;   // 这一仗上场的（开打时活着的，最多 Party.MaxFighters 个），后备不参战
         public readonly List<General> Enemies;
         public readonly bool IsBoss;
         public BattleResult Result = BattleResult.None;

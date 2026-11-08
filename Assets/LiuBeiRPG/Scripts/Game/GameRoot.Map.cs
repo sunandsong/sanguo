@@ -14,6 +14,8 @@ namespace LiuBeiRPG.Game
         MapData map;
         int px, py;
         int faceX, faceY = 1;
+        /// <summary>大地图上跟在领头后面的人数：队伍再多，外面也只走 3 个（领头 + 2）。</summary>
+        int MapFollowers { get { return Mathf.Clamp(party.Members.Count - 1, 0, 2); } }
         readonly List<Vector2Int> trail = new List<Vector2Int>();   // 跟随武将的位置（吞食天地式一字长蛇）
         int stepsSinceBattle;
         int smokeSteps;  // 烟幕弹：还剩几步不遇敌（ponytail: 不存档，读档就散了）
@@ -47,7 +49,7 @@ namespace LiuBeiRPG.Game
         {
             trail.Clear();
             prevTrail.Clear();
-            for (int i = 0; i * 2 + 1 < cells.Length && i + 1 < party.Members.Count; i++)
+            for (int i = 0; i * 2 + 1 < cells.Length && i < MapFollowers; i++)
             {
                 var c = new Vector2Int(cells[i * 2], cells[i * 2 + 1]);
                 trail.Add(c); prevTrail.Add(c);
@@ -133,6 +135,16 @@ namespace LiuBeiRPG.Game
             if (leaderPuppet != null) leaderPuppet.Facing = FacingOf(dx, dy);
             int nx = px + dx, ny = py + dy;
 
+            // 路人挡在前面：和他换个位置，不然城里十字路口常被路人堵死
+            var walker = map.NpcAt(nx, ny);
+            if (walker != null && walker.Route != null)
+            {
+                walker.PrevX = walker.X; walker.PrevY = walker.Y;
+                walker.X = px; walker.Y = py;
+                walker.StepTime = Time.time;
+                walker.Facing = FacingOf(-dx, -dy);
+            }
+
             if (!map.IsWalkable(nx, ny))
             {
                 // 撞到营寨、城门之类的特殊地块
@@ -142,7 +154,7 @@ namespace LiuBeiRPG.Game
 
             var oldTrail = new List<Vector2Int>(trail);
             trail.Insert(0, new Vector2Int(px, py));
-            while (trail.Count > Mathf.Max(0, party.Members.Count - 1)) trail.RemoveAt(trail.Count - 1);
+            while (trail.Count > MapFollowers) trail.RemoveAt(trail.Count - 1);
             prevTrail.Clear();
             for (int i = 0; i < trail.Count; i++)
             {
@@ -164,7 +176,7 @@ namespace LiuBeiRPG.Game
 
             // 随机遇敌
             var tile = Tiles.Get(map.At(px, py));
-            if (!DevWalkOn && tile.Encounter && stepsSinceBattle >= 4 && smokeSteps == 0 && rng.NextDouble() < map.EncounterRate)
+            if (!DevWalkOn && tile.Encounter && stepsSinceBattle >= 8 && smokeSteps == 0 && rng.NextDouble() < map.EncounterRate)
             {
                 stepsSinceBattle = 0;
                 StartBattle(GameDatabase.RandomEncounter(rng, party.Level, party.Fighters().Count, map.EnemyLevel, map.EnemyPool), false, null);

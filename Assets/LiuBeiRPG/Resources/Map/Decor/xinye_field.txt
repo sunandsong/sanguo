@@ -8,16 +8,16 @@ tree_green_1 3.60 13.90 1.90 plant amp=0.03
 tree_green_3 24.60 13.90 1.83 plant amp=0.03
 tree_green_3 18.60 17.90 1.61 plant amp=0.03
 tree_green_1 2.60 18.90 1.89 plant amp=0.03
-# 营地（C 块）；第 15 列是穿过营地中心的南路，栅栏让开
-palisade 11.00 12.25 2.6
-palisade 13.50 12.21 2.6
-flag_big_cao 13.90 12.27 2.6 flag amp=0.05 lift=1.2
-tent_big_cao 12.80 14.75 4.2
-tent_small 18.30 14.35 2.8
-firepit 12.70 14.45 1.8
-fire 12.70 14.47 1.4 frames=6 fps=10 lift=0.42
-weapon_rack 18.60 13.75 1.7
-crates 11.60 14.90 2.0
+# 营地（C 块）；第 15 列是穿过营地中心的南路，栅栏让开；打败曹仁后拆掉（gone=c7_caoren）
+palisade 11.00 12.25 2.6 gone=c7_caoren
+palisade 13.50 12.21 2.6 gone=c7_caoren
+flag_big_cao 13.90 12.27 2.6 flag amp=0.05 lift=1.2 gone=c7_caoren
+tent_big_cao 12.80 14.75 4.2 gone=c7_caoren
+tent_small 18.30 14.35 2.8 gone=c7_caoren
+firepit 12.70 14.45 1.8 gone=c7_caoren
+fire 12.70 14.47 1.4 frames=6 fps=10 lift=0.42 gone=c7_caoren
+weapon_rack 18.60 13.75 1.7 gone=c7_caoren
+crates 11.60 14.90 2.0 gone=c7_caoren
 # 出口
 flag_small 14.40 1.20 0.8 flag amp=0.05 lift=0.9
 flag_small 16.60 1.20 0.8 flag amp=0.05 lift=0.9

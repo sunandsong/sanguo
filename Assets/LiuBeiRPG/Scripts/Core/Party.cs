@@ -5,15 +5,16 @@ namespace LiuBeiRPG.Core
 {
     /// <summary>
     /// 玩家队伍。和吞食天地一样，等级/经验/法力是全队共享的。
-    /// 队伍最多 7 人：活着的前 5 个上场，后面的是后备；再多的放到后方（Stored）。
+    /// 队伍最多 10 人，活着的都上场；再多的放到后方（Stored）。
     /// 法术只有军师能放，威力看军师的智力。
     /// </summary>
     public class Party
     {
-        public const int MaxFighters = 5, MaxMembers = 7;
+        public const int MaxFighters = 10, MaxMembers = 10;
 
         public readonly List<General> Members = new List<General>();
         public readonly List<General> Stored = new List<General>();   // 后方待命的武将，城里「队伍」页调进调出
+        public readonly List<General> Away = new List<General>();     // 剧情里暂时离队的（关羽降曹、张飞走散），装备跟着人走，归队原样回来
         General strategist;
         public int Level = 1;
         public int Exp;
@@ -50,10 +51,34 @@ namespace LiuBeiRPG.Core
         {
             foreach (var m in Members) if (m.Def == def) return true;
             foreach (var m in Stored) if (m.Def == def) return true;
+            foreach (var m in Away) if (m.Def == def) return true;
             return false;
         }
 
-        /// <summary>这一仗上场的：活着的前 5 个。队里超过 5 人时军师不上场，留在后备只供法术（吞食天地）。</summary>
+        /// <summary>剧情离队：从队里或后方拿出来放进 Away，装备、兵力都留在他身上。</summary>
+        public void Leave(GeneralDef def)
+        {
+            var g = Members.Find(m => m.Def == def) ?? Stored.Find(m => m.Def == def);
+            if (g == null) return;
+            Members.Remove(g);
+            Stored.Remove(g);
+            Away.Add(g);
+            while (Members.Count < MaxMembers && Stored.Count > 0) { Members.Add(Stored[0]); Stored.RemoveAt(0); }   // 空出来的位置后方补上
+        }
+
+        /// <summary>剧情归队：按全队等级补足兵力，队里满了放后方。</summary>
+        public void Rejoin(GeneralDef def)
+        {
+            var g = Away.Find(m => m.Def == def);
+            if (g == null) return;
+            Away.Remove(g);
+            g.SetLevel(Level);
+            g.Soldiers = g.MaxSoldiers;
+            Members.Insert(Math.Min(Members.Count, Members.FindAll(m => m.Def.Id == "liubei" || m.Def.Id == "guanyu" || m.Def.Id == "zhangfei").Count), g);   // 兄弟排在主公后面
+            while (Members.Count > MaxMembers) { var last = Members[Members.Count - 1]; Members.RemoveAt(Members.Count - 1); Stored.Insert(0, last); }   // 挤出来的到后方
+        }
+
+        /// <summary>这一仗上场的：活着的前 MaxFighters 个。队里比上场人数多时军师不上场，留在后备只供法术（吞食天地）。</summary>
         public List<General> Fighters()
         {
             var list = new List<General>();
@@ -242,6 +267,30 @@ namespace LiuBeiRPG.Core
         }
 
         public bool CanHold(string id) { return Items.Contains(id) ? Count(id) < StackMax : Slots().Count < BagSlots; }
+
+        /// <summary>剧情给的（不标价的）东西不能扔：兵书、专属兵器、任务物品。</summary>
+        public static bool CanDiscard(string id) { var i = ItemDb.Get(id); return i != null && i.Price > 0; }
+
+        /// <summary>扔掉 id：all = 整格都扔，否则扔一个。返回提示；扔不了返回原因。</summary>
+        public string Discard(string id, bool all)
+        {
+            var item = ItemDb.Get(id);
+            if (!CanDiscard(id)) return "「" + item.Name + "」是要紧的东西，不能扔。";
+            int n = all ? Count(id) : 1;
+            for (int k = 0; k < n; k++) Items.Remove(id);
+            return "扔掉了「" + item.Name + "」" + (n > 1 ? " × " + n : "") + "。";
+        }
+
+        /// <summary>放生招降来的人：身上装备先卸回行囊，行囊放不下就不放生。剧情武将不能放。返回原因，成功返回 null。</summary>
+        public string Release(General g)
+        {
+            if (!g.Def.Recruitable) return g.Name + "不是招降来的，不能放生。";
+            for (int s = 0; s < General.GearSlots; s++) Unequip(g, s);
+            foreach (var id in g.Gear) if (id != null) return "行囊满了，" + g.Name + "身上的装备卸不下来。先腾出地方再放生。";
+            Members.Remove(g);
+            Stored.Remove(g);
+            return null;
+        }
 
         public string Buy(string id)
         {

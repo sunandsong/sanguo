@@ -63,13 +63,13 @@ namespace LiuBeiRPG.World
             host.Party.Add(new General(GameDatabase.LiuBei));
             host.Party.Gold = 50;
             host.Warp(Town, StartX, StartY);
-            host.Say(new List<DialogueLine>
+            host.ShowComic(new[] { "intro_1", "intro_2", "intro_3", "intro_4" }, new[]
             {
-                L(null, "东汉末年，朝政腐败，天下大乱。"),
-                L(null, "巨鹿人张角聚众起事，头裹黄巾，号称“黄巾军”，四方响应。"),
-                L(null, "幽州涿郡涿县，有一人姓刘名备，字玄德，乃汉室宗亲，以织席贩履为生。"),
-                L("刘备", "听说城里贴出了招兵的榜文……去城门口看看吧。"),
-            });
+                "东汉末年，朝政腐败，天下大乱。",
+                "巨鹿人张角聚众起事，头裹黄巾，号称“黄巾军”，四方响应。",
+                "幽州涿郡涿县，有一人姓刘名备，字玄德，乃汉室宗亲，以织席贩履为生。",
+                "这一日，涿县城门口贴出了一张招兵的榜文……",
+            }, () => host.Say(new List<DialogueLine> { L("刘备", "听说城里贴出了招兵的榜文……去城门口看看吧。") }));
         }
 
         /// <summary>全灭后：回到客栈门口，兵力全满，金钱减半。</summary>

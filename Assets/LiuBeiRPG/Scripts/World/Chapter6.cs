@@ -6,7 +6,7 @@ namespace LiuBeiRPG.World
 {
     /// <summary>
     /// 第六章「古城会」（演义第二十五～二十八回）：关羽千里走单骑、兄弟会于汝南 → 卧牛山收周仓、关定庄收关平 → 刘辟龚都试刀 → 古城外斩蔡阳，三兄弟古城相会。
-    /// 等级段 32～38。队伍不拆：开场旁白交代关羽已寻到刘备，张飞在古城等着。
+    /// 等级段 32～38。第五章末关羽、张飞离队（Party.Away）：开场汝南关羽归队，古城斩蔡阳后张飞归队。
     /// </summary>
     public class Chapter6 : Chapter
     {
@@ -37,6 +37,7 @@ namespace LiuBeiRPG.World
 
         public override void Begin()
         {
+            host.Party.Rejoin(GameDatabase.GuanYu);   // 千里走单骑，汝南重逢；张飞要到古城斩了蔡阳才归队
             host.Party.FullRestore();
             host.Warp(Field, 15, 18);
             host.Say(new List<DialogueLine>
@@ -200,6 +201,7 @@ namespace LiuBeiRPG.World
             }, () => host.StartBattle(GameDatabase.Chapter6CaiYang(), true, () =>
             {
                 host.Flags.Set(F_Boss);
+                host.Party.Rejoin(GameDatabase.ZhangFei);   // 古城相会，张飞归队
                 host.Say(new List<DialogueLine>
                 {
                     L(null, "一通鼓未尽，关羽刀起处，蔡阳头已落地。"),
@@ -209,7 +211,7 @@ namespace LiuBeiRPG.World
                     L(null, "刘备、关羽、张飞，古城相会。赵云、孙乾、糜竺、简雍、周仓、关平都在，兄弟重聚，大宴三日。"),
                     L("刘备", "备飘零半生，今日方知，得兄弟者得天下。"),
                     L("赵云", "主公，曹操势大，袁绍将败，汝南不可久留。荆州刘表是主公同宗，可往投之。"),
-                    L(null, "（出古城，沿汝南郊外西边的官道南下荆州）"),
+                    L(null, "（离开汝南，沿郊外西边的官道南下荆州）"),
                 });
             }));
         }

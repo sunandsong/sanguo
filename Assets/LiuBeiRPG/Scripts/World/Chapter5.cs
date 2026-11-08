@@ -154,7 +154,7 @@ namespace LiuBeiRPG.World
             m.OnTouch = (x, y) =>
             {
                 if (x == 4 && y == 6) { host.Warp(Inn, 4, 5); return true; }
-                if (x == 15 && y == 5) { host.Warp(Fu, 5, 7); return true; }
+                if (x >= 14 && x <= 16 && y == 5) { host.Warp(Fu, 5, 7); return true; }   // 台阶三格宽，站哪格往上走都能进
                 return false;
             };
             return m;
@@ -245,7 +245,7 @@ namespace LiuBeiRPG.World
             m.OnStep = (x, y) =>
             {
                 if (m.At(x, y) == 't') { host.Warp(Town, 14, 18); return true; }
-                if (x == 29 && y == 10) { Say(L("关羽", "兄长，东边是山间小道。去徐州走南边大路。")); return true; }
+                if (x == 29 && y == 10) { Say(L(flags.Has(F_Boss) ? "赵云" : "关羽", flags.Has(F_Boss) ? "主公，东边是山间小道。往南才是大路。" : "兄长，东边是山间小道。去徐州走南边大路。")); return true; }
                 if (x == 15 && y == 19) { host.Warp(XuzhouField, 27, 10); return true; }   // 南口 ↔ 徐州郊外下邳门
                 return false;
             };
@@ -341,7 +341,7 @@ namespace LiuBeiRPG.World
             m.OnTouch = (x, y) =>
             {
                 if (x == 5 && y == 6) { Say(L("店小二", "使君！车刺史征了小店做兵营，今日不能住店，对不住……")); return true; }
-                if (x == 15 && y == 5) { host.Warp(XuzhouFu, 5, 7); return true; }
+                if (x >= 14 && x <= 16 && y == 5) { host.Warp(XuzhouFu, 5, 7); return true; }   // 台阶三格宽，站哪格往上走都能进
                 return false;
             };
             return m;
@@ -365,6 +365,9 @@ namespace LiuBeiRPG.World
             }, () => host.StartBattle(GameDatabase.Chapter5CheZhou(), true, () =>
             {
                 host.Flags.Set(F_Boss);
+                // 兵败小沛：关羽降曹、张飞走散，两人离队（装备跟人走），第六章汝南、古城分别归队
+                host.Party.Leave(GameDatabase.GuanYu);
+                host.Party.Leave(GameDatabase.ZhangFei);
                 host.Say(new List<DialogueLine>
                 {
                     L(null, "关羽一刀斩车胄于堂前。刘备重据徐州，杀车胄的消息传到许都，曹操大怒，亲率二十万大军来攻。"),

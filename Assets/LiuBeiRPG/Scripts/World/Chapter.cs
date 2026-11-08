@@ -38,6 +38,20 @@ namespace LiuBeiRPG.World
         protected void Say(params DialogueLine[] lines) { host.Say(new List<DialogueLine>(lines)); }
 
         /// <summary>宝箱（通用）：开一次给钱 / 物品，开的时候演一段（GameRoot.Chest），开过换成打开的图。图见 ArtSrc/宝箱提示词.md，缺图时箱子看不见但照样能开。</summary>
+        /// <summary>住店：花 cost 金，全军兵力、法力回满，睡到清晨。客栈店小二、军营客帐门口共用。</summary>
+        protected void OfferRest(int cost, string who, string ask, string bye, string poor)
+        {
+            host.Choose(ask, new[] { "住店", "不了" }, i =>
+            {
+                if (i != 0) { Say(L(who, bye)); return; }
+                if (host.Party.Gold < cost) { Say(L(who, poor)); return; }
+                host.Party.Gold -= cost;
+                host.Party.FullRestore();
+                host.SetHour(7f);
+                Say(L(null, "一夜休整。全军兵力、法力已恢复！"));
+            });
+        }
+
         protected Npc Chest(string flag, int x, int y, int gold, string item = null, int count = 1)
         {
             var flags = host.Flags;
@@ -82,6 +96,7 @@ namespace LiuBeiRPG.World
             var g = new General(def);
             host.Party.Add(g);
             foreach (var id in gear) g.Gear[ItemDb.Get(id).Slot] = id;
+            if (host.Party.Stored.Contains(g)) Say(L(null, "队伍已满，" + def.Name + "先在后方待命。（城里 菜单 → 队伍 可以调上来）"));
             return g;
         }
 
@@ -125,15 +140,7 @@ namespace LiuBeiRPG.World
             inn.Npcs.Add(new Npc
             {
                 Id = "xiaoer", Name = "店小二", Glyph = "店", Color = "#e0e0e0", X = 4, Y = 2,
-                Talk = () => host.Choose("客官，住店一晚 " + cost + " 金，兵马都能休整好。住吗？", new[] { "住店", "不了" }, i =>
-                {
-                    if (i != 0) { Say(L("店小二", "客官慢走！")); return; }
-                    if (host.Party.Gold < cost) { Say(L("店小二", "客官，您这钱……不太够啊。")); return; }
-                    host.Party.Gold -= cost;
-                    host.Party.FullRestore();
-                    host.SetHour(7f);
-                    Say(L(null, "一夜休整。全军兵力、法力已恢复！"));
-                })
+                Talk = () => OfferRest(cost, "店小二", "客官，住店一晚 " + cost + " 金，兵马都能休整好。住吗？", "客官慢走！", "客官，您这钱……不太够啊。")
             });
             inn.OnTouch = (x, y) =>
             {

@@ -302,6 +302,36 @@ namespace LiuBeiRPG.Game
 
         /// <summary>检测在某个区域内的鼠标点击（已考虑缩放矩阵）。点中了响 sfx（null = 不响，调用方自己放）。</summary>
         /// <summary>为 true 时 Clicked 一律不认（菜单上叠着对话框时，点击只给对话框）。</summary>
+        static readonly Dictionary<int, GUIStyle> pillStyles = new Dictionary<int, GUIStyle>();
+
+        /// <summary>胶囊 / 圆形：半径 = 短边一半，按半径生成九宫格贴图并缓存（Q 版按钮用）。</summary>
+        public static void Pill(Rect r, Color c)
+        {
+            if (Event.current.type != EventType.Repaint) return;
+            int rad = Mathf.Max(2, Mathf.RoundToInt(Mathf.Min(r.width, r.height) * 0.5f));
+            GUIStyle st;
+            if (!pillStyles.TryGetValue(rad, out st))
+            {
+                int n = rad * 2 + 2;
+                var tex = new Texture2D(n, n) { hideFlags = HideFlags.HideAndDontSave, wrapMode = TextureWrapMode.Clamp };
+                for (int y = 0; y < n; y++)
+                    for (int x = 0; x < n; x++)
+                    {
+                        float dx = Mathf.Max(0, Mathf.Max(rad - x - 0.5f, x + 0.5f - (n - rad)));
+                        float dy = Mathf.Max(0, Mathf.Max(rad - y - 0.5f, y + 0.5f - (n - rad)));
+                        tex.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01(rad - Mathf.Sqrt(dx * dx + dy * dy) + 0.5f)));
+                    }
+                tex.Apply();
+                st = new GUIStyle { border = new RectOffset(rad, rad, rad, rad) };
+                st.normal.background = tex;
+                pillStyles[rad] = st;
+            }
+            var old = GUI.color;
+            GUI.color = c;
+            st.Draw(r, false, false, false, false);
+            GUI.color = old;
+        }
+
         public static bool BlockClicks;
 
         public static bool Clicked(Rect r, string sfx = "ui_tap")
