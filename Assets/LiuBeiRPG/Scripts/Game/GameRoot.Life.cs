@@ -245,6 +245,7 @@ namespace LiuBeiRPG.Game
             var d = c.Def;
             bool idle = d.Idle > 0;
             var tex = CritterTex(c.Kind, idle ? "idle" : "move");
+            if (tex == null) return 0;   // 云上的图没下完：先缩成 0 不画
             return d.Size / (tex.width / (float)(idle ? d.Idle : d.Move));
         }
 

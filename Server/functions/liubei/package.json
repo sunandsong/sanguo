@@ -1,0 +1,9 @@
+{
+  "name": "liubei",
+  "version": "1.0.0",
+  "description": "刘备英雄传后端：登录 + 云存档（CloudBase 云函数，和群本玩 jbs 同一环境）",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^3.6.0"
+  }
+}

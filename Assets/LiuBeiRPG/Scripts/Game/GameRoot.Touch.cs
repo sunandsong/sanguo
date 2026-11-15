@@ -18,7 +18,8 @@ namespace LiuBeiRPG.Game
         float pressA = -10f, pressB = -10f;   // 按下的时刻，画按下的缩放
 
         // UnityEngine.Device 版会跟着 Device Simulator 变；UnityEngine.Application 在编辑器里永远是 false
-        static bool TouchUi { get { return UnityEngine.Device.Application.isMobilePlatform; } }
+        // 微信开发者工具报 macOS，isMobilePlatform 是 false，所以再看能不能触摸
+        static bool TouchUi { get { return UnityEngine.Device.Application.isMobilePlatform || Input.touchSupported; } }
 
         bool TouchUiShown { get { return TouchUi && mode == Mode.Map && !UiBusy; } }
 

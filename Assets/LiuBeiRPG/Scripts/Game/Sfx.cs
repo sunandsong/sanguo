@@ -49,7 +49,7 @@ namespace LiuBeiRPG.Game
         static string playing;
         const float MusicVolume = 0.25f;
 
-        /// <summary>背景音乐，每帧调，传这会儿该放哪首（Resources/Audio/bgm_xxx，null = 静音）。换曲：旧的 0.5 秒淡出，新的 1 秒淡入。</summary>
+        /// <summary>背景音乐，每帧调，传这会儿该放哪首（Resources/Audio/bgm_xxx，null = 静音；本地没有就从云上下，见 Remote.Audio）。换曲：旧的 0.5 秒淡出，新的 1 秒淡入。</summary>
         public static void Music(string name)
         {
             if (music == null)
@@ -62,11 +62,17 @@ namespace LiuBeiRPG.Game
                 music.volume = 0f;
             }
             float dt = Time.unscaledDeltaTime;
+            if (name == playing && name != null && music.clip == null)
+            {
+                music.clip = Remote.Audio("Audio/" + name);   // 云上的曲子刚下完：这才开始放，照常淡入
+                if (music.clip != null) { music.volume = 0f; music.Play(); }
+                return;
+            }
             if (name == playing) { music.volume = Mathf.MoveTowards(music.volume, MusicVolume, dt * MusicVolume); return; }
             music.volume -= dt * MusicVolume * 2f;
             if (music.volume > 0f && music.isPlaying) return;
             playing = name;
-            music.clip = name == null ? null : Resources.Load<AudioClip>("Audio/" + name);
+            music.clip = name == null ? null : Remote.Audio("Audio/" + name);   // 微信包里 bgm 在云上，没下完是 null，上面每帧再要
             music.volume = 0f;
             if (music.clip != null) music.Play(); else music.Stop();
         }

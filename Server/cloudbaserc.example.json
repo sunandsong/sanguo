@@ -1,0 +1,21 @@
+{
+  "version": "2.0",
+  "envId": "renshengqingdan-d9fc03opf3bac6ba",
+  "functionRoot": "./functions",
+  "functions": [
+    {
+      "name": "liubei",
+      "timeout": 10,
+      "runtime": "Nodejs18.15",
+      "handler": "index.main",
+      "installDependency": true,
+      "memorySize": 128,
+      "envVariables": {
+        "CLOUDBASE_ENV_ID": "renshengqingdan-d9fc03opf3bac6ba",
+        "WX_APPID": "wxd2614ebe0d3da219",
+        "WX_APPSECRET": "<小游戏 AppSecret，公众平台 开发管理→开发设置>",
+        "JWT_SECRET": "<openssl rand -hex 32>"
+      }
+    }
+  ]
+}

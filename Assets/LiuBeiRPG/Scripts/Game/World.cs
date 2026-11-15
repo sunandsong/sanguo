@@ -16,7 +16,6 @@ namespace LiuBeiRPG.Game
         static MaterialPropertyBlock mpb;
         static float z;
         static readonly List<PuppetDraw> draws = new List<PuppetDraw>();
-        static readonly Dictionary<string, Texture2D> puppetTex = new Dictionary<string, Texture2D>();
 
         public static void Begin() { z = 50f; }
 
@@ -41,6 +40,7 @@ namespace LiuBeiRPG.Game
 
         static void DrawBlend(Texture tex, Rect r, Color c, ref Material m, float mode, UnityEngine.Rendering.BlendMode src, UnityEngine.Rendering.BlendMode dst)
         {
+            if (tex == null) return;
             if (quad == null) Init();
             if (m == null)
             {
@@ -94,6 +94,9 @@ namespace LiuBeiRPG.Game
         {
             var clip = float.IsNaN(waterY) ? Vector4.zero : new Vector4(waterY, 1, 0, 0);
             PuppetPose.Pose(a.Rig, a.Skin, a.Clip, a.Facing, a.Time, draws, a.Weapon);
+            bool ready = true;
+            foreach (var d in draws) ready &= PuppetTex(d.tex) != null;   // 部件没下齐就整个人先不画，免得只露半个身子
+            if (!ready) return;
             foreach (var d in draws)
             {
                 var tex = PuppetTex(d.tex);
@@ -109,6 +112,7 @@ namespace LiuBeiRPG.Game
 
         static void Draw(Texture tex, Matrix4x4 m, Color c, float flash, Vector4 uvST, Vector4 fx = default(Vector4), Texture mask = null, Vector4 clip = default(Vector4), float push = 0)
         {
+            if (tex == null) return;   // 云上的图没下完
             if (quad == null) Init();
             m.m23 = z;
             z -= 0.001f;
@@ -137,15 +141,6 @@ namespace LiuBeiRPG.Game
             mpb = new MaterialPropertyBlock();
         }
 
-        static Texture2D PuppetTex(string path)
-        {
-            Texture2D t;
-            if (!puppetTex.TryGetValue(path, out t))
-            {
-                puppetTex[path] = t = Resources.Load<Texture2D>("Puppets/" + path);
-                if (t == null) throw new System.Exception("缺少贴图 Resources/Puppets/" + path + ".png");
-            }
-            return t;
-        }
+        static Texture2D PuppetTex(string path) { return Remote.Tex("Puppets/" + path); }
     }
 }

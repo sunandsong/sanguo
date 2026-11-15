@@ -51,6 +51,9 @@ namespace LiuBeiRPG.Game
             // 中文显示成方块时：把任意中文 TTF/OTF 字体命名为 ChineseFont 放进 Assets/LiuBeiRPG/Resources/
             if (chineseFont == null) chineseFont = Resources.Load<Font>("ChineseFont");
             SetupCamera();
+            PuppetActor.TexLoader = p => Remote.Tex("Puppets/" + p);   // 人偶部件图：本地没有就从云上下
+            Cloud.Pull(SaveKey);   // 云上更新的档拉下来
+            foreach (var bgm in new[] { "bgm_title", "bgm_map", "bgm_battle" }) Remote.Audio("Audio/" + bgm);   // 背景音乐先在后台下（微信包里在云上）
         }
 
         void NewGame()
@@ -113,6 +116,13 @@ namespace LiuBeiRPG.Game
 
         Chapter MakeChapter(int n)
         {
+            var c = BuildChapter(n);
+            if (c != null) PrefetchChapter(c, true);   // 放掉上一章不用的图，再预载这一章
+            return c;
+        }
+
+        Chapter BuildChapter(int n)
+        {
             switch (n)
             {
                 case 1: return new Chapter1(this);
@@ -124,6 +134,30 @@ namespace LiuBeiRPG.Game
                 case 7: return new Chapter7(this);
                 default: return null;
             }
+        }
+
+        /// <summary>进章节就在后台把这一章所有地图要用的图先下好（微信包；本地有图时 Remote 直接跳过）。
+        /// 先排的先下：队伍的人偶，再按地图顺序排底图、前景、物件、路人。</summary>
+        void PrefetchChapter(Chapter c, bool release = false)
+        {
+            var need = new List<string>();
+            if (party != null) foreach (var m in party.Members) need.Add("Puppets/" + (m.Def.Skin ?? m.Def.Id));
+            foreach (var m in c.Maps)
+            {
+                if (m.Art != null) { need.Add("Map/Art/" + m.Art); need.Add("Map/Art/" + m.Art + "_fg"); }
+                need.Add(m.WaterMask == null ? null : "Map/" + m.WaterMask);
+                LoadDecor(m);
+                foreach (var d in m.Decor) need.Add("Map/" + d.Sprite);
+                foreach (var p in m.Props) need.Add("Map/" + p.Sprite);
+                foreach (var n in m.Npcs)
+                {
+                    need.Add(n.Sprite == null ? null : "Map/" + n.Sprite);
+                    if (n.Id != null) need.Add("Puppets/" + (n.Skin ?? n.Id));
+                    if (n.Weapon != null) need.Add("Puppets/weapons/" + n.Weapon);
+                }
+            }
+            if (release) Remote.ReleaseExcept(need);
+            foreach (var p in need) Remote.Prefetch(p);
         }
 
         /// <summary>开始第 n 章：队伍、物品、flags 都带着，只换剧情和地图。没有这一章就回标题。</summary>
@@ -152,6 +186,7 @@ namespace LiuBeiRPG.Game
 
         void Update()
         {
+            Remote.Tick();   // 云上下好的图分帧解码
             UpdateTouch();
             UpdateChest();
             if (mode == Mode.Map) UpdateMap();
@@ -220,6 +255,7 @@ namespace LiuBeiRPG.Game
             if (ChestPlaying) return;   // 开箱演出时不吃按键
             KeySfx(key);
             if (comicPages != null) { ComicKey(key); return; }   // 开场漫画盖在最上面
+            if (loadOpen) { LoadPageKey(key); return; }
             // 对话 / 选项优先
             if (choice != null) { ChoiceKey(key); return; }
             if (currentDialogue != null)
@@ -232,8 +268,14 @@ namespace LiuBeiRPG.Game
             switch (mode)
             {
                 case Mode.Title:
-                    if ((key == InputKey.Up || key == InputKey.Down) && HasSave) { titleSel = 1 - titleSel; Sfx.Play("ui_tap"); }
-                    else if (key == InputKey.Confirm) TitlePick(HasSave ? titleSel : 0);
+                    if (aboutOpen) { if (key == InputKey.Confirm || key == InputKey.Cancel) aboutOpen = false; }
+                    else if (key == InputKey.Up || key == InputKey.Down)
+                    {
+                        // 三项：新游戏 / 读档（没存档时跳过）/ 关于我们
+                        do titleSel = (titleSel + (key == InputKey.Down ? 1 : 2)) % 3; while (titleSel == 1 && !HasSave);
+                        Sfx.Play("ui_tap");
+                    }
+                    else if (key == InputKey.Confirm) TitlePick(titleSel);
                     break;
                 case Mode.Map:
                     MapKeyDown(key);
@@ -293,7 +335,7 @@ namespace LiuBeiRPG.Game
             if (b.OnDone != null) b.OnDone();
         }
 
-        bool UiBusy { get { return currentDialogue != null || choice != null || menuPage != 0 || ChestPlaying || comicPages != null; } }
+        bool UiBusy { get { return currentDialogue != null || choice != null || menuPage != 0 || ChestPlaying || comicPages != null || loadOpen; } }
 
         /// <summary>对话框贴在安全区域底部居中（最宽 900），横竖屏使用不同高度。</summary>
         static Rect DialogRect
@@ -473,6 +515,7 @@ namespace LiuBeiRPG.Game
             Gfx.Paper = false;
             if (mode != Mode.Map && mode != Mode.Battle) Gfx.Rect(new Rect(0, 0, Screen.width, Screen.height), Color.black);   // 大地图由相机画在底下
             Gfx.BeginScaled();
+            if (loadOpen) { DrawLoadPage(); DrawNote(); return; }   // 读档页盖满全屏，下面的都不画、不吃点击
 
             switch (mode)
             {
@@ -507,8 +550,10 @@ namespace LiuBeiRPG.Game
             float oy = (Gfx.VH - 540f) * 0.5f;   // 内容按 540 高排版，竖屏时垂直居中
             if (titleShownAt < 0) titleShownAt = Time.time;   // 每次回到首页重新播一遍入场
             float t = Time.time - titleShownAt;
+            TitlePrefetch();
+            if (aboutOpen) { DrawAbout(); return; }
             bool hasSave = HasSave;
-            if (!hasSave) titleSel = 0;
+            if (!hasSave && titleSel == 1) titleSel = 0;
 
             // 背景：等比铺满（竖屏裁两边），慢慢推近一点点
             Gfx.Rect(new Rect(0, 0, Gfx.VW, Gfx.VH), new Color(0.1f, 0.08f, 0.2f));
@@ -537,21 +582,24 @@ namespace LiuBeiRPG.Game
                 GUI.color = Color.white;
             }
 
-            // 菜单：新游戏 / 读档，竖排，晚一点淡入
-            string[] items = { "新游戏", "读档" };
-            for (int i = 0; i < 2; i++)
+            // 菜单：新游戏 / 读档 / 关于我们，竖排，晚一点淡入
+            // 首页预载没走完（微信包首次打开）：新游戏 / 读档先灰着，按钮上写进度，下完再进，进去就不会闪
+            bool loading = Remote.PrefetchTotal > 0;
+            string[] items = { loading ? "下载中 " + (Remote.PrefetchDone * 100 / Remote.PrefetchTotal) + "%" : "新游戏", "读档", "关于我们" };
+            for (int i = 0; i < items.Length; i++)
             {
                 float a = Mathf.Clamp01((t - 0.5f - i * 0.12f) / 0.4f);
                 if (a <= 0) continue;
-                bool enabled = i == 0 || hasSave, sel = i == titleSel;
+                bool enabled = i == 2 || (!loading && (i == 0 || hasSave)), sel = i == titleSel;
                 // Q 版扁平胶囊：深色粗描边 + 实心投影 + 底下一道深色“唇边”，和标题字一个画风
                 float bw = 230, bh = 56, slide = (1 - a) * 30;
                 float lift = sel ? 3 + Mathf.Abs(Mathf.Sin(Time.time * 4)) * 3 : 0;   // 选中的一蹦一蹦
                 var r = new Rect((Gfx.VW - bw) * 0.5f, oy + 335 + i * 78 + slide - lift, bw, bh);
+                if (!Gfx.Portrait && i > 0) { r.x = Gfx.VW * 0.5f + (i == 1 ? -bw - 12 : 12); r.y = oy + 335 + 78 + slide - lift; }   // 横屏高度不够竖排三个：读档、关于我们并排放第二行
                 var ink = new Color(0.13f, 0.1f, 0.28f, a);
                 Color top, lip, tc;
                 if (!enabled) { top = new Color(0.84f, 0.82f, 0.88f, a); lip = new Color(0.68f, 0.66f, 0.75f, a); tc = new Color(0.52f, 0.5f, 0.6f, a); }
-                else if (sel) { top = new Color(1f, 0.83f, 0.25f, a); lip = new Color(1f, 0.58f, 0.12f, a); tc = ink; }
+                else if (i == 0) { top = new Color(1f, 0.83f, 0.25f, a); lip = new Color(1f, 0.58f, 0.12f, a); tc = ink; }   // 只有第一项是黄的，其余同色；选中靠一蹦一蹦区分
                 else { top = new Color(1f, 0.97f, 0.9f, a); lip = new Color(0.9f, 0.82f, 0.72f, a); tc = ink; }
                 var o = new Rect(r.x - 4, r.y - 4, r.width + 8, r.height + 8);
                 Gfx.Pill(new Rect(o.x, o.y + 5 + lift, o.width, o.height), new Color(0.1f, 0.07f, 0.2f, 0.45f * a));   // 投影，蹦起来时离得远
@@ -561,10 +609,10 @@ namespace LiuBeiRPG.Game
                 Gfx.Pill(new Rect(r.x + 20, r.y + 8, 24, 8), new Color(1, 1, 1, 0.85f * a));   // 左上角的小高光
                 Gfx.Pill(new Rect(r.x + 48, r.y + 8, 8, 8), new Color(1, 1, 1, 0.85f * a));
                 Gfx.Text(new Rect(r.x, r.y - 3, r.width, r.height), items[i], 28, tc, TextAnchor.MiddleCenter, false, false);
-                if (a >= 1 && enabled && Gfx.Clicked(o)) { titleSel = i; TitlePick(i); }
+                if (a >= 1 && enabled && choice == null && Gfx.Clicked(o)) { titleSel = i; TitlePick(i); }   // 选档框开着时别点穿
             }
             float ha = Mathf.Clamp01((t - 1.2f) / 0.5f) * 0.75f;
-            Gfx.Text(new Rect(0, Gfx.VH - 36, Gfx.VW, 24), "泉都发科技有限公司出品", 15, new Color(1, 1, 1, ha), TextAnchor.MiddleCenter);
+            Gfx.Text(new Rect(0, Gfx.VH - 36, Gfx.VW, 24), "泉都发科技有限公司", 15, new Color(1, 1, 1, ha), TextAnchor.MiddleCenter);
         }
 
         int titleSel;
@@ -572,7 +620,10 @@ namespace LiuBeiRPG.Game
 
         void TitlePick(int i)
         {
-            if (i == 1 && HasSave) ContinueGame(); else NewGame();
+            if (i == 2) { aboutOpen = true; aboutCopiedAt = -10; return; }
+            if (Remote.PrefetchTotal > 0) return;   // 资源还在下（键盘回车也挡住）
+            if (i == 1) { if (HasSave) OpenLoadPage(true); return; }
+            NewGame();
         }
 
         static float EaseOutBack(float x) { const float c = 1.7f; x -= 1; return 1 + (c + 1) * x * x * x + c * x * x; }
@@ -601,15 +652,6 @@ namespace LiuBeiRPG.Game
 
         static bool HasSave { get { return PlayerPrefs.HasKey("save1") || PlayerPrefs.HasKey("save2") || PlayerPrefs.HasKey("save3"); } }
 
-        /// <summary>标题读档：先起一局新游戏（建好章节和队伍），跳过开场白，再弹读档。</summary>
-        void ContinueGame()
-        {
-            NewGame();
-            dialogueQueue.Clear();
-            currentDialogue = null;
-            comicPages = null;   // 开场漫画也跳过
-            LoadGame();
-        }
 
         void DrawGameOver()
         {

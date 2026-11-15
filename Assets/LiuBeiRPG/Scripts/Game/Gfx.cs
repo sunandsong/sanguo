@@ -62,22 +62,15 @@ namespace LiuBeiRPG.Game
             GUI.color = old;
         }
 
-        static readonly Dictionary<string, Texture2D> texCache = new Dictionary<string, Texture2D>();
-
-        /// <summary>读取 Resources/Map 下的贴图；不存在返回 null（调用方退回色块）。</summary>
+        /// <summary>读取 Resources/Map 下的贴图（本地没有就从云上下，见 Remote）；不存在或没下完返回 null（调用方退回色块）。</summary>
         public static Texture2D Tex(string name)
         {
-            if (string.IsNullOrEmpty(name)) return null;
-            Texture2D t;
-            if (texCache.TryGetValue(name, out t)) return t;
-            t = Resources.Load<Texture2D>("Map/" + name);   // 采样方式由 PixelArtImport 决定
-            texCache[name] = t;
-            return t;
+            return string.IsNullOrEmpty(name) ? null : Remote.Tex("Map/" + name);   // 本地图的采样方式由 PixelArtImport 决定
         }
 
         public static void Image(Rect r, Texture2D tex)
         {
-            GUI.DrawTexture(r, tex, ScaleMode.StretchToFill, true);
+            if (tex != null) GUI.DrawTexture(r, tex, ScaleMode.StretchToFill, true);   // 云上的图没下完时是 null
         }
 
         public static void Frame(Rect r, Color c, float t = 2f)
@@ -333,24 +326,33 @@ namespace LiuBeiRPG.Game
         }
 
         public static bool BlockClicks;
+        static int tapFrame = -1;
+        static bool tapLeft;
+        static Vector2 tapScreen;
 
         public static bool Clicked(Rect r, string sfx = "ui_tap")
         {
             if (BlockClicks) return false;
             var e = Event.current;
-            if (e.type == EventType.MouseDown && e.button == 0 && r.Contains(e.mousePosition))
+            // 不用 IMGUI 的点击事件（微信小游戏里收不到触摸）：直接读 Input 这一帧按下的手指 / 鼠标，每帧只算给第一个点中的按钮
+            if (e.type != EventType.Layout) return false;
+            if (tapFrame != Time.frameCount)
             {
-                e.Use();
-                if (sfx != null) Sfx.Play(sfx);
-                return true;
+                tapFrame = Time.frameCount;
+                tapLeft = false;
+                for (int i = 0; i < Input.touchCount; i++)
+                {
+                    var t = Input.GetTouch(i);
+                    if (t.phase == TouchPhase.Began) { tapLeft = true; tapScreen = t.position; break; }
+                }
+                if (!tapLeft && Input.GetMouseButtonDown(0)) { tapLeft = true; tapScreen = Input.mousePosition; }
+                // ponytail: 临时日志，查微信里点不动；点得动了就删
+                if (tapLeft) Debug.Log("[tap] " + tapScreen + " screen " + Screen.width + "x" + Screen.height + " touches " + Input.touchCount);
             }
-            if (e.type == EventType.TouchDown && r.Contains(e.mousePosition))
-            {
-                e.Use();
-                if (sfx != null) Sfx.Play(sfx);
-                return true;
-            }
-            return false;
+            if (!tapLeft || !r.Contains(GUIUtility.ScreenToGUIPoint(new Vector2(tapScreen.x, Screen.height - tapScreen.y)))) return false;
+            tapLeft = false;
+            if (sfx != null) Sfx.Play(sfx);
+            return true;
         }
     }
 }

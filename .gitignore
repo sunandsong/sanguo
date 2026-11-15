@@ -10,3 +10,7 @@
 *.sln
 *.log
 .DS_Store
+
+# 云函数密钥
+/Server/cloudbaserc.json
+/Server/functions/*/node_modules/

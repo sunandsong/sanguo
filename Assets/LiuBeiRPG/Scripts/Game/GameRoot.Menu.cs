@@ -405,7 +405,7 @@ namespace LiuBeiRPG.Game
         /// <summary>兵器原图是竖长条，斜 45° 放进格子里。</summary>
         static void WeaponIcon(Rect slot, string weapon)
         {
-            var tex = Resources.Load<Texture2D>("Puppets/weapons/" + weapon + "/" + weapon);
+            var tex = Remote.Tex("Puppets/weapons/" + weapon + "/" + weapon);
             if (tex == null) return;
             float len = slot.width * 1.2f, wid = len * tex.width / tex.height;
             var old = GUI.matrix;
@@ -656,7 +656,7 @@ namespace LiuBeiRPG.Game
             Gfx.Text(r, noteText, 19, new Color(1, 1, 1, a), TextAnchor.MiddleCenter, false, false);
         }
 
-        // ---------------- 存档：三个档位（吞食天地），JSON 放 PlayerPrefs ----------------
+        // ---------------- 存档：三个档位（吞食天地），JSON 放 PlayerPrefs，再抄一份到云上（见 Cloud） ----------------
         // 剧情进度全在 flags 里，地图上的人和东西都由 flags 推出来，所以只存队伍（含物品、学会的法术）+ flags + 位置
 
         const int SaveSlots = 3;
@@ -704,8 +704,12 @@ namespace LiuBeiRPG.Game
                 s.Items.AddRange(party.Items);
                 s.Learned.AddRange(party.Learned);
                 s.Strategist = party.Strategist.Def.Id;
-                PlayerPrefs.SetString(SaveKey(slot), JsonUtility.ToJson(s));
+                var json = JsonUtility.ToJson(s);
+                long t = Cloud.Now();
+                PlayerPrefs.SetString(SaveKey(slot), json);
+                PlayerPrefs.SetString(Cloud.TimeKey(SaveKey(slot)), t.ToString());
                 PlayerPrefs.Save();
+                Cloud.Push(slot, json, t);   // 抄一份到云上，失败就算了，本地已经存好
                 Note("已存到第" + SlotNames[slot] + "档。", null);
                 Sfx.Play("save");
             });
@@ -724,13 +728,14 @@ namespace LiuBeiRPG.Game
             return g;
         }
 
-        void LoadGame()
+        void LoadGame() { OpenLoadPage(false); }
+
+        /// <summary>读第 slot 档并进到存档的位置；空档返回 false，什么都不动。</summary>
+        bool LoadSlot(int slot)
         {
-            Choose("读哪一档？", SlotLabels(), slot =>
             {
-                if (slot >= SaveSlots) { OpenMenu(); return; }
                 var json = PlayerPrefs.GetString(SaveKey(slot), "");
-                if (json == "") { Note("第" + SlotNames[slot] + "档是空的。", OpenMenu); return; }
+                if (json == "") return false;
                 var s = JsonUtility.FromJson<SaveData>(json);
                 party = new Party { Level = s.Level, Exp = s.Exp, Gold = s.Gold, TPBonus = s.TPBonus };
                 party.Items.AddRange(s.Items);
@@ -752,7 +757,8 @@ namespace LiuBeiRPG.Game
                 var target = Array.Find(chapter.Maps, m => m.Name == s.Map) ?? chapter.Maps[0];
                 Warp(target, s.X, s.Y);
                 Note("读档完成。", null);
-            });
+            }
+            return true;
         }
     }
 }
