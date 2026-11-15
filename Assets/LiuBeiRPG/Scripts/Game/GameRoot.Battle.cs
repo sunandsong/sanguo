@@ -88,6 +88,10 @@ namespace LiuBeiRPG.Game
             onBattleVictory = onVictory;
             mode = Mode.Battle;
             battleEnter = Time.time;
+            var need = new List<string>();   // 敌我人偶没齐就先出加载页，齐了再从头播入场
+            foreach (var g in party.Members) need.Add("Puppets/" + (g.Def.Skin ?? g.Def.Id));
+            foreach (var g in enemies) need.Add("Puppets/" + (g.Def.Skin ?? g.Def.Id));
+            BeginSceneLoad(need, () => battleEnter = Time.time);
             battleExit = -1f;
             autoBattle = false;
             log.Clear();

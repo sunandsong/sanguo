@@ -7,7 +7,7 @@ W=$P/Build/_wxproj
 ENGINE=~/Desktop/sanguoguge/Packages/com.sunandsong.puppet
 NOPNG=(--exclude='/Resources/**.png' --exclude='/Resources/**.png.meta' --delete-excluded)
 rsync -a --delete $NOPNG --exclude='/Resources/Audio/bgm_*' $P/Assets/LiuBeiRPG/ $W/Assets/LiuBeiRPG/   # 背景音乐也在云上（Remote.Audio）
-rsync -a --delete $NOPNG $ENGINE/Runtime/ $W/Packages/com.sunandsong.puppet/Runtime/   # 引擎嵌进来，才能只剥这边的图
+rsync -a --delete --include='/Resources/Puppets/liubei/side/*' $NOPNG $ENGINE/Runtime/ $W/Packages/com.sunandsong.puppet/Runtime/   # 引擎嵌进来，才能只剥这边的图；刘备侧面留在包里（加载页上的小人）
 rsync -a --delete $ENGINE/ --exclude=/Runtime $W/Packages/com.sunandsong.puppet/
 sed -i '' '/"com.sunandsong.puppet": "file:/d' $W/Packages/manifest.json
 python3 $P/Tools/wx/subset_fonts.py $W   # 字体裁到游戏里用到的字（22MB → 1.5MB）
@@ -15,6 +15,9 @@ cp $P/Tools/wx/WxBuild.cs $W/Assets/Editor/
 cp $P/Tools/wx/WxGlue.cs $W/Assets/
 WX_CDN=${WX_CDN:-https://7265-renshengqingdan-d9fc03opf3bac6ba-1478597699.tcb.qcloud.la/liubei/wxgame} /Applications/Unity/Hub/Editor/6000.3.22f1/Unity.app/Contents/MacOS/Unity -batchmode -projectPath $W -executeMethod WxBuild.Build -logFile $P/Build/wx_unity.log
 python3 $P/Tools/wx/patch_minigame.py $P   # 启动加载页：背景图 + 进度条颜色
-# 资源包也传到云存储（DATA_CDN 指向这里）
+# 资源包也传到云存储（DATA_CDN 指向这里）。文件名按内容算，云上已有同名同大小的就不传（只改代码时常见）
 cd $P/Build/wxgame/webgl && F=$(ls *.webgl.data.unityweb.bin.txt)
+REMOTE=$(curl -sI "https://7265-renshengqingdan-d9fc03opf3bac6ba-1478597699.tcb.qcloud.la/liubei/wxgame/$F" | tr -d '\r' | awk -F': ' 'tolower($1)=="content-length"{print $2}')
+if [ "$REMOTE" = "$(stat -f%z $F)" ]; then echo "资源包没变，云上已有 $F，跳过上传"; else
 for i in 1 2 3 4 5 6; do tcb storage upload "$F" "liubei/wxgame/$F" -e renshengqingdan-d9fc03opf3bac6ba 2>&1 | grep -q "✖" || { echo "已上传 $F"; break; }; done
+fi

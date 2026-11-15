@@ -31,34 +31,19 @@ namespace LiuBeiRPG.Game
         {
             camSnap = true;
             walkersPlaced = false;   // 路人按钟点重新摆：夜里在屋里，白天在外面
-            irisStart = irisBegan = Time.time;
+            irisStart = Time.time;
             if (newMap) { titleText = map.Name; titleStart = Time.time + 0.25f; Sfx.Play("map_enter"); }
-            WarmMap();
+            // 换了地图：上一张图用过、这张用不到的贴图放掉（压缩数据还在内存，回来时在加载页里重解，不走网络）
+            var need = MapNeed();
+            if (newMap) Remote.ReleaseExcept(need, false);
+            // 这张图要用的图没齐就先出加载页，齐了再从这里开始圆形转场、写地名
+            BeginSceneLoad(need, () => { irisStart = Time.time; if (titleText == map.Name) titleStart = Time.time + 0.25f; });
         }
 
-        float irisBegan;   // 这次转场从什么时候开始等（底图没解码好时圆洞先不张开，最多等 3 秒）
-
-        /// <summary>进地图：队伍每个人所有朝向的部件、这张图的物件 / 路人，提前排进解码（微信包里的图是下载后才解码的）。</summary>
-        void WarmMap()
-        {
-            if (map.Art != null) Remote.Tex("Map/Art/" + map.Art);   // 底图排第一个解码，转场等的就是它
-            if (party != null) foreach (var m in party.Members) Remote.Warm("Puppets/" + (m.Def.Skin ?? m.Def.Id));
-            if (map.Art != null) Remote.Warm("Map/Art/" + map.Art + "_fg");
-            LoadDecor(map);   // 物件清单可能还没读
-            foreach (var d in map.Decor) Remote.Warm("Map/" + d.Sprite);
-            foreach (var p in map.Props) Remote.Warm("Map/" + p.Sprite);
-            foreach (var n in map.Npcs)
-            {
-                if (n.Sprite != null) Remote.Warm("Map/" + n.Sprite);
-                if (n.Id != null) Remote.Warm("Puppets/" + (n.Skin ?? n.Id));
-            }
-        }
 
         /// <summary>圆形转场：黑幕中间一个从主角处张开的圆洞。</summary>
         void DrawIris()
         {
-            // 底图还没解码好：圆洞先别张开（全黑），省得看到一张空地图；最多等 3 秒
-            if (mode == Mode.Map && Time.time - irisBegan < 3f && map.Art != null && Remote.Pending("Map/Art/" + map.Art)) irisStart = Time.time;
             float t = (Time.time - irisStart) / IrisTime;
             if (t >= 1f || mode != Mode.Map) return;
             if (t < 0) t = 0;

@@ -170,7 +170,7 @@ namespace LiuBeiRPG.Game
         {
             if (titlePrefetched) return;
             titlePrefetched = true;
-            foreach (var p in new[] { "Map/Art/intro", "Map/Art/ui", "Map/Art/dialogue_box_frame", "Map/Art/place_name_plate", "Map/Art/load", "Map/Art/battle_disc" }) Remote.Prefetch(p);
+            foreach (var p in new[] { "Map/Art/loading_bg", "Map/Art/intro", "Map/Art/ui", "Map/Art/dialogue_box_frame", "Map/Art/place_name_plate", "Map/Art/load", "Map/Art/battle_disc" }) Remote.Prefetch(p);
             int n = 1; long newest = -1;
             for (int i = 0; i < SaveSlots; i++)
             {

@@ -19,6 +19,9 @@ public static class WxBuild
         c.ProjectConf.bundlePathIdentifier = "StreamingAssets;liubei/;";   // 云上的图（Remote.cs）也走微信的文件缓存，下过一次就不再下
         var f = c.ProjectConf.GetType().GetField("Orientation");
         f.SetValue(c.ProjectConf, Enum.Parse(f.FieldType, Enum.GetNames(f.FieldType).First(n => n.StartsWith("Portrait"))));
+        // 界面用 IMGUI，内置 GUISkin 是 MonoBehaviour 资源，要 MonoScript（类 ID 115）；剥引擎代码会把它剥掉，
+        // 运行时刷「Could not produce class with ID 115」「Copied style is null」，所以关掉
+        PlayerSettings.stripEngineCode = false;
         EditorUtility.SetDirty(c);
         AssetDatabase.SaveAssets();
         var r = WXConvertCore.DoExport();

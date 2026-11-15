@@ -196,6 +196,7 @@ Map/Art/life/well.png
 Map/Art/liubei_home.jpg
 Map/Art/load_bg.jpg
 Map/Art/load_card.png
+Map/Art/loading_bg.jpg
 Map/Art/longzhong.jpg
 Map/Art/notice_board.png
 Map/Art/qingzhou_field.jpg

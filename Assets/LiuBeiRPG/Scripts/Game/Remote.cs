@@ -43,15 +43,14 @@ namespace LiuBeiRPG.Game
             if (string.IsNullOrEmpty(path)) return null;
             Texture2D t;
             if (cache.TryGetValue(path, out t)) return t;
+            if (retryAt.ContainsKey(path)) { Download(path, false); return null; }   // 在下 / 等解码：别每帧再查 Resources
             byte[] b;
-            if (stored.TryGetValue(path, out b))   // 预载好的压缩数据：要画了才解码
+            if (stored.TryGetValue(path, out b))   // 内存里有压缩数据（预载的、或释放过的）：要画了才解码，数据留着下次还能用
             {
-                stored.Remove(path); storedBytes -= b.Length;
                 retryAt[path] = float.MaxValue;
                 decodeQueue.Enqueue(new KeyValuePair<string, byte[]>(path, b));
                 return null;
             }
-            if (retryAt.ContainsKey(path)) { Download(path, false); return null; }   // 在下 / 等解码：别每帧再查 Resources
             t = Resources.Load<Texture2D>(path);
             if (t != null) return cache[path] = t;
             if (Files.Count > 0 && !Files.ContainsKey(path)) return cache[path] = null;   // 清单里没有 = 云上也没有（可选的图：地名牌、地图前景…），别发请求白拿 404
@@ -67,12 +66,16 @@ namespace LiuBeiRPG.Game
             return !cache.ContainsKey(path);
         }
 
-        /// <summary>提前解码：path 本身和它下面的文件（写法同 Prefetch）有预载好的就排进解码队列，没下的马上下，分帧慢慢解。
-        /// 进地图时对队伍人偶（所有朝向）和这张图的物件调，免得换方向、走到跟前才解码闪一下。</summary>
-        public static void Warm(string path)
+        /// <summary>need 里每个路径（写法同 Prefetch）在云上对应的全部文件；本地有图（编辑器 / Mac 包）时返回空。</summary>
+        public static List<string> Expand(List<string> need)
         {
-            if (string.IsNullOrEmpty(path) || LocalArt) return;
-            foreach (var p in new List<string>(Files.Keys)) if (Under(p, path)) Tex(p);
+            var r = new List<string>();
+            if (LocalArt) return r;
+            var seen = new HashSet<string>();
+            foreach (var p in Files.Keys)
+                foreach (var n in need)
+                    if (n != null && Under(p, n)) { if (seen.Add(p)) r.Add(p); break; }
+            return r;
         }
 
         // ---------------- 背景音乐 ----------------
@@ -161,12 +164,9 @@ namespace LiuBeiRPG.Game
                 if (req.result == UnityWebRequest.Result.Success)
                 {
                     var data = req.downloadHandler.data;
+                    if (!stored.ContainsKey(path) && storedBytes + data.Length <= StoreCap) { stored[path] = data; storedBytes += data.Length; }   // 压缩数据留内存，释放后重解不走网络
                     if (!bg) decodeQueue.Enqueue(new KeyValuePair<string, byte[]>(path, data));   // 眼前要画的：留到 Tick 里分帧解码
-                    else
-                    {
-                        retryAt.Remove(path);
-                        if (storedBytes + data.Length <= StoreCap) { stored[path] = data; storedBytes += data.Length; }
-                    }
+                    else retryAt.Remove(path);   // 预载的：只下载，画到时才解码
                 }
                 else if (req.responseCode == 404) cache[path] = null;   // 云上也没有：当缺图，别再问
                 else retryAt[path] = Time.realtimeSinceStartup + RetryDelay;
@@ -178,7 +178,9 @@ namespace LiuBeiRPG.Game
         // ---------------- 分帧解码 ----------------
 
         static readonly Queue<KeyValuePair<string, byte[]>> decodeQueue = new Queue<KeyValuePair<string, byte[]>>();
-        const float DecodeBudget = 0.008f;   // 每帧最多花约 8ms 解码；大图一张就上百毫秒，几张同一帧到会卡一下
+        /// <summary>场景加载页开着：画面是静止的，解码放开到每帧 30ms，赶紧解完；玩的时候只给 8ms，不卡。</summary>
+        public static bool Loading;
+        static float DecodeBudget { get { return Loading ? 0.03f : 0.008f; } }
 
         /// <summary>每帧调一次（GameRoot.Update）：解码下好的图，超过预算留到下一帧，但每帧至少解一张。</summary>
         public static void Tick()
@@ -211,7 +213,7 @@ namespace LiuBeiRPG.Game
 
         /// <summary>换章节时调：放掉上一章的地图、物件、人偶这些解码过的贴图（一张大图好几 MB 显存）；新章节还要用的（need，同 Prefetch 的路径写法）留着。
         /// 之后再要会重新解码，数据从微信文件缓存读，不走网络；画面上最多闪一两帧，换章节本来有黑场转场盖着。</summary>
-        public static void ReleaseExcept(List<string> need)
+        public static void ReleaseExcept(List<string> need, bool dropStored)
         {
             System.Func<string, bool> keep = p => { if (Kept(p)) return true; foreach (var n in need) if (n != null && Under(p, n)) return true; return false; };
             var drop = new List<string>();
@@ -223,7 +225,7 @@ namespace LiuBeiRPG.Game
                 cache.Remove(p);
                 decoded.Remove(p);
             }
-            foreach (var p in new List<string>(stored.Keys)) if (!keep(p)) { storedBytes -= stored[p].Length; stored.Remove(p); }   // 上一章预载了没用上的也放掉
+            if (dropStored) foreach (var p in new List<string>(stored.Keys)) if (!keep(p)) { storedBytes -= stored[p].Length; stored.Remove(p); }   // 上一章预载了没用上的也放掉
         }
 
         /// <summary>导入设置照 PixelArtImport / PuppetImport：Map 下的像素图块点采样无 mipmap，手绘整图和人偶双线性 + mipmap。</summary>

@@ -1,0 +1,2722 @@
+{
+"Audio/bgm_battle.wav": [
+"2d8d217be43c8ac0a4bac7c880bd4810",
+"Audio/bgm_battle.mp3"
+],
+"Audio/bgm_map.ogg": [
+"b4379e46b20d3e3f1dd94dd96afd18b6",
+"Audio/bgm_map.mp3"
+],
+"Audio/bgm_title.ogg": [
+"a77b8dbad21c916b3cf9f2e0a8e54a4f",
+"Audio/bgm_title.mp3"
+],
+"Map/Art/about_bg.png": [
+"1f340989696a94803a851d0e44824e9c",
+"Map/Art/about_bg.jpg"
+],
+"Map/Art/battle_disc.png": [
+"b128b69f56adc2355218e86660d19d7a",
+"Map/Art/battle_disc.png"
+],
+"Map/Art/beihai_field.png": [
+"968054a329671402781e84d6cd0651a1",
+"Map/Art/beihai_field.jpg"
+],
+"Map/Art/bowang.png": [
+"f84987a8a0c6278baec50c89c2e5aba6",
+"Map/Art/bowang.jpg"
+],
+"Map/Art/chest.png": [
+"7c39c92b6052db9f7ddeb66673b91ae4",
+"Map/Art/chest.png"
+],
+"Map/Art/chest_open.png": [
+"e82189c7415db2b1ed1e1fe57c7dd47a",
+"Map/Art/chest_open.png"
+],
+"Map/Art/end_bg.png": [
+"78c996be624c0df5c6be0685ebcbf8fa",
+"Map/Art/end_bg.jpg"
+],
+"Map/Art/field.png": [
+"b2ff229fd68da75c6bf9b2bffe587a90",
+"Map/Art/field.jpg"
+],
+"Map/Art/field_big.png": [
+"45358bff677916aa10a922dccda07f8b",
+"Map/Art/field_big.jpg"
+],
+"Map/Art/field_big_water.png": [
+"157eea63d6307b890178d8dd6f540b04",
+"Map/Art/field_big_water.jpg"
+],
+"Map/Art/field_fg.png": [
+"fbe32e607741c3d6d320ba73d0af4456",
+"Map/Art/field_fg.png"
+],
+"Map/Art/fu_qz.png": [
+"7891786b1e6443aaa8cb897434226b59",
+"Map/Art/fu_qz.jpg"
+],
+"Map/Art/fx/cast_glow_0.png": [
+"95e5fffbb8b06212988ab068ebb896e9",
+"Map/Art/fx/cast_glow_0.png"
+],
+"Map/Art/fx/cast_glow_1.png": [
+"cea92ad13148ccbee10f2cb2c8d01fe1",
+"Map/Art/fx/cast_glow_1.png"
+],
+"Map/Art/fx/cast_glow_2.png": [
+"f68adb1aa486776551d1ac23f1ce23f0",
+"Map/Art/fx/cast_glow_2.png"
+],
+"Map/Art/fx/cast_glow_3.png": [
+"f0a85c6bfceba048e59c20fd3c8927ee",
+"Map/Art/fx/cast_glow_3.png"
+],
+"Map/Art/fx/cast_glow_4.png": [
+"2c9d20d110543784660b5149f1bbea99",
+"Map/Art/fx/cast_glow_4.png"
+],
+"Map/Art/fx/cast_glow_5.png": [
+"345eea5469d0093523f4e3f146f8aa11",
+"Map/Art/fx/cast_glow_5.png"
+],
+"Map/Art/fx/cast_glow_6.png": [
+"450e84dc24f4178eef47f3974f47eaf8",
+"Map/Art/fx/cast_glow_6.png"
+],
+"Map/Art/fx/cast_glow_7.png": [
+"4f99ba2d570e351bfbcc44d89b7bdb9d",
+"Map/Art/fx/cast_glow_7.png"
+],
+"Map/Art/fx/fire_arrow_0.png": [
+"920ff8d353ada258829f5dfca5978c4b",
+"Map/Art/fx/fire_arrow_0.png"
+],
+"Map/Art/fx/fire_arrow_1.png": [
+"a0a74ba984db3ec2ae88b397f9a2142a",
+"Map/Art/fx/fire_arrow_1.png"
+],
+"Map/Art/fx/fire_arrow_2.png": [
+"6ebbf1f3c883fba1b0c6df606aa7a970",
+"Map/Art/fx/fire_arrow_2.png"
+],
+"Map/Art/fx/fire_arrow_3.png": [
+"0c518611fca017e9377da7f1cb97a6bc",
+"Map/Art/fx/fire_arrow_3.png"
+],
+"Map/Art/fx/fire_arrow_4.png": [
+"c7fb54af8c2374f8950766f64461286a",
+"Map/Art/fx/fire_arrow_4.png"
+],
+"Map/Art/fx/fire_arrow_5.png": [
+"f49641c089cf8e80556312dbb03b6943",
+"Map/Art/fx/fire_arrow_5.png"
+],
+"Map/Art/fx/fire_arrow_6.png": [
+"9e0c5d4afd3fa7b454a36e3a2ec63613",
+"Map/Art/fx/fire_arrow_6.png"
+],
+"Map/Art/fx/fire_arrow_7.png": [
+"79e6ac33de95e6ff4bd02cbd60a5a1ef",
+"Map/Art/fx/fire_arrow_7.png"
+],
+"Map/Art/fx/fire_burst_0.png": [
+"f807f49a65b0e3861e5e0e2d7a08b0bc",
+"Map/Art/fx/fire_burst_0.png"
+],
+"Map/Art/fx/fire_burst_1.png": [
+"038975731d52099536f88cce1defa192",
+"Map/Art/fx/fire_burst_1.png"
+],
+"Map/Art/fx/fire_burst_2.png": [
+"e768cf8ec14163dc7a9d1fe4de99cb90",
+"Map/Art/fx/fire_burst_2.png"
+],
+"Map/Art/fx/fire_burst_3.png": [
+"8e17868c0d24e7a11f695559e45ed0f0",
+"Map/Art/fx/fire_burst_3.png"
+],
+"Map/Art/fx/fire_burst_4.png": [
+"9128fa3bcbfbd0b7abfb93186c37c916",
+"Map/Art/fx/fire_burst_4.png"
+],
+"Map/Art/fx/fire_burst_5.png": [
+"afdddcf001b326899818698ccd8327db",
+"Map/Art/fx/fire_burst_5.png"
+],
+"Map/Art/fx/fire_burst_6.png": [
+"480b4838d65ed4405cb3f2862070a103",
+"Map/Art/fx/fire_burst_6.png"
+],
+"Map/Art/fx/fire_burst_7.png": [
+"69a783d3d3fbd503e27888fd08a22616",
+"Map/Art/fx/fire_burst_7.png"
+],
+"Map/Art/fx/heal_light_0.png": [
+"221af4894a5149e56aacc87024644cbf",
+"Map/Art/fx/heal_light_0.png"
+],
+"Map/Art/fx/heal_light_1.png": [
+"52319afc7305edb40987b86abcbb4c6c",
+"Map/Art/fx/heal_light_1.png"
+],
+"Map/Art/fx/heal_light_2.png": [
+"747e59c32997167ea7eb7c5d78f2397f",
+"Map/Art/fx/heal_light_2.png"
+],
+"Map/Art/fx/heal_light_3.png": [
+"46684650fa3f9c33bd5573670c3ed280",
+"Map/Art/fx/heal_light_3.png"
+],
+"Map/Art/fx/heal_light_4.png": [
+"5d5941edc03c0458cce6e27e52c9fa4d",
+"Map/Art/fx/heal_light_4.png"
+],
+"Map/Art/fx/heal_light_5.png": [
+"3a934790dc64678421cd5c7a65a2eaf5",
+"Map/Art/fx/heal_light_5.png"
+],
+"Map/Art/fx/heal_light_6.png": [
+"25c5e60c8d2ff7cf5927c1ae10071915",
+"Map/Art/fx/heal_light_6.png"
+],
+"Map/Art/fx/heal_light_7.png": [
+"46f94dca93ce8131589fd4f8fd5ceb9b",
+"Map/Art/fx/heal_light_7.png"
+],
+"Map/Art/fx/hex_storm_0.png": [
+"3017fe16d358775804926d136604ef51",
+"Map/Art/fx/hex_storm_0.png"
+],
+"Map/Art/fx/hex_storm_1.png": [
+"7558b68a86079a073f1b311b6dde47f4",
+"Map/Art/fx/hex_storm_1.png"
+],
+"Map/Art/fx/hex_storm_2.png": [
+"907a66f88c4e3cfd9e352fe3ba313d40",
+"Map/Art/fx/hex_storm_2.png"
+],
+"Map/Art/fx/hex_storm_3.png": [
+"c052f4ba6e0edc8f5a934f49afec39d4",
+"Map/Art/fx/hex_storm_3.png"
+],
+"Map/Art/fx/hex_storm_4.png": [
+"d9faa6d1aa53be5d52ab72aa01f92f8b",
+"Map/Art/fx/hex_storm_4.png"
+],
+"Map/Art/fx/hex_storm_5.png": [
+"8e784a27ee98d558c2424b9b83dab687",
+"Map/Art/fx/hex_storm_5.png"
+],
+"Map/Art/fx/hex_storm_6.png": [
+"2d96ac7b03625b1a129bdccc1302787d",
+"Map/Art/fx/hex_storm_6.png"
+],
+"Map/Art/fx/hex_storm_7.png": [
+"3649dbccda67681cc98a324f11d770c8",
+"Map/Art/fx/hex_storm_7.png"
+],
+"Map/Art/fx/prop_drum.png": [
+"98a055a85f2172ed67a4b3ebbdbc8f13",
+"Map/Art/fx/prop_drum.png"
+],
+"Map/Art/fx/prop_gourd.png": [
+"512e447252881e9ce84bb088122e3929",
+"Map/Art/fx/prop_gourd.png"
+],
+"Map/Art/fx/prop_herb.png": [
+"42794ac91d797c8d4e82ac1f05db1dc3",
+"Map/Art/fx/prop_herb.png"
+],
+"Map/Art/fx/prop_rock_big.png": [
+"c587ec72321b93bb10cb616c68146cb1",
+"Map/Art/fx/prop_rock_big.png"
+],
+"Map/Art/fx/prop_rock_small.png": [
+"b2c58c061712a4b87f72f7e279597cd8",
+"Map/Art/fx/prop_rock_small.png"
+],
+"Map/Art/fx/prop_talisman.png": [
+"e8ef76e8d0bcb93bcac237f6a05cd25b",
+"Map/Art/fx/prop_talisman.png"
+],
+"Map/Art/fx/rally_wave_0.png": [
+"bd8c9dca5330be371b76493251f07fd9",
+"Map/Art/fx/rally_wave_0.png"
+],
+"Map/Art/fx/rally_wave_1.png": [
+"bf6c4ee8cec46c9143da9c0259a504fd",
+"Map/Art/fx/rally_wave_1.png"
+],
+"Map/Art/fx/rally_wave_2.png": [
+"8acb89eb89370f4dd63f6781ba1e33d6",
+"Map/Art/fx/rally_wave_2.png"
+],
+"Map/Art/fx/rally_wave_3.png": [
+"e41f85123a3f401a06ccf9d07605e866",
+"Map/Art/fx/rally_wave_3.png"
+],
+"Map/Art/fx/rally_wave_4.png": [
+"43486181c9f812de36c5db44a9fb8b97",
+"Map/Art/fx/rally_wave_4.png"
+],
+"Map/Art/fx/rally_wave_5.png": [
+"44e6af0e4ef98e9346ad2e2e29c79919",
+"Map/Art/fx/rally_wave_5.png"
+],
+"Map/Art/fx/rally_wave_6.png": [
+"26ad328d5dee647307cb64f65536be5d",
+"Map/Art/fx/rally_wave_6.png"
+],
+"Map/Art/fx/rally_wave_7.png": [
+"71941db9d2b0da737b30d64b553c7ba2",
+"Map/Art/fx/rally_wave_7.png"
+],
+"Map/Art/fx/rock_dust_0.png": [
+"901f191abd8c2e5bd252a05548fec7ad",
+"Map/Art/fx/rock_dust_0.png"
+],
+"Map/Art/fx/rock_dust_1.png": [
+"023b1e6f8c64a96bfec16feacf7f1bde",
+"Map/Art/fx/rock_dust_1.png"
+],
+"Map/Art/fx/rock_dust_2.png": [
+"5f8712f6885e1b5f9fcfa3b41a73c798",
+"Map/Art/fx/rock_dust_2.png"
+],
+"Map/Art/fx/rock_dust_3.png": [
+"429ee64b781246a41140bc9e6bb01a14",
+"Map/Art/fx/rock_dust_3.png"
+],
+"Map/Art/fx/rock_dust_4.png": [
+"dfda89f2e8e960f3e5568f2ea9503131",
+"Map/Art/fx/rock_dust_4.png"
+],
+"Map/Art/fx/rock_dust_5.png": [
+"d2e914a460075fa8fc2ea21ca7934b85",
+"Map/Art/fx/rock_dust_5.png"
+],
+"Map/Art/fx/rock_dust_6.png": [
+"6142c5a4d8948dea39077af36a312f10",
+"Map/Art/fx/rock_dust_6.png"
+],
+"Map/Art/fx/rock_dust_7.png": [
+"d6e6b460ca59401cb264761a4ef60817",
+"Map/Art/fx/rock_dust_7.png"
+],
+"Map/Art/guangzong.png": [
+"a20945ab3eda04631038c4468a2e617d",
+"Map/Art/guangzong.jpg"
+],
+"Map/Art/gucheng.png": [
+"c1c5b61e7f52994b9a05072c90c10010",
+"Map/Art/gucheng.jpg"
+],
+"Map/Art/hulao.png": [
+"0e6586031b49747c22be412833d5a704",
+"Map/Art/hulao.jpg"
+],
+"Map/Art/icon_bag.png": [
+"36662a9ef3dda96b77209126c0d0ac32",
+"Map/Art/icon_bag.png"
+],
+"Map/Art/icon_exp.png": [
+"4614fb9eda2c364bbf22cac812fee826",
+"Map/Art/icon_exp.png"
+],
+"Map/Art/icon_gold.png": [
+"e6fb9d5310d4a146432e839c6dcc6152",
+"Map/Art/icon_gold.png"
+],
+"Map/Art/inn.png": [
+"8d5257c03781ce88fab44b2bbe29d89f",
+"Map/Art/inn.jpg"
+],
+"Map/Art/inn_2f.png": [
+"6a73473274ac6fe2dc1a9b24f9d4143b",
+"Map/Art/inn_2f.jpg"
+],
+"Map/Art/inn_2f_fg.png": [
+"d4cf0ec731a42aa97e400c0fb7a9fb75",
+"Map/Art/inn_2f_fg.png"
+],
+"Map/Art/intro_1.png": [
+"9458042455c3d9058818cfd6ed807513",
+"Map/Art/intro_1.jpg"
+],
+"Map/Art/intro_2.png": [
+"01e15e3678466c3abd6e03d249278ec2",
+"Map/Art/intro_2.jpg"
+],
+"Map/Art/intro_3.png": [
+"646a233143327adaf5d0d7b41b4220f1",
+"Map/Art/intro_3.jpg"
+],
+"Map/Art/intro_4.png": [
+"a8d38075e2630c76e1f98ae027c62ccb",
+"Map/Art/intro_4.jpg"
+],
+"Map/Art/item_aiye.png": [
+"e10df1d78ef8db072c539f7657fec521",
+"Map/Art/item_aiye.png"
+],
+"Map/Art/item_baguadaopao.png": [
+"b9a1849bc20940f04759638c1782cfb4",
+"Map/Art/item_baguadaopao.png"
+],
+"Map/Art/item_baima.png": [
+"4a807bef00bca7946a0086802e7e3d84",
+"Map/Art/item_baima.png"
+],
+"Map/Art/item_buxue.png": [
+"a65959a2675b8062e8d30680771aecab",
+"Map/Art/item_buxue.png"
+],
+"Map/Art/item_caoyao.png": [
+"ac3a19edd1b47b2e73c83937d56b2da7",
+"Map/Art/item_caoyao.png"
+],
+"Map/Art/item_chitu.png": [
+"7d7bdd42b8698540312898e62716edcc",
+"Map/Art/item_chitu.png"
+],
+"Map/Art/item_dilu.png": [
+"aeeb67041178bdba915143388f33ff51",
+"Map/Art/item_dilu.png"
+],
+"Map/Art/item_feiniaoshan.png": [
+"452aa5da6d32396a4855bf218c58605c",
+"Map/Art/item_feiniaoshan.png"
+],
+"Map/Art/item_huangjinbu.png": [
+"d5b199e480dee455feafb99910093103",
+"Map/Art/item_huangjinbu.png"
+],
+"Map/Art/item_huanhundan.png": [
+"de2b83fe663b6aa33a1f68b0b07a2d1f",
+"Map/Art/item_huanhundan.png"
+],
+"Map/Art/item_jinchuangyao.png": [
+"2ce212e676067ab62c15ce7fd657383a",
+"Map/Art/item_jinchuangyao.png"
+],
+"Map/Art/item_junma.png": [
+"621d7c298765076280c60b2691b990ec",
+"Map/Art/item_junma.png"
+],
+"Map/Art/item_langyan.png": [
+"178da2e71a176f5ceead6a91c64cd4cb",
+"Map/Art/item_langyan.png"
+],
+"Map/Art/item_liutao.png": [
+"c487cc897f9b379d310fd77afd163c46",
+"Map/Art/item_liutao.png"
+],
+"Map/Art/item_numa.png": [
+"2c134afe5b334af6a5b7e409d00ffe43",
+"Map/Art/item_numa.png"
+],
+"Map/Art/item_nuqiwan.png": [
+"ef2c34959791e48e145ba9f3cbafa57a",
+"Map/Art/item_nuqiwan.png"
+],
+"Map/Art/item_pijia.png": [
+"690752f985fbc9c98e4106d20f4e375d",
+"Map/Art/item_pijia.png"
+],
+"Map/Art/item_pikui.png": [
+"5dec43e8d9e8173198b193060752e443",
+"Map/Art/item_pikui.png"
+],
+"Map/Art/item_pojia.png": [
+"7cc1a9c4f44d8f83d8dbd94ba58f5b42",
+"Map/Art/item_pojia.png"
+],
+"Map/Art/item_qingjiu.png": [
+"26576a411629cac8242815379767357d",
+"Map/Art/item_qingjiu.png"
+],
+"Map/Art/item_sanlue.png": [
+"d1def2443001ec4b3211aecf511d7e5d",
+"Map/Art/item_sanlue.png"
+],
+"Map/Art/item_shoumiankai.png": [
+"4bd8dd17ca2dc06d8ba6533c8def763b",
+"Map/Art/item_shoumiankai.png"
+],
+"Map/Art/item_sunzibingfa.png": [
+"d0c6b3982f511599895d65b254590c8a",
+"Map/Art/item_sunzibingfa.png"
+],
+"Map/Art/item_suozijia.png": [
+"70390313d17d82cc2e9736780c8fc765",
+"Map/Art/item_suozijia.png"
+],
+"Map/Art/item_taipingyaoshu.png": [
+"c4a56bacb05dc44a1c78abd1a52b12da",
+"Map/Art/item_taipingyaoshu.png"
+],
+"Map/Art/item_tiejia.png": [
+"0856eec999fb3f3a60a6e438cda7f1f7",
+"Map/Art/item_tiejia.png"
+],
+"Map/Art/item_wuzi.png": [
+"5d0bd8ade24af802e3081d5fa12d942f",
+"Map/Art/item_wuzi.png"
+],
+"Map/Art/item_yanmudan.png": [
+"b06d90a7f9dc714e5f07affca8966de2",
+"Map/Art/item_yanmudan.png"
+],
+"Map/Art/item_yulinjia.png": [
+"4222a7e954d6337c4310cd47d394bff4",
+"Map/Art/item_yulinjia.png"
+],
+"Map/Art/item_yupei.png": [
+"cb977d49f159ddfd6c86e0f422f18a1a",
+"Map/Art/item_yupei.png"
+],
+"Map/Art/item_zhixuesan.png": [
+"089e0bd59b08e000a3ff8c3020c4e353",
+"Map/Art/item_zhixuesan.png"
+],
+"Map/Art/item_zhuojiu.png": [
+"e655824c5827e824d4b25d36ee485ac1",
+"Map/Art/item_zhuojiu.png"
+],
+"Map/Art/lianjun_camp.png": [
+"94ee945f7c0c46974f3f582bf63457a0",
+"Map/Art/lianjun_camp.jpg"
+],
+"Map/Art/lianjun_out.png": [
+"7a3ad1fa5423ca50c3911038fd66c55c",
+"Map/Art/lianjun_out.jpg"
+],
+"Map/Art/life/awning.png": [
+"0c33b47095a6b1cffd664d9a9e911977",
+"Map/Art/life/awning.png"
+],
+"Map/Art/life/bamboo_0.png": [
+"31076ffeca243056b458b122551c26e9",
+"Map/Art/life/bamboo_0.png"
+],
+"Map/Art/life/bamboo_1.png": [
+"ed6d149f60098667292450d6a114d10e",
+"Map/Art/life/bamboo_1.png"
+],
+"Map/Art/life/banner_blue.png": [
+"0bc3692b8b267406b981b218af2e130e",
+"Map/Art/life/banner_blue.png"
+],
+"Map/Art/life/bridge.png": [
+"30020bc14f798b04b1e7991cf889a438",
+"Map/Art/life/bridge.png"
+],
+"Map/Art/life/bush_0.png": [
+"e23ffed5421a3f5489238f3946910b3b",
+"Map/Art/life/bush_0.png"
+],
+"Map/Art/life/bush_1.png": [
+"c41c43fe14ba76870e98beb2fe1a2e1d",
+"Map/Art/life/bush_1.png"
+],
+"Map/Art/life/bush_2.png": [
+"518bb1e77be618619111d00108833092",
+"Map/Art/life/bush_2.png"
+],
+"Map/Art/life/butterfly2_idle.png": [
+"5790bf41b21dda4710ea06355cee8c1e",
+"Map/Art/life/butterfly2_idle.png"
+],
+"Map/Art/life/butterfly_idle.png": [
+"71b4d57e0e8e4e39b8b0c6450aa41efa",
+"Map/Art/life/butterfly_idle.png"
+],
+"Map/Art/life/cattail_0.png": [
+"e3e216a1f1f5567228a92c894e1f9293",
+"Map/Art/life/cattail_0.png"
+],
+"Map/Art/life/chicken_idle.png": [
+"d225478ad055d83ce1faa4bb60672310",
+"Map/Art/life/chicken_idle.png"
+],
+"Map/Art/life/chicken_move.png": [
+"1cb44a33e4c9816a225b3a6073cb00b6",
+"Map/Art/life/chicken_move.png"
+],
+"Map/Art/life/city_gate.png": [
+"82fa0b681c736d21373399971a00a55a",
+"Map/Art/life/city_gate.png"
+],
+"Map/Art/life/cottage_0.png": [
+"b5c4cbfd4fe2c03fcbe1e70aa9210b69",
+"Map/Art/life/cottage_0.png"
+],
+"Map/Art/life/cottage_1.png": [
+"d04bcc9b8e00524a0305c4c9286decae",
+"Map/Art/life/cottage_1.png"
+],
+"Map/Art/life/crates.png": [
+"746ec3a32adfec978768c4d635680b62",
+"Map/Art/life/crates.png"
+],
+"Map/Art/life/curtain_red.png": [
+"d7621315a4e4a74cf3fa23aeaf657441",
+"Map/Art/life/curtain_red.png"
+],
+"Map/Art/life/dragonfly_idle.png": [
+"82510f5ac87ed302622af876edb4d0e5",
+"Map/Art/life/dragonfly_idle.png"
+],
+"Map/Art/life/duck_dive.png": [
+"93fe747fdc870609aa8bd54d80e58ed1",
+"Map/Art/life/duck_dive.png"
+],
+"Map/Art/life/duck_idle.png": [
+"6c1cdef811134962ff509a15a662c36a",
+"Map/Art/life/duck_idle.png"
+],
+"Map/Art/life/fence.png": [
+"58031a6642be9f489583c64c30d486e3",
+"Map/Art/life/fence.png"
+],
+"Map/Art/life/fire.png": [
+"e463df21ba12eddc91c802da8b5600b1",
+"Map/Art/life/fire.png"
+],
+"Map/Art/life/firepit.png": [
+"26f4f7d3688650b9aabd4c61a287dca8",
+"Map/Art/life/firepit.png"
+],
+"Map/Art/life/fish_jump.png": [
+"7e05225babdb161618bfb29afea9956a",
+"Map/Art/life/fish_jump.png"
+],
+"Map/Art/life/fish_move.png": [
+"2e1c3e662d10516d7758b176e7e4772b",
+"Map/Art/life/fish_move.png"
+],
+"Map/Art/life/flag_big.png": [
+"bb4ac7f0e56973004be388f72f0f0e7f",
+"Map/Art/life/flag_big.png"
+],
+"Map/Art/life/flag_big_cao.png": [
+"0b6f8fb160468e1c54cb7dc6189ca7ba",
+"Map/Art/life/flag_big_cao.png"
+],
+"Map/Art/life/flag_big_hn.png": [
+"a9b6768c1e24ce5af71cff5cc31f70bb",
+"Map/Art/life/flag_big_hn.png"
+],
+"Map/Art/life/flag_big_xl.png": [
+"6e801aa9781a77ae19b14aadeee6d9cd",
+"Map/Art/life/flag_big_xl.png"
+],
+"Map/Art/life/flag_small.png": [
+"f8c0fff940d9175721e87e5856fa347f",
+"Map/Art/life/flag_small.png"
+],
+"Map/Art/life/gate.png": [
+"123924055245f45f9dbd8e94b5e4c1d3",
+"Map/Art/life/gate.png"
+],
+"Map/Art/life/grass_0.png": [
+"3dbcf9ec4b30d33f8335495983d77b45",
+"Map/Art/life/grass_0.png"
+],
+"Map/Art/life/haystack.png": [
+"4757fb0d6c3b2cb1ebae5112c5b258b7",
+"Map/Art/life/haystack.png"
+],
+"Map/Art/life/house_fu.png": [
+"10987512e2577550eb3323c48dd2187f",
+"Map/Art/life/house_fu.png"
+],
+"Map/Art/life/house_hut.png": [
+"b5c5bff7c42af964e560b595a8da0c96",
+"Map/Art/life/house_hut.png"
+],
+"Map/Art/life/house_inn.png": [
+"df07a2406fd5a7c4dffe956631b08812",
+"Map/Art/life/house_inn.png"
+],
+"Map/Art/life/house_liubei.png": [
+"7a6a169876db1c36bd6b3109a9d8a726",
+"Map/Art/life/house_liubei.png"
+],
+"Map/Art/life/house_shop.png": [
+"eaee4c8ed862d1a04428229bf6b4007e",
+"Map/Art/life/house_shop.png"
+],
+"Map/Art/life/house_tavern.png": [
+"bf06b26ee6e3a78170d1ef76bca6a045",
+"Map/Art/life/house_tavern.png"
+],
+"Map/Art/life/lantern.png": [
+"79aeb839071f92acb80ae25797a79d82",
+"Map/Art/life/lantern.png"
+],
+"Map/Art/life/lotus_0.png": [
+"0ecb00b543fe048ef20ecf74214c6bf2",
+"Map/Art/life/lotus_0.png"
+],
+"Map/Art/life/palisade.png": [
+"dda6cf72e449d15e8738817e28440d54",
+"Map/Art/life/palisade.png"
+],
+"Map/Art/life/pass_gate.png": [
+"ae55a603ba5a60fad03282afb9e49ad5",
+"Map/Art/life/pass_gate.png"
+],
+"Map/Art/life/rabbit_idle.png": [
+"fe99380aefe6b06a5e5f48fcc9034385",
+"Map/Art/life/rabbit_idle.png"
+],
+"Map/Art/life/rabbit_move.png": [
+"9fd5eeff2288c7577aec0dca41f2fc80",
+"Map/Art/life/rabbit_move.png"
+],
+"Map/Art/life/reed_0.png": [
+"f3af2bd8c77bd1c8bc58a0f292d1ced6",
+"Map/Art/life/reed_0.png"
+],
+"Map/Art/life/reed_1.png": [
+"f9ca5f32dc9b9a9c9d9370a319e5e612",
+"Map/Art/life/reed_1.png"
+],
+"Map/Art/life/signpost.png": [
+"b36234926c27de73441603d7152812c6",
+"Map/Art/life/signpost.png"
+],
+"Map/Art/life/sparrow_idle.png": [
+"262ccc8f9a2cbbe20957a14ed9aa788b",
+"Map/Art/life/sparrow_idle.png"
+],
+"Map/Art/life/sparrow_move.png": [
+"1f7c387ea73f60378c0594ebb7b2456c",
+"Map/Art/life/sparrow_move.png"
+],
+"Map/Art/life/stone_table.png": [
+"4d3892383ac0b7ff8dc79c7d94bc6026",
+"Map/Art/life/stone_table.png"
+],
+"Map/Art/life/tent_big.png": [
+"b17e6cd724e2faee6b023c3c83d0a157",
+"Map/Art/life/tent_big.png"
+],
+"Map/Art/life/tent_big_cao.png": [
+"2aff383873d8e57aeb3b298e537c4936",
+"Map/Art/life/tent_big_cao.png"
+],
+"Map/Art/life/tent_big_hn.png": [
+"4046d0e2e184bc28abdbded2a23abfca",
+"Map/Art/life/tent_big_hn.png"
+],
+"Map/Art/life/tent_big_xl.png": [
+"7d835858dad84c42f3f840a95832fada",
+"Map/Art/life/tent_big_xl.png"
+],
+"Map/Art/life/tent_command.png": [
+"f55ab5f4813b332a5d44314985308076",
+"Map/Art/life/tent_command.png"
+],
+"Map/Art/life/tent_small.png": [
+"e584caca381d1ea6dbf2d853a7445bb1",
+"Map/Art/life/tent_small.png"
+],
+"Map/Art/life/tree_autumn_0.png": [
+"7353f32b6aa6bee9762aa93c9225b6e7",
+"Map/Art/life/tree_autumn_0.png"
+],
+"Map/Art/life/tree_autumn_1.png": [
+"df3f53977f9cc7a87a06af13c9eabb6f",
+"Map/Art/life/tree_autumn_1.png"
+],
+"Map/Art/life/tree_autumn_2.png": [
+"7a7028a4664c32cef1d467ce6aadbf9a",
+"Map/Art/life/tree_autumn_2.png"
+],
+"Map/Art/life/tree_green_0.png": [
+"92f1333a996d2a9ced2184f382878da6",
+"Map/Art/life/tree_green_0.png"
+],
+"Map/Art/life/tree_green_1.png": [
+"665c3d2ed8fd3c21b7f50cd0c0418799",
+"Map/Art/life/tree_green_1.png"
+],
+"Map/Art/life/tree_green_2.png": [
+"cd75cc67d1511da6d8e988f1f64e1571",
+"Map/Art/life/tree_green_2.png"
+],
+"Map/Art/life/tree_green_3.png": [
+"1513c52e4d22367bffd473d82a8d69b1",
+"Map/Art/life/tree_green_3.png"
+],
+"Map/Art/life/tree_peach_0.png": [
+"b2c4e1e04f133c2af261b2938d82fc06",
+"Map/Art/life/tree_peach_0.png"
+],
+"Map/Art/life/tree_peach_1.png": [
+"ca1ae9704844423f05827ec25a7505c8",
+"Map/Art/life/tree_peach_1.png"
+],
+"Map/Art/life/tree_peach_2.png": [
+"1f37a8f2a3852c7e1ef9c9687a86c81f",
+"Map/Art/life/tree_peach_2.png"
+],
+"Map/Art/life/wall_h.png": [
+"c0ed3ec994dc5ca008970aaaa06f4405",
+"Map/Art/life/wall_h.png"
+],
+"Map/Art/life/wall_tower.png": [
+"227e4b2903f437db4e12b429299a35c4",
+"Map/Art/life/wall_tower.png"
+],
+"Map/Art/life/wall_v.png": [
+"899d5f49319ffa18dd1a5c26e1301fb8",
+"Map/Art/life/wall_v.png"
+],
+"Map/Art/life/watchtower.png": [
+"e325de78ef04bd998669c6ea50775268",
+"Map/Art/life/watchtower.png"
+],
+"Map/Art/life/weapon_rack.png": [
+"7a4e8049a42a8a5305ab8662c5608e56",
+"Map/Art/life/weapon_rack.png"
+],
+"Map/Art/life/well.png": [
+"e62e80142a0db6b7c7aca5fd0eade60c",
+"Map/Art/life/well.png"
+],
+"Map/Art/liubei_home.png": [
+"e7b5f569552d3b2045be584c6057a4c9",
+"Map/Art/liubei_home.jpg"
+],
+"Map/Art/load_bg.png": [
+"071d7e7a832bddb796fa9b5447b307f6",
+"Map/Art/load_bg.jpg"
+],
+"Map/Art/load_card.png": [
+"add5145abdbbd6c29d8deb474eef6b54",
+"Map/Art/load_card.png"
+],
+"Map/Art/loading_bg.jpg": [
+"b7469de0a8d5b8305f8a7e7e864b92c7",
+"Map/Art/loading_bg.jpg"
+],
+"Map/Art/longzhong.png": [
+"52342e1e9995a9a914ae50e9a4307740",
+"Map/Art/longzhong.jpg"
+],
+"Map/Art/notice_board.png": [
+"107ac9fe10de89e7abb06b196e6ef701",
+"Map/Art/notice_board.png"
+],
+"Map/Art/qingzhou_field.png": [
+"b64498de286018132e06f97c8eb19a57",
+"Map/Art/qingzhou_field.jpg"
+],
+"Map/Art/qingzhou_ground.png": [
+"7614fcd2da858b75ad9441bb6996ec91",
+"Map/Art/qingzhou_ground.jpg"
+],
+"Map/Art/runan_field.png": [
+"09a03edd1b19a5f410ff2f6d79ce080f",
+"Map/Art/runan_field.jpg"
+],
+"Map/Art/seal_weiwan.png": [
+"d8a543decb41f7e3c8c9fd83282ad293",
+"Map/Art/seal_weiwan.png"
+],
+"Map/Art/sishui.png": [
+"af981c66951d2d5f85695add81812ad5",
+"Map/Art/sishui.jpg"
+],
+"Map/Art/tactic_anmin.png": [
+"d0b9a22356f9b081694055c20f808ca9",
+"Map/Art/tactic_anmin.png"
+],
+"Map/Art/tactic_cike.png": [
+"4f3b736e8fe7bd0e78d5d3f22ec20e3d",
+"Map/Art/tactic_cike.png"
+],
+"Map/Art/tactic_fengce.png": [
+"a4c67e4917cb23b26624a0326ddff321",
+"Map/Art/tactic_fengce.png"
+],
+"Map/Art/tactic_fenzhan.png": [
+"883b8ab82aa502eea49d97c85fef530d",
+"Map/Art/tactic_fenzhan.png"
+],
+"Map/Art/tactic_fubing.png": [
+"30049f8639dd2b7034f7bb600d1e2672",
+"Map/Art/tactic_fubing.png"
+],
+"Map/Art/tactic_guwu.png": [
+"eb84d2a133fbdb4dc8bfacda91345ca8",
+"Map/Art/tactic_guwu.png"
+],
+"Map/Art/tactic_huitian.png": [
+"6ed5deb74e57eff812f647f906275cdd",
+"Map/Art/tactic_huitian.png"
+],
+"Map/Art/tactic_hunluan.png": [
+"5c1a29364e0c9dada35c4a4b9072fe8c",
+"Map/Art/tactic_hunluan.png"
+],
+"Map/Art/tactic_huoji.png": [
+"d585b6ef5180c3e42dc059d6c01a9900",
+"Map/Art/tactic_huoji.png"
+],
+"Map/Art/tactic_huolong.png": [
+"fa2adb43728746dcd0b6cf7d8bc5def3",
+"Map/Art/tactic_huolong.png"
+],
+"Map/Art/tactic_jianshou.png": [
+"7ae4ac5abacf5d46c3d92d23ca022a13",
+"Map/Art/tactic_jianshou.png"
+],
+"Map/Art/tactic_jifeng.png": [
+"c666aa391b4352797678865036cfa58c",
+"Map/Art/tactic_jifeng.png"
+],
+"Map/Art/tactic_jili.png": [
+"0b2bbf8a7c541c17cb70ff72a4ebef7e",
+"Map/Art/tactic_jili.png"
+],
+"Map/Art/tactic_lianji.png": [
+"1f18836e32dc6b074f3e09f2a52bfbab",
+"Map/Art/tactic_lianji.png"
+],
+"Map/Art/tactic_liaobing.png": [
+"0fe6f0858c2e9382049fe32ab847ea12",
+"Map/Art/tactic_liaobing.png"
+],
+"Map/Art/tactic_liehuo.png": [
+"c9f6b7f2e8c27c870862186e5fdb48a7",
+"Map/Art/tactic_liehuo.png"
+],
+"Map/Art/tactic_lijian.png": [
+"cafd68a13c7b66bee93536639f8543df",
+"Map/Art/tactic_lijian.png"
+],
+"Map/Art/tactic_luolei.png": [
+"1bb099efda44474e989fbf9ca38bb2f6",
+"Map/Art/tactic_luolei.png"
+],
+"Map/Art/tactic_luoshi.png": [
+"b965255795960b1503869a36f768b072",
+"Map/Art/tactic_luoshi.png"
+],
+"Map/Art/tactic_qixi.png": [
+"44d0f2ed2cb7742ea6c6d482cc09a3ee",
+"Map/Art/tactic_qixi.png"
+],
+"Map/Art/tactic_shanbeng.png": [
+"868ec7bfc47ac410ad9921b064169691",
+"Map/Art/tactic_shanbeng.png"
+],
+"Map/Art/tactic_shenyi.png": [
+"2e840cb87a90a50d9d93c90003a04188",
+"Map/Art/tactic_shenyi.png"
+],
+"Map/Art/tactic_shuiji.png": [
+"bc965ec06ba858e96784b1f0344ea5b2",
+"Map/Art/tactic_shuiji.png"
+],
+"Map/Art/tactic_shuimu.png": [
+"ad5f785f5855b82cb98cf4d2a676f014",
+"Map/Art/tactic_shuimu.png"
+],
+"Map/Art/tactic_tianlei.png": [
+"0016845a841c40b37953eaf3af6bd9a4",
+"Map/Art/tactic_tianlei.png"
+],
+"Map/Art/tactic_yehuo.png": [
+"ba1a78e6bc618f893e1ce0fe8e4a03b8",
+"Map/Art/tactic_yehuo.png"
+],
+"Map/Art/tactic_yibing.png": [
+"e4ac6f6a914b6a660c30a44e1cf4cf33",
+"Map/Art/tactic_yibing.png"
+],
+"Map/Art/tactic_yiliao.png": [
+"37eee6a411025e4cf384c67db521c404",
+"Map/Art/tactic_yiliao.png"
+],
+"Map/Art/tactic_zhudi.png": [
+"d9a6d73b2bc96f032174a66323688bee",
+"Map/Art/tactic_zhudi.png"
+],
+"Map/Art/tavern.png": [
+"f8aaa3c537cccbc6aba7360860d1f4e5",
+"Map/Art/tavern.jpg"
+],
+"Map/Art/tavern_fg.png": [
+"65c9cd3156a0b9f8f136197e17cf42fb",
+"Map/Art/tavern_fg.png"
+],
+"Map/Art/title_bg.png": [
+"6d574f4bc448856f15fa49dbe1e075b4",
+"Map/Art/title_bg.jpg"
+],
+"Map/Art/title_logo.png": [
+"f10f379ac8b4542436c77d0069693e85",
+"Map/Art/title_logo.png"
+],
+"Map/Art/ui_card.png": [
+"b9d9a4ccf98fbc21e5076bd0a23296f0",
+"Map/Art/ui_card.png"
+],
+"Map/Art/ui_panel.png": [
+"40e2c915377ee1ffc4946b1f15f1cee8",
+"Map/Art/ui_panel.png"
+],
+"Map/Art/wechat_logo.png": [
+"71f1a10341d0478f3a1da3cdeef16d13",
+"Map/Art/wechat_logo.jpg"
+],
+"Map/Art/xinye.png": [
+"4e2e20fd67d70e6975bd87aeaaa017e5",
+"Map/Art/xinye.jpg"
+],
+"Map/Art/xinye_field.png": [
+"3e1384234f578acaf5a55bdaa528ecd1",
+"Map/Art/xinye_field.jpg"
+],
+"Map/Art/xudu.png": [
+"faace6eeb519c9f4e53b13c8ea9de533",
+"Map/Art/xudu.jpg"
+],
+"Map/Art/xudu_field.png": [
+"8f7195fad266b96ee8b28b133fb7ea64",
+"Map/Art/xudu_field.jpg"
+],
+"Map/Art/xuzhou.png": [
+"72d93f144dcfb6dd80c5d31fba1c4c0c",
+"Map/Art/xuzhou.jpg"
+],
+"Map/Art/xuzhou_field.png": [
+"cce8e99f563215450be4f8e8d69dbd86",
+"Map/Art/xuzhou_field.jpg"
+],
+"Map/Art/zhuoxian.png": [
+"59b7b276092909ffa58c5fc9f18d3f82",
+"Map/Art/zhuoxian.jpg"
+],
+"Map/Art/zhuoxian_fg.png": [
+"1343e82d86057df85363b2ff239d1841",
+"Map/Art/zhuoxian_fg.png"
+],
+"Map/Art/zhuoxian_ground.png": [
+"c735648f853584a9eab36cc8a0a51b21",
+"Map/Art/zhuoxian_ground.jpg"
+],
+"Map/_preview_zhuoxian.png": [
+"b5d545573b662a20c198470a3e2bc6f0",
+"Map/_preview_zhuoxian.png"
+],
+"Map/city_gate.png": [
+"c29885e0e7a2be1a7fb18d293b86f0ac",
+"Map/city_gate.png"
+],
+"Map/dialogue_box_frame.png": [
+"fb0dc919e91ce28e0996635450d9f4d0",
+"Map/dialogue_box_frame.png"
+],
+"Map/dialogue_box_frame_v2.png": [
+"570cd028d0016ae486bf394c35bc1669",
+"Map/dialogue_box_frame_v2.png"
+],
+"Map/ground_peach_garden.png": [
+"cc65a63e852cd99601ca910f05e28f23",
+"Map/ground_peach_garden.png"
+],
+"Map/ground_road.png": [
+"25bc142ff5194fb2e78047778eca4b15",
+"Map/ground_road.png"
+],
+"Map/ground_town_grass.png": [
+"67ddd244b7919db3a456e3d08a8ec832",
+"Map/ground_town_grass.png"
+],
+"Map/ground_wild_grass.png": [
+"6a6eff4d034b82dbc596d3ca14ab90ab",
+"Map/ground_wild_grass.png"
+],
+"Map/house_liubei.png": [
+"5687b6f6e4447c7d59615b42b6db8226",
+"Map/house_liubei.png"
+],
+"Map/inn.png": [
+"d19c58aedfaab2b5d2dbe3542587471d",
+"Map/inn.png"
+],
+"Map/inn_entrance_hall_generated.png": [
+"6e24a99235841d18ae60b53bb6ce8dbf",
+"Map/inn_entrance_hall_generated.png"
+],
+"Map/inn_lobby_interior_generated.png": [
+"ecf9b6ca3eb1761fbf46c7c2b526a53c",
+"Map/inn_lobby_interior_generated.png"
+],
+"Map/inn_second_floor_generated.png": [
+"1d147d56f2a0155146a5321a0810aa32",
+"Map/inn_second_floor_generated.png"
+],
+"Map/mountain.png": [
+"737e3535266aa11dedb4bb1bfbcbe9fe",
+"Map/mountain.png"
+],
+"Map/peach_tree.png": [
+"9311044a0da669bdb2ddd3484135c53d",
+"Map/peach_tree.png"
+],
+"Map/portrait_frame.png": [
+"7500eeb7f6cdc0a217fef5ead7d83a88",
+"Map/portrait_frame.png"
+],
+"Map/tavern.png": [
+"ffabfb7b485ea8c270872f6ef7290bdd",
+"Map/tavern.png"
+],
+"Map/town_entrance.png": [
+"e72f25f8837cfd8d0c9c8f9b943988c1",
+"Map/town_entrance.png"
+],
+"Map/tree.png": [
+"bfb74bc0e2d4fadd23d88bfa0a8e3f81",
+"Map/tree.png"
+],
+"Map/water_0.png": [
+"af5f42f6675643ca657f11c5321ec7e8",
+"Map/water_0.png"
+],
+"Map/water_1.png": [
+"0653cdd3a1b20eb70d33fbf46b514544",
+"Map/water_1.png"
+],
+"Map/water_2.png": [
+"c30debf95943b91bd3d1eacc25c39520",
+"Map/water_2.png"
+],
+"Map/yellow_turban_camp.png": [
+"1c81dd9fac9bfc7062c499cc2e6da4fe",
+"Map/yellow_turban_camp.png"
+],
+"Puppets/caiyang/back/body.png": [
+"201da6ffea0e70d6e76b4d9226be58c1",
+"Puppets/caiyang/back/body.png"
+],
+"Puppets/caiyang/back/head.png": [
+"a5bf0e0a523c9a9c041722538ab405f5",
+"Puppets/caiyang/back/head.png"
+],
+"Puppets/caiyang/front/body.png": [
+"53458251db2d8764fb0058709ea48a22",
+"Puppets/caiyang/front/body.png"
+],
+"Puppets/caiyang/front/head.png": [
+"570b662bf8087881cceb363ba95a0723",
+"Puppets/caiyang/front/head.png"
+],
+"Puppets/caiyang/side/body.png": [
+"07d54581daafb0c3ccae5aa3f48f29d2",
+"Puppets/caiyang/side/body.png"
+],
+"Puppets/caiyang/side/head.png": [
+"d07a2a91a004eeb36a30e82e58db0348",
+"Puppets/caiyang/side/head.png"
+],
+"Puppets/caocao/back/body.png": [
+"ee2ed12bd5b1dd6409033edea37d36dc",
+"Puppets/caocao/back/body.png"
+],
+"Puppets/caocao/back/head.png": [
+"d3174b3f2647f0b2c023421edcdbf4a9",
+"Puppets/caocao/back/head.png"
+],
+"Puppets/caocao/front/body.png": [
+"3fa2c3ca4b850e90741bab5cb085c6b1",
+"Puppets/caocao/front/body.png"
+],
+"Puppets/caocao/front/head.png": [
+"ce46ab9d56eb000825c64cb9630e0f84",
+"Puppets/caocao/front/head.png"
+],
+"Puppets/caocao/side/body.png": [
+"cec1b16f5d8db94fb980dff65efc874f",
+"Puppets/caocao/side/body.png"
+],
+"Puppets/caocao/side/head.png": [
+"441a94caa2ee3a8602c77af2b6a7f3fa",
+"Puppets/caocao/side/head.png"
+],
+"Puppets/caojunbubing/back/body.png": [
+"ca40569a519c8acd2127aefbfb856232",
+"Puppets/caojunbubing/back/body.png"
+],
+"Puppets/caojunbubing/back/head.png": [
+"f27814991fd995516a8b1a1ea13859da",
+"Puppets/caojunbubing/back/head.png"
+],
+"Puppets/caojunbubing/front/body.png": [
+"3c7b5e9526f2f0173cc456d0b9b0ac2e",
+"Puppets/caojunbubing/front/body.png"
+],
+"Puppets/caojunbubing/front/head.png": [
+"5ba8a2ba9faf98cd4ce04c115bc97228",
+"Puppets/caojunbubing/front/head.png"
+],
+"Puppets/caojunbubing/side/body.png": [
+"3650017d091654d480bcf1adc844f973",
+"Puppets/caojunbubing/side/body.png"
+],
+"Puppets/caojunbubing/side/head.png": [
+"9aa1d74177d6cb16ecf8119dbd91ff7b",
+"Puppets/caojunbubing/side/head.png"
+],
+"Puppets/caojungongbing/back/body.png": [
+"0769832e792dd88a8b3fad81c0e390fe",
+"Puppets/caojungongbing/back/body.png"
+],
+"Puppets/caojungongbing/back/head.png": [
+"32ec5f42c2edfaa92eeb3467204c95fc",
+"Puppets/caojungongbing/back/head.png"
+],
+"Puppets/caojungongbing/front/body.png": [
+"33b8c82a1bae18aa9d1757ab903f24ec",
+"Puppets/caojungongbing/front/body.png"
+],
+"Puppets/caojungongbing/front/head.png": [
+"0f7226b7db23a542eac8728d0cadcc9e",
+"Puppets/caojungongbing/front/head.png"
+],
+"Puppets/caojungongbing/side/body.png": [
+"7c8336a46cb1678d0c4785bfdbff7327",
+"Puppets/caojungongbing/side/body.png"
+],
+"Puppets/caojungongbing/side/head.png": [
+"6e70762dfdd19c9b11305f581166ca59",
+"Puppets/caojungongbing/side/head.png"
+],
+"Puppets/caoren/back/body.png": [
+"0294776912ae5de67fa034317d4c378a",
+"Puppets/caoren/back/body.png"
+],
+"Puppets/caoren/back/head.png": [
+"aaaa06c582ae458d2e8e0593660b9ae9",
+"Puppets/caoren/back/head.png"
+],
+"Puppets/caoren/front/body.png": [
+"e8ca1ce4ca6b790eb1bfd3c4176e83b8",
+"Puppets/caoren/front/body.png"
+],
+"Puppets/caoren/front/head.png": [
+"8b59d99a4fcb331a24f3644e3c214977",
+"Puppets/caoren/front/head.png"
+],
+"Puppets/caoren/side/body.png": [
+"0b48c42c19bb3304a65d48b3ae0eed8d",
+"Puppets/caoren/side/body.png"
+],
+"Puppets/caoren/side/head.png": [
+"b37326b3501485ce534ae00df1b16a16",
+"Puppets/caoren/side/head.png"
+],
+"Puppets/chendao/back/body.png": [
+"cfbcca63f0f75c58befe2c05131af6c4",
+"Puppets/chendao/back/body.png"
+],
+"Puppets/chendao/back/head.png": [
+"28cc595d6834e1939ae94dbd3c5713f6",
+"Puppets/chendao/back/head.png"
+],
+"Puppets/chendao/front/body.png": [
+"d9f120ae5800b848b5ad10ccf001e332",
+"Puppets/chendao/front/body.png"
+],
+"Puppets/chendao/front/head.png": [
+"e4f71bfdb4af9365e53871d46ab2e62b",
+"Puppets/chendao/front/head.png"
+],
+"Puppets/chendao/side/body.png": [
+"4fdfa74a104553a0891a7192d32ebce0",
+"Puppets/chendao/side/body.png"
+],
+"Puppets/chendao/side/head.png": [
+"9c9fdfebfd0d52ae8fed391649adf1ee",
+"Puppets/chendao/side/head.png"
+],
+"Puppets/chengyuanzhi/back/body.png": [
+"07b5dbebb1e205ff36bf6c9f5dc9bdae",
+"Puppets/chengyuanzhi/back/body.png"
+],
+"Puppets/chengyuanzhi/back/head.png": [
+"f052fdda92e005d1be4104e914f60e12",
+"Puppets/chengyuanzhi/back/head.png"
+],
+"Puppets/chengyuanzhi/front/body.png": [
+"b9b69aecda9e2cf08dfa090c324bdc72",
+"Puppets/chengyuanzhi/front/body.png"
+],
+"Puppets/chengyuanzhi/front/head.png": [
+"9ab77a5c133ea4aaf5b3cdd0eeb9db0c",
+"Puppets/chengyuanzhi/front/head.png"
+],
+"Puppets/chengyuanzhi/side/body.png": [
+"0b442aed3705a7d4f61bd496ca286ec6",
+"Puppets/chengyuanzhi/side/body.png"
+],
+"Puppets/chengyuanzhi/side/head.png": [
+"6ea2431f2a3c0d1e48f57f226d691241",
+"Puppets/chengyuanzhi/side/head.png"
+],
+"Puppets/chezhou/back/body.png": [
+"9c7ac21aff10f24e82e7b192f5883de5",
+"Puppets/chezhou/back/body.png"
+],
+"Puppets/chezhou/back/head.png": [
+"e6d4dd0814abbc7871dfbc91eb1c9541",
+"Puppets/chezhou/back/head.png"
+],
+"Puppets/chezhou/front/body.png": [
+"54dbba8d71d0024a518220f3a884dd2d",
+"Puppets/chezhou/front/body.png"
+],
+"Puppets/chezhou/front/head.png": [
+"f0765674cace98ee6590a723ba71748a",
+"Puppets/chezhou/front/head.png"
+],
+"Puppets/chezhou/side/body.png": [
+"7806db1bd4ec7fc1dc73dfba8449e487",
+"Puppets/chezhou/side/body.png"
+],
+"Puppets/chezhou/side/head.png": [
+"692309b5b462363647f79ec99ce4219c",
+"Puppets/chezhou/side/head.png"
+],
+"Puppets/cunmin_nan/back/body.png": [
+"8e1b97114fed818da3136d3ca3012d01",
+"Puppets/cunmin_nan/back/body.png"
+],
+"Puppets/cunmin_nan/back/head.png": [
+"c839acfd03b47b7ce49efae480e7425e",
+"Puppets/cunmin_nan/back/head.png"
+],
+"Puppets/cunmin_nan/front/body.png": [
+"a8a28c8e57478dc0cfac0122c7c37884",
+"Puppets/cunmin_nan/front/body.png"
+],
+"Puppets/cunmin_nan/front/head.png": [
+"ac3641cd2757ac95de5dfeb6feaf0db5",
+"Puppets/cunmin_nan/front/head.png"
+],
+"Puppets/cunmin_nan/side/body.png": [
+"dd2274e6a263d24e2316e4f3d1596a59",
+"Puppets/cunmin_nan/side/body.png"
+],
+"Puppets/cunmin_nan/side/head.png": [
+"9b9bd72166e5aba3a3b486534f4b79c6",
+"Puppets/cunmin_nan/side/head.png"
+],
+"Puppets/cunmin_nv/back/body.png": [
+"739014d8c0cecf861f181dc593743a55",
+"Puppets/cunmin_nv/back/body.png"
+],
+"Puppets/cunmin_nv/back/head.png": [
+"9408accbaabfda0a70113218c8b7eda7",
+"Puppets/cunmin_nv/back/head.png"
+],
+"Puppets/cunmin_nv/front/body.png": [
+"2c0d1804483e138a2f435eec7c7afe83",
+"Puppets/cunmin_nv/front/body.png"
+],
+"Puppets/cunmin_nv/front/head.png": [
+"302d8cc9dba9aedc68416743b1ef1ae5",
+"Puppets/cunmin_nv/front/head.png"
+],
+"Puppets/cunmin_nv/side/body.png": [
+"be2ee5d4704461c7dc60ac26a6a384b8",
+"Puppets/cunmin_nv/side/body.png"
+],
+"Puppets/cunmin_nv/side/head.png": [
+"8f0fe1fdb8fa7516253461e060d92907",
+"Puppets/cunmin_nv/side/head.png"
+],
+"Puppets/dengmao/back/body.png": [
+"393058ec0d96954c6b2fc55be7a60010",
+"Puppets/dengmao/back/body.png"
+],
+"Puppets/dengmao/back/head.png": [
+"214e36275c3accd393136730871681e3",
+"Puppets/dengmao/back/head.png"
+],
+"Puppets/dengmao/front/body.png": [
+"51289e536dd07e4056304fc2b32b5b2a",
+"Puppets/dengmao/front/body.png"
+],
+"Puppets/dengmao/front/head.png": [
+"f2e2dc280434712d8bf5c9cb6eac5ddb",
+"Puppets/dengmao/front/head.png"
+],
+"Puppets/dengmao/side/body.png": [
+"012af73cc6980e54bae72da344dfd155",
+"Puppets/dengmao/side/body.png"
+],
+"Puppets/dengmao/side/head.png": [
+"21f7faa86e1e0ac4b81c08d605dad763",
+"Puppets/dengmao/side/head.png"
+],
+"Puppets/dianwei/back/body.png": [
+"19e3e7233305a50fe7badc9ecd651a1f",
+"Puppets/dianwei/back/body.png"
+],
+"Puppets/dianwei/back/head.png": [
+"2679501eadb2a5621df2b778db943233",
+"Puppets/dianwei/back/head.png"
+],
+"Puppets/dianwei/front/body.png": [
+"efb87aa75c736b414d36cc7bccb65f2b",
+"Puppets/dianwei/front/body.png"
+],
+"Puppets/dianwei/front/head.png": [
+"7266550d21edcbfcbc7a3dea7970f425",
+"Puppets/dianwei/front/head.png"
+],
+"Puppets/dianwei/side/body.png": [
+"4affac377e2ada6066e73d200e976b7c",
+"Puppets/dianwei/side/body.png"
+],
+"Puppets/dianwei/side/head.png": [
+"1dce7bac5a9904b9ae0903ce918e7ec2",
+"Puppets/dianwei/side/head.png"
+],
+"Puppets/dongcheng/back/body.png": [
+"a3cbbca1ab11eb89436a2f7a3a91cf32",
+"Puppets/dongcheng/back/body.png"
+],
+"Puppets/dongcheng/back/head.png": [
+"25aae0b9532ff5aaf9c227e616770098",
+"Puppets/dongcheng/back/head.png"
+],
+"Puppets/dongcheng/front/body.png": [
+"bbb441e00bc156ed4790a4347bf1c5b3",
+"Puppets/dongcheng/front/body.png"
+],
+"Puppets/dongcheng/front/head.png": [
+"ce1c8e06ff759f5c60957cef109b4446",
+"Puppets/dongcheng/front/head.png"
+],
+"Puppets/dongcheng/side/body.png": [
+"9494c8b9215eb04b57fcc53ace539011",
+"Puppets/dongcheng/side/body.png"
+],
+"Puppets/dongcheng/side/head.png": [
+"1a8ba93d6d0b9ba05545c479e076463a",
+"Puppets/dongcheng/side/head.png"
+],
+"Puppets/feixiongjun/back/body.png": [
+"2d9283f666d7a932d4e104bede380721",
+"Puppets/feixiongjun/back/body.png"
+],
+"Puppets/feixiongjun/back/head.png": [
+"235889d92d6aea59f37e239dc0827d33",
+"Puppets/feixiongjun/back/head.png"
+],
+"Puppets/feixiongjun/front/body.png": [
+"d0f6b247f9f1ea764392a6c570bbe6a7",
+"Puppets/feixiongjun/front/body.png"
+],
+"Puppets/feixiongjun/front/head.png": [
+"fb34bcc95e282de9bbaa69a410647d28",
+"Puppets/feixiongjun/front/head.png"
+],
+"Puppets/feixiongjun/side/body.png": [
+"076d741cf7eb4f4be1f4418e9bcade46",
+"Puppets/feixiongjun/side/body.png"
+],
+"Puppets/feixiongjun/side/head.png": [
+"208e6e4b2131fbf37daa4abd6e7e117b",
+"Puppets/feixiongjun/side/head.png"
+],
+"Puppets/gongdu/back/body.png": [
+"4191989b8f9cc9ddfae1723b3aa2464f",
+"Puppets/gongdu/back/body.png"
+],
+"Puppets/gongdu/back/head.png": [
+"455a2795e07bbadac23757fab30a3a07",
+"Puppets/gongdu/back/head.png"
+],
+"Puppets/gongdu/front/body.png": [
+"97267aa12c5e6c7e703fc3606d1489bd",
+"Puppets/gongdu/front/body.png"
+],
+"Puppets/gongdu/front/head.png": [
+"e75e071c4ce55bd4756f53cc12b0cd22",
+"Puppets/gongdu/front/head.png"
+],
+"Puppets/gongdu/side/body.png": [
+"e155cc2855d6894b9f6e27960b9b2cc1",
+"Puppets/gongdu/side/body.png"
+],
+"Puppets/gongdu/side/head.png": [
+"658b1649de4f3574b790865475403f1b",
+"Puppets/gongdu/side/head.png"
+],
+"Puppets/gongjing/back/body.png": [
+"f2045cecfb143a45304e173df0f603c2",
+"Puppets/gongjing/back/body.png"
+],
+"Puppets/gongjing/back/head.png": [
+"5298130892cfc089fe87991a06b1ead0",
+"Puppets/gongjing/back/head.png"
+],
+"Puppets/gongjing/front/body.png": [
+"51719e920d86a5e1fe70bd63d38925b3",
+"Puppets/gongjing/front/body.png"
+],
+"Puppets/gongjing/front/head.png": [
+"0afbac316ca42502757ebaa80bbbfe77",
+"Puppets/gongjing/front/head.png"
+],
+"Puppets/gongjing/side/body.png": [
+"7f63de61891d19a47faf1a2a7b3c1cf3",
+"Puppets/gongjing/side/body.png"
+],
+"Puppets/gongjing/side/head.png": [
+"bfc037f707626d8c927e20a0b5e6dcdc",
+"Puppets/gongjing/side/head.png"
+],
+"Puppets/gongsunzan/back/body.png": [
+"c6f43cc9b60eeb9a5c47540aed61ca67",
+"Puppets/gongsunzan/back/body.png"
+],
+"Puppets/gongsunzan/back/head.png": [
+"206c85fd84c19505be43ccec0cf7729d",
+"Puppets/gongsunzan/back/head.png"
+],
+"Puppets/gongsunzan/front/body.png": [
+"54ea66e9c92c15c8dd5bac94c3da24a5",
+"Puppets/gongsunzan/front/body.png"
+],
+"Puppets/gongsunzan/front/head.png": [
+"411b9199980c29395c2fd1e4e9537110",
+"Puppets/gongsunzan/front/head.png"
+],
+"Puppets/gongsunzan/side/body.png": [
+"0693ba302130c2be390d2235266ffe70",
+"Puppets/gongsunzan/side/body.png"
+],
+"Puppets/gongsunzan/side/head.png": [
+"f699a542620726ada885cff59cc1b324",
+"Puppets/gongsunzan/side/head.png"
+],
+"Puppets/guanhai/back/body.png": [
+"defd7f2a9aff850997cc420c832946de",
+"Puppets/guanhai/back/body.png"
+],
+"Puppets/guanhai/back/head.png": [
+"03b4d3136bd5995e95e23e9197373121",
+"Puppets/guanhai/back/head.png"
+],
+"Puppets/guanhai/front/body.png": [
+"0513eaf9ba386b54b7d4ee05bf5cf578",
+"Puppets/guanhai/front/body.png"
+],
+"Puppets/guanhai/front/head.png": [
+"557ba8f5c673f0aa9dbe7fa7cc9081bb",
+"Puppets/guanhai/front/head.png"
+],
+"Puppets/guanhai/side/body.png": [
+"f8abc5bf546b05710e2a167fc1142020",
+"Puppets/guanhai/side/body.png"
+],
+"Puppets/guanhai/side/head.png": [
+"e6f720ad4dce1570da4e749d11f03c21",
+"Puppets/guanhai/side/head.png"
+],
+"Puppets/guanping/back/body.png": [
+"1b73ab913c4d0180565c35f9a5efe520",
+"Puppets/guanping/back/body.png"
+],
+"Puppets/guanping/back/head.png": [
+"fddb3a7a5a93a3bfe148b16a785d90bd",
+"Puppets/guanping/back/head.png"
+],
+"Puppets/guanping/front/body.png": [
+"b673d187d49bfd715920c61fe13e2d0c",
+"Puppets/guanping/front/body.png"
+],
+"Puppets/guanping/front/head.png": [
+"9c7935c350d8fa74af249b7a28a3f1f1",
+"Puppets/guanping/front/head.png"
+],
+"Puppets/guanping/side/body.png": [
+"e9fa82f35f5562470bc60cf1ee1f3aaa",
+"Puppets/guanping/side/body.png"
+],
+"Puppets/guanping/side/head.png": [
+"4b0a01855d7fa792f8b1bf46a945b7d7",
+"Puppets/guanping/side/head.png"
+],
+"Puppets/guanyu/back/body.png": [
+"ed437ac59b24b46776a92a32af2c430f",
+"Puppets/guanyu/back/body.png"
+],
+"Puppets/guanyu/back/head.png": [
+"c70e615560090155d81e9c833971982f",
+"Puppets/guanyu/back/head.png"
+],
+"Puppets/guanyu/front/body.png": [
+"37e1354a3f1442ea279c8e25057cacbb",
+"Puppets/guanyu/front/body.png"
+],
+"Puppets/guanyu/front/head.png": [
+"a02a8119e086474378bdc23f9af67586",
+"Puppets/guanyu/front/head.png"
+],
+"Puppets/guanyu/side/body.png": [
+"8734efa5ca2ed795bd7287e8e22405d1",
+"Puppets/guanyu/side/body.png"
+],
+"Puppets/guanyu/side/head.png": [
+"48ef5e10453972af63a94717a0818492",
+"Puppets/guanyu/side/head.png"
+],
+"Puppets/hjls/back/body.png": [
+"245f76dd5d247ab173c2db2bcb9910c4",
+"Puppets/hjls/back/body.png"
+],
+"Puppets/hjls/back/head.png": [
+"539410b95d42be1b2d7529fc31c7fa4a",
+"Puppets/hjls/back/head.png"
+],
+"Puppets/hjls/front/body.png": [
+"1d3176b64ec6d798996851c7b707e529",
+"Puppets/hjls/front/body.png"
+],
+"Puppets/hjls/front/head.png": [
+"7bfce068814ce9dae5efcdbd276c53d0",
+"Puppets/hjls/front/head.png"
+],
+"Puppets/hjls/side/body.png": [
+"4a5918c3a2d5aa9f5f17f5dc26ada703",
+"Puppets/hjls/side/body.png"
+],
+"Puppets/hjls/side/head.png": [
+"ea1210c86a9857ab0c665df2fc630c62",
+"Puppets/hjls/side/head.png"
+],
+"Puppets/hjss/back/body.png": [
+"982f4b6caa1daab11201b8455634d824",
+"Puppets/hjss/back/body.png"
+],
+"Puppets/hjss/back/head.png": [
+"591c4d2898507124ad6bc3a0490cecf0",
+"Puppets/hjss/back/head.png"
+],
+"Puppets/hjss/front/body.png": [
+"3d50d36bfd88724b5bfcbc533d672a78",
+"Puppets/hjss/front/body.png"
+],
+"Puppets/hjss/front/head.png": [
+"046b88d85f008982cafa3381dbd5027c",
+"Puppets/hjss/front/head.png"
+],
+"Puppets/hjss/side/body.png": [
+"61910e22d1b011ff302059b631bbe289",
+"Puppets/hjss/side/body.png"
+],
+"Puppets/hjss/side/head.png": [
+"ae498be764b3f1533daae56b71a51bf7",
+"Puppets/hjss/side/head.png"
+],
+"Puppets/hjtm/back/body.png": [
+"ed3345137c370113e02074e30e0c724e",
+"Puppets/hjtm/back/body.png"
+],
+"Puppets/hjtm/back/head.png": [
+"3983198c178cd4c8752d431e6f7083c6",
+"Puppets/hjtm/back/head.png"
+],
+"Puppets/hjtm/front/body.png": [
+"275b0dccfa9db19a9ac9ccc6f7b66cf7",
+"Puppets/hjtm/front/body.png"
+],
+"Puppets/hjtm/front/head.png": [
+"4808819e2c53fa13ca4475f70433710c",
+"Puppets/hjtm/front/head.png"
+],
+"Puppets/hjtm/side/body.png": [
+"6f48cf0d810d41e890a1446ccc681035",
+"Puppets/hjtm/side/body.png"
+],
+"Puppets/hjtm/side/head.png": [
+"12954dbdc249e145102f37d2bb4b64f7",
+"Puppets/hjtm/side/head.png"
+],
+"Puppets/huainanbing/back/body.png": [
+"44e481cef56c229472e5e8cf9b9d0289",
+"Puppets/huainanbing/back/body.png"
+],
+"Puppets/huainanbing/back/head.png": [
+"2aa361f72c0a6832ed20dbec70c79c47",
+"Puppets/huainanbing/back/head.png"
+],
+"Puppets/huainanbing/front/body.png": [
+"74ed23f1b11da1a8363ac794e26a863b",
+"Puppets/huainanbing/front/body.png"
+],
+"Puppets/huainanbing/front/head.png": [
+"79ee832083d55500710632fc11cb28ca",
+"Puppets/huainanbing/front/head.png"
+],
+"Puppets/huainanbing/side/body.png": [
+"bf8d87c515247bc1c09b0ad231236a8b",
+"Puppets/huainanbing/side/body.png"
+],
+"Puppets/huainanbing/side/head.png": [
+"10fc7a2e0dca2f981f246e85284ecca6",
+"Puppets/huainanbing/side/head.png"
+],
+"Puppets/huangjin/back/body.png": [
+"edb084a8cc43fd848491e56f5e4b930a",
+"Puppets/huangjin/back/body.png"
+],
+"Puppets/huangjin/back/head.png": [
+"73d56c9c89a2df4785006a98dd51db83",
+"Puppets/huangjin/back/head.png"
+],
+"Puppets/huangjin/front/body.png": [
+"94cc54a4d8be76402dd0759853f3a46b",
+"Puppets/huangjin/front/body.png"
+],
+"Puppets/huangjin/front/head.png": [
+"29e6f97d5c96fb78ff768e26feb57086",
+"Puppets/huangjin/front/head.png"
+],
+"Puppets/huangjin/side/body.png": [
+"8c9c8049a0881811759ba3c060da0ab5",
+"Puppets/huangjin/side/body.png"
+],
+"Puppets/huangjin/side/head.png": [
+"2a6543e8e7d8ba4b1eafefb4ed87999b",
+"Puppets/huangjin/side/head.png"
+],
+"Puppets/huaxiong/back/body.png": [
+"be1940aa9ee1b47540eb9d424f27d1ad",
+"Puppets/huaxiong/back/body.png"
+],
+"Puppets/huaxiong/back/head.png": [
+"609f6d38d7d9568ed5b12659353b9035",
+"Puppets/huaxiong/back/head.png"
+],
+"Puppets/huaxiong/front/body.png": [
+"4aaae60557fa89cd33d0e934e4931290",
+"Puppets/huaxiong/front/body.png"
+],
+"Puppets/huaxiong/front/head.png": [
+"f001db0ae1d8246df02ef6fa81374175",
+"Puppets/huaxiong/front/head.png"
+],
+"Puppets/huaxiong/side/body.png": [
+"35228fec8d4e6a59b974651bf2de8ba8",
+"Puppets/huaxiong/side/body.png"
+],
+"Puppets/huaxiong/side/head.png": [
+"c8d76dbbdd2281a274065a967a50478f",
+"Puppets/huaxiong/side/head.png"
+],
+"Puppets/hubaoqi/back/body.png": [
+"19487d333bdcd971f2bf3e8e03d6df78",
+"Puppets/hubaoqi/back/body.png"
+],
+"Puppets/hubaoqi/back/head.png": [
+"a16089f89bfed8bc2bd9850d2aa0ba1b",
+"Puppets/hubaoqi/back/head.png"
+],
+"Puppets/hubaoqi/front/body.png": [
+"4253e2793cf76184d8bd3060bd2856c2",
+"Puppets/hubaoqi/front/body.png"
+],
+"Puppets/hubaoqi/front/head.png": [
+"875a7873c0354f226bee9ff28b6e6c3c",
+"Puppets/hubaoqi/front/head.png"
+],
+"Puppets/hubaoqi/side/body.png": [
+"e2ebf2ef75c53e86862b76582d076c9f",
+"Puppets/hubaoqi/side/body.png"
+],
+"Puppets/hubaoqi/side/head.png": [
+"75fbe375f8bc7aac72921f72120e5f65",
+"Puppets/hubaoqi/side/head.png"
+],
+"Puppets/huolang/back/body.png": [
+"2b88ec7785c6861583d0497cc94013dd",
+"Puppets/huolang/back/body.png"
+],
+"Puppets/huolang/back/head.png": [
+"adece9f2b1758f371c888831bf28714f",
+"Puppets/huolang/back/head.png"
+],
+"Puppets/huolang/front/body.png": [
+"e8dbeb8d649b510973488a41a0c54dfa",
+"Puppets/huolang/front/body.png"
+],
+"Puppets/huolang/front/head.png": [
+"fc481331a9911827bca32e545be61024",
+"Puppets/huolang/front/head.png"
+],
+"Puppets/huolang/side/body.png": [
+"ee0483fdf19bcfcec2feb79ab785a6de",
+"Puppets/huolang/side/body.png"
+],
+"Puppets/huolang/side/head.png": [
+"6f07789d370c263da7251a97ea939cf8",
+"Puppets/huolang/side/head.png"
+],
+"Puppets/jianyong/back/body.png": [
+"0cccaa39d16c9e521b48feecce0e2dd1",
+"Puppets/jianyong/back/body.png"
+],
+"Puppets/jianyong/back/head.png": [
+"b34d5550bc3f1eb6a3b91096a5fb1e3c",
+"Puppets/jianyong/back/head.png"
+],
+"Puppets/jianyong/front/body.png": [
+"33995a7a054df6e4bb65d4b9b6f07f99",
+"Puppets/jianyong/front/body.png"
+],
+"Puppets/jianyong/front/head.png": [
+"9c5b8d134655cb9df400f827b88fa569",
+"Puppets/jianyong/front/head.png"
+],
+"Puppets/jianyong/side/body.png": [
+"7a3b6739cba6211ddd22c94b4db2f59a",
+"Puppets/jianyong/side/body.png"
+],
+"Puppets/jianyong/side/head.png": [
+"0e288d649c7ace0d7f72bda167a111fc",
+"Puppets/jianyong/side/head.png"
+],
+"Puppets/jiling/back/body.png": [
+"315898d4f2d1a45957c09f24160cefe6",
+"Puppets/jiling/back/body.png"
+],
+"Puppets/jiling/back/head.png": [
+"81fccfc7e4d66b905c3a169c006eed79",
+"Puppets/jiling/back/head.png"
+],
+"Puppets/jiling/front/body.png": [
+"0ed68cd35cf3bce5e42029a78293356f",
+"Puppets/jiling/front/body.png"
+],
+"Puppets/jiling/front/head.png": [
+"e4677c1df2ed3082409cc3857db15d80",
+"Puppets/jiling/front/head.png"
+],
+"Puppets/jiling/side/body.png": [
+"c7dc3b414ceda18f096f1b8be9861633",
+"Puppets/jiling/side/body.png"
+],
+"Puppets/jiling/side/head.png": [
+"bb45209bdb7acffcb00088583969666d",
+"Puppets/jiling/side/head.png"
+],
+"Puppets/kongrong/back/body.png": [
+"addcad3c99423c8865cf3526bc621442",
+"Puppets/kongrong/back/body.png"
+],
+"Puppets/kongrong/back/head.png": [
+"031eb7751a7134e62a324e44b623c074",
+"Puppets/kongrong/back/head.png"
+],
+"Puppets/kongrong/front/body.png": [
+"583abc502c5dda161ee37e418635c088",
+"Puppets/kongrong/front/body.png"
+],
+"Puppets/kongrong/front/head.png": [
+"8c07cc7c33040663465fb2ee5faf1869",
+"Puppets/kongrong/front/head.png"
+],
+"Puppets/kongrong/side/body.png": [
+"ef29e68f5094527db9522e2ae71d35fa",
+"Puppets/kongrong/side/body.png"
+],
+"Puppets/kongrong/side/head.png": [
+"afa4e0d51dbf7be39f90cdc9f7da40fd",
+"Puppets/kongrong/side/head.png"
+],
+"Puppets/laoren/back/body.png": [
+"3bd9c0249f9d839cd188f4635b2bf837",
+"Puppets/laoren/back/body.png"
+],
+"Puppets/laoren/back/head.png": [
+"526268e1a4cad5e43a4ae4809874b2dc",
+"Puppets/laoren/back/head.png"
+],
+"Puppets/laoren/front/body.png": [
+"3ca7028ab7d6b34ed444197ed60d877f",
+"Puppets/laoren/front/body.png"
+],
+"Puppets/laoren/front/head.png": [
+"fe897b36e2ee3e2a6c8662bfb162d137",
+"Puppets/laoren/front/head.png"
+],
+"Puppets/laoren/side/body.png": [
+"de97e09593df08200046eaaa09e36fd2",
+"Puppets/laoren/side/body.png"
+],
+"Puppets/laoren/side/head.png": [
+"1ae9ab094a88a5872d62bbad53c9ec78",
+"Puppets/laoren/side/head.png"
+],
+"Puppets/liubei/back/body.png": [
+"7a528a43d30985ba4c490020ceed6374",
+"Puppets/liubei/back/body.png"
+],
+"Puppets/liubei/back/foot-back.png": [
+"5937cb6b74f1e51801138275ca06dd6f",
+"Puppets/liubei/back/foot-back.png"
+],
+"Puppets/liubei/back/foot-front.png": [
+"4fd43d4b91cc88736f8fe6eae7acf736",
+"Puppets/liubei/back/foot-front.png"
+],
+"Puppets/liubei/back/hand-back.png": [
+"ce2c7d93acbe04a286674afba74d854c",
+"Puppets/liubei/back/hand-back.png"
+],
+"Puppets/liubei/back/hand-front.png": [
+"afd62d75d984e909694a5176aee76ca8",
+"Puppets/liubei/back/hand-front.png"
+],
+"Puppets/liubei/back/head.png": [
+"5f52be769f781271fcb1d111b7ff0f2c",
+"Puppets/liubei/back/head.png"
+],
+"Puppets/liubei/front/body.png": [
+"d95d7f3d33007ba6195fd5dd2b3af575",
+"Puppets/liubei/front/body.png"
+],
+"Puppets/liubei/front/foot-back.png": [
+"02909657b2d708994b57f44f28f5eaaf",
+"Puppets/liubei/front/foot-back.png"
+],
+"Puppets/liubei/front/foot-front.png": [
+"835de2399f1655854ceea72bcee9e963",
+"Puppets/liubei/front/foot-front.png"
+],
+"Puppets/liubei/front/hand-back.png": [
+"5f144069cbe73d9f192fcf984ea639d1",
+"Puppets/liubei/front/hand-back.png"
+],
+"Puppets/liubei/front/hand-front.png": [
+"be32d7691942759bc7b0bdf118861a74",
+"Puppets/liubei/front/hand-front.png"
+],
+"Puppets/liubei/front/head.png": [
+"71b0df33ca9780034dad2d74e22802a8",
+"Puppets/liubei/front/head.png"
+],
+"Puppets/liubei/side/body.png": [
+"43df494dad7d84882151941e8aca4123",
+"Puppets/liubei/side/body.png"
+],
+"Puppets/liubei/side/foot-back.png": [
+"7500d51d92de658ad7717645c4099f80",
+"Puppets/liubei/side/foot-back.png"
+],
+"Puppets/liubei/side/foot-front.png": [
+"b8704945b66bb737c95c56a260376265",
+"Puppets/liubei/side/foot-front.png"
+],
+"Puppets/liubei/side/hand-back.png": [
+"2bd29e19e6710cc355c8b1bb4ba1b1a5",
+"Puppets/liubei/side/hand-back.png"
+],
+"Puppets/liubei/side/hand-front.png": [
+"2bd29e19e6710cc355c8b1bb4ba1b1a5",
+"Puppets/liubei/side/hand-front.png"
+],
+"Puppets/liubei/side/head.png": [
+"8a4fc7a8364c6c820e61d8de73741db6",
+"Puppets/liubei/side/head.png"
+],
+"Puppets/liufeng/back/body.png": [
+"655c41617b96eec32c9a224ba8e78f28",
+"Puppets/liufeng/back/body.png"
+],
+"Puppets/liufeng/back/head.png": [
+"38053b8d7518c6dccece5d8806f79ebc",
+"Puppets/liufeng/back/head.png"
+],
+"Puppets/liufeng/front/body.png": [
+"bcf3c91cfd6176c80d806fce91e3eea4",
+"Puppets/liufeng/front/body.png"
+],
+"Puppets/liufeng/front/head.png": [
+"621f985860c8bae249df5fc30e851e52",
+"Puppets/liufeng/front/head.png"
+],
+"Puppets/liufeng/side/body.png": [
+"191efa89354f7a049e3320440f0e24c5",
+"Puppets/liufeng/side/body.png"
+],
+"Puppets/liufeng/side/head.png": [
+"401e8881f0083428fa3c212dd1724ec5",
+"Puppets/liufeng/side/head.png"
+],
+"Puppets/liupi/back/body.png": [
+"3017264b37cd70fc0aff6c03a41db61b",
+"Puppets/liupi/back/body.png"
+],
+"Puppets/liupi/back/head.png": [
+"7ee7677c89df24e7ced45b3758cb73dc",
+"Puppets/liupi/back/head.png"
+],
+"Puppets/liupi/front/body.png": [
+"c2523c6f033aa05425ad4d1c633fd39d",
+"Puppets/liupi/front/body.png"
+],
+"Puppets/liupi/front/head.png": [
+"8d863a599c9041d7c659379433071a7a",
+"Puppets/liupi/front/head.png"
+],
+"Puppets/liupi/side/body.png": [
+"5fba86acc354e52f59a0273bdad964af",
+"Puppets/liupi/side/body.png"
+],
+"Puppets/liupi/side/head.png": [
+"ca5560f613aed5b30c186f3dc7c4c9d6",
+"Puppets/liupi/side/head.png"
+],
+"Puppets/lvbu/back/body.png": [
+"db83d8b254ac1d7d89f89e0c94eb6f6f",
+"Puppets/lvbu/back/body.png"
+],
+"Puppets/lvbu/back/head.png": [
+"dc26fed994686a702591747afa4d1cea",
+"Puppets/lvbu/back/head.png"
+],
+"Puppets/lvbu/front/body.png": [
+"a2303238231127db0d54087dafb408dd",
+"Puppets/lvbu/front/body.png"
+],
+"Puppets/lvbu/front/head.png": [
+"ba82044f467558ad5aa5a69f70db96f1",
+"Puppets/lvbu/front/head.png"
+],
+"Puppets/lvbu/side/body.png": [
+"2f947a20bb6dd2c37c17bf88c022af40",
+"Puppets/lvbu/side/body.png"
+],
+"Puppets/lvbu/side/head.png": [
+"f95cd92a20fdd498af26c397330d7757",
+"Puppets/lvbu/side/head.png"
+],
+"Puppets/mizhu/back/body.png": [
+"7307674d9e5e74b8abde521e74f94094",
+"Puppets/mizhu/back/body.png"
+],
+"Puppets/mizhu/back/head.png": [
+"686b8ebad2e8ee063505c9307b49f433",
+"Puppets/mizhu/back/head.png"
+],
+"Puppets/mizhu/front/body.png": [
+"54b70a827591368712867df72a88c820",
+"Puppets/mizhu/front/body.png"
+],
+"Puppets/mizhu/front/head.png": [
+"b0d4f53289a851610f5d50b6a8eaf552",
+"Puppets/mizhu/front/head.png"
+],
+"Puppets/mizhu/side/body.png": [
+"9fe468ffddc2faeb96aec28fc3c0fadc",
+"Puppets/mizhu/side/body.png"
+],
+"Puppets/mizhu/side/head.png": [
+"a6f4b3e4e0efb306d32e2bb68c2b7dd6",
+"Puppets/mizhu/side/head.png"
+],
+"Puppets/muqin/back/body.png": [
+"7c55ed5c231f351015157c5639e26b1e",
+"Puppets/muqin/back/body.png"
+],
+"Puppets/muqin/back/head.png": [
+"c6ac0f9028a4f11b165c6b63c64e8b46",
+"Puppets/muqin/back/head.png"
+],
+"Puppets/muqin/front/body.png": [
+"0051eb1a4619397144463b6e7a070daf",
+"Puppets/muqin/front/body.png"
+],
+"Puppets/muqin/front/head.png": [
+"bbaf1f35491ae26538e8ac595c5786d3",
+"Puppets/muqin/front/head.png"
+],
+"Puppets/muqin/side/body.png": [
+"1855cd350861a0d794bbd431befe37c4",
+"Puppets/muqin/side/body.png"
+],
+"Puppets/muqin/side/head.png": [
+"e2f2ef591422622c5c4014e9b9f08b0a",
+"Puppets/muqin/side/head.png"
+],
+"Puppets/nanmin/back/body.png": [
+"7160eaaa11264f2dfe34a7a6c5342d00",
+"Puppets/nanmin/back/body.png"
+],
+"Puppets/nanmin/back/head.png": [
+"e8de447797b8f323093a72bd1043df06",
+"Puppets/nanmin/back/head.png"
+],
+"Puppets/nanmin/front/body.png": [
+"52b14ae00a8fc8cf9b46448cef2cfc70",
+"Puppets/nanmin/front/body.png"
+],
+"Puppets/nanmin/front/head.png": [
+"764cce4d576d04d28ddd2504c5b9d5b5",
+"Puppets/nanmin/front/head.png"
+],
+"Puppets/nanmin/side/body.png": [
+"1bc3d51eba71983510e07f4608fb7989",
+"Puppets/nanmin/side/body.png"
+],
+"Puppets/nanmin/side/head.png": [
+"cc6a19ac5c7eb203fc0c7f25a78adca6",
+"Puppets/nanmin/side/head.png"
+],
+"Puppets/qingzhoubing/back/body.png": [
+"5903b63bd2e3cd22c9a1029135d00fb2",
+"Puppets/qingzhoubing/back/body.png"
+],
+"Puppets/qingzhoubing/back/head.png": [
+"bd29e53f58f16705311cbad8a06c2214",
+"Puppets/qingzhoubing/back/head.png"
+],
+"Puppets/qingzhoubing/front/body.png": [
+"68aa9301ddd91ec3fd0f2a6cee8ac00e",
+"Puppets/qingzhoubing/front/body.png"
+],
+"Puppets/qingzhoubing/front/head.png": [
+"563985a8e9de7fc6254ca8d9a95710d7",
+"Puppets/qingzhoubing/front/head.png"
+],
+"Puppets/qingzhoubing/side/body.png": [
+"92691b8a90616c4e9f98503b821459fe",
+"Puppets/qingzhoubing/side/body.png"
+],
+"Puppets/qingzhoubing/side/head.png": [
+"57759ee1bd51ffde36e8bfd7aae898d4",
+"Puppets/qingzhoubing/side/head.png"
+],
+"Puppets/shangren/back/body.png": [
+"79676a610f7a8bcfacc7429b29827e0a",
+"Puppets/shangren/back/body.png"
+],
+"Puppets/shangren/back/head.png": [
+"037e3a6bf85edae7dcec34437609e239",
+"Puppets/shangren/back/head.png"
+],
+"Puppets/shangren/front/body.png": [
+"b4b4a1b4cbc5c4ce46a3ab7a2a9049c0",
+"Puppets/shangren/front/body.png"
+],
+"Puppets/shangren/front/head.png": [
+"ff839f215bab82a6aa0ee2a0ce6d99c3",
+"Puppets/shangren/front/head.png"
+],
+"Puppets/shangren/side/body.png": [
+"b52c989e7e5453ea4b5d32d7bd66d422",
+"Puppets/shangren/side/body.png"
+],
+"Puppets/shangren/side/head.png": [
+"b81d3e05a3b4f03381b72a2bf77a6922",
+"Puppets/shangren/side/head.png"
+],
+"Puppets/shouwei/back/body.png": [
+"0632e22a3b75fb110c5054c570b6cef9",
+"Puppets/shouwei/back/body.png"
+],
+"Puppets/shouwei/back/head.png": [
+"802497ecdd3ba64fb6397b4571c2de60",
+"Puppets/shouwei/back/head.png"
+],
+"Puppets/shouwei/front/body.png": [
+"a95866278d3e45d56a4f4d40be173063",
+"Puppets/shouwei/front/body.png"
+],
+"Puppets/shouwei/front/head.png": [
+"fb9c0dc7090ce8876e511125f015a773",
+"Puppets/shouwei/front/head.png"
+],
+"Puppets/shouwei/side/body.png": [
+"70bfaed15ba7c9e35a0f5074d8032ba4",
+"Puppets/shouwei/side/body.png"
+],
+"Puppets/shouwei/side/head.png": [
+"d7a08312dd98508a8da915700eb32668",
+"Puppets/shouwei/side/head.png"
+],
+"Puppets/sunqian/back/body.png": [
+"903107b3c7a96be85bbba48cf46e4067",
+"Puppets/sunqian/back/body.png"
+],
+"Puppets/sunqian/back/head.png": [
+"30a50f69d84250eec6480d6aa5de4beb",
+"Puppets/sunqian/back/head.png"
+],
+"Puppets/sunqian/front/body.png": [
+"0f2774c3538fc0d4e90fcb4c9eb3d259",
+"Puppets/sunqian/front/body.png"
+],
+"Puppets/sunqian/front/head.png": [
+"806eb0e7f0ee2a6119c09162e3c1c1e7",
+"Puppets/sunqian/front/head.png"
+],
+"Puppets/sunqian/side/body.png": [
+"a009e38c0b22edd5f283ce42c48ec1da",
+"Puppets/sunqian/side/body.png"
+],
+"Puppets/sunqian/side/head.png": [
+"e276c6169af41c8896cda38455593145",
+"Puppets/sunqian/side/head.png"
+],
+"Puppets/taishici/back/body.png": [
+"cac34018b8ab97dfc4edd020fb04ffb3",
+"Puppets/taishici/back/body.png"
+],
+"Puppets/taishici/back/head.png": [
+"f5a6c5fba21e983bcfd11e81d683275a",
+"Puppets/taishici/back/head.png"
+],
+"Puppets/taishici/front/body.png": [
+"e08903dd7ab4cc58f9b716b7ae6f3d3d",
+"Puppets/taishici/front/body.png"
+],
+"Puppets/taishici/front/head.png": [
+"3c5a53912cc258236ced773b8ca6391f",
+"Puppets/taishici/front/head.png"
+],
+"Puppets/taishici/side/body.png": [
+"827f920e209fb4677a0a2746205ee601",
+"Puppets/taishici/side/body.png"
+],
+"Puppets/taishici/side/head.png": [
+"5f18336df43190a1eb5bea10716cf147",
+"Puppets/taishici/side/head.png"
+],
+"Puppets/taoqian/back/body.png": [
+"f76638c1819c5a68ae4fda309c45369a",
+"Puppets/taoqian/back/body.png"
+],
+"Puppets/taoqian/back/head.png": [
+"8e2d211fd5d366dcbd0521e1de8ffd19",
+"Puppets/taoqian/back/head.png"
+],
+"Puppets/taoqian/front/body.png": [
+"d1d36ad66a99ff412aeb04b78752243c",
+"Puppets/taoqian/front/body.png"
+],
+"Puppets/taoqian/front/head.png": [
+"9a77e1cdc9096ebd47d08da0abdb5f6a",
+"Puppets/taoqian/front/head.png"
+],
+"Puppets/taoqian/side/body.png": [
+"cbbdbcfdada2a4f077494ee138571e51",
+"Puppets/taoqian/side/body.png"
+],
+"Puppets/taoqian/side/head.png": [
+"9066a7f71dee2d7ebc1c8142fe8cc9cc",
+"Puppets/taoqian/side/head.png"
+],
+"Puppets/weapons/bian/bian.png": [
+"e6187509bf6828ed7f09ea5652ef866e",
+"Puppets/weapons/bian/bian.png"
+],
+"Puppets/weapons/biandan/biandan.png": [
+"3c5aee0074c0f7e5d4465dd05beb9276",
+"Puppets/weapons/biandan/biandan.png"
+],
+"Puppets/weapons/cha/cha.png": [
+"072b18437b4cb55bd4798d59e790b617",
+"Puppets/weapons/cha/cha.png"
+],
+"Puppets/weapons/chui/chui.png": [
+"6a07e5b4c920f84791130f0313a44735",
+"Puppets/weapons/chui/chui.png"
+],
+"Puppets/weapons/chutou/chutou.png": [
+"6346e828b0f74c07131a505ebfb12a2d",
+"Puppets/weapons/chutou/chutou.png"
+],
+"Puppets/weapons/dafu/dafu.png": [
+"ecbf799644de40873657f14953580363",
+"Puppets/weapons/dafu/dafu.png"
+],
+"Puppets/weapons/dao/dao.png": [
+"d58a9e3a54162bc3607b0e0d02942802",
+"Puppets/weapons/dao/dao.png"
+],
+"Puppets/weapons/fuchen/fuchen.png": [
+"72915ab4417dfe11ccf2515c182585cb",
+"Puppets/weapons/fuchen/fuchen.png"
+],
+"Puppets/weapons/guaizhang/guaizhang.png": [
+"df2b7d20c32c7fccda4c16564e8e493a",
+"Puppets/weapons/guaizhang/guaizhang.png"
+],
+"Puppets/weapons/gun/gun.png": [
+"45d7bb8a861573f34b747b30c181fa1a",
+"Puppets/weapons/gun/gun.png"
+],
+"Puppets/weapons/huaji/huaji.png": [
+"eeaf7bea9d07865a33f0d37456d2c513",
+"Puppets/weapons/huaji/huaji.png"
+],
+"Puppets/weapons/ji/ji.png": [
+"38418130a6a1998333a5f9fa8df324b2",
+"Puppets/weapons/ji/ji.png"
+],
+"Puppets/weapons/jian/jian.png": [
+"28da813b37cbbf263c8a6b65169ba398",
+"Puppets/weapons/jian/jian.png"
+],
+"Puppets/weapons/jiujie/jiujie.png": [
+"d76a106b89c0adbfb1df3de771a43b17",
+"Puppets/weapons/jiujie/jiujie.png"
+],
+"Puppets/weapons/langya/langya.png": [
+"003d575d1c0dcab0600f1af43791dd21",
+"Puppets/weapons/langya/langya.png"
+],
+"Puppets/weapons/liuxing/liuxing.png": [
+"24c1066b0339f90f9265e6fdf2791950",
+"Puppets/weapons/liuxing/liuxing.png"
+],
+"Puppets/weapons/podao/podao.png": [
+"f5ceacd77115b773178c38730205ad62",
+"Puppets/weapons/podao/podao.png"
+],
+"Puppets/weapons/qiang/qiang.png": [
+"d7b2be2d1fa4630804d0f1f4c6edf154",
+"Puppets/weapons/qiang/qiang.png"
+],
+"Puppets/weapons/shemao/shemao.png": [
+"d069b1a6f272dd1656666b8f6d7db58b",
+"Puppets/weapons/shemao/shemao.png"
+],
+"Puppets/weapons/shoufu/shoufu.png": [
+"8d84dee6b558b941da3beae1112a7e2a",
+"Puppets/weapons/shoufu/shoufu.png"
+],
+"Puppets/weapons/shuanggu/shuanggu.png": [
+"7a883f3d31eda21e2ebf0c11ddfb1a81",
+"Puppets/weapons/shuanggu/shuanggu.png"
+],
+"Puppets/weapons/tiejian/tiejian.png": [
+"b4902f31ca5d44d4d446b09628c5ad07",
+"Puppets/weapons/tiejian/tiejian.png"
+],
+"Puppets/weapons/yanyue/yanyue.png": [
+"5f09500a737982868f09f1704e3d7c66",
+"Puppets/weapons/yanyue/yanyue.png"
+],
+"Puppets/weapons/yushan/yushan.png": [
+"eb32881f5476c579e0863f7408a032c3",
+"Puppets/weapons/yushan/yushan.png"
+],
+"Puppets/weapons/zhanchui/zhanchui.png": [
+"77f0836cadcf1607261016d30ae43cac",
+"Puppets/weapons/zhanchui/zhanchui.png"
+],
+"Puppets/xiahoudun/back/body.png": [
+"f03c86c9ede8cdee5df4f9a850aededd",
+"Puppets/xiahoudun/back/body.png"
+],
+"Puppets/xiahoudun/back/head.png": [
+"ec6ac319a4a2e06a6674ddaaf4768336",
+"Puppets/xiahoudun/back/head.png"
+],
+"Puppets/xiahoudun/front/body.png": [
+"f5b526b0b08956c0a85bf635079b1734",
+"Puppets/xiahoudun/front/body.png"
+],
+"Puppets/xiahoudun/front/head.png": [
+"34e64b46c080ab628cbbb6e6cb003330",
+"Puppets/xiahoudun/front/head.png"
+],
+"Puppets/xiahoudun/side/body.png": [
+"c00c1105f42234542bf299eceb543d91",
+"Puppets/xiahoudun/side/body.png"
+],
+"Puppets/xiahoudun/side/head.png": [
+"8e923f6ba62f9c03b2bd42f75aade4ca",
+"Puppets/xiahoudun/side/head.png"
+],
+"Puppets/xiaoer/back/body.png": [
+"f1f9a34a5656853708d682c00770f794",
+"Puppets/xiaoer/back/body.png"
+],
+"Puppets/xiaoer/back/head.png": [
+"568ab98dae2961632887f8f364bb2a02",
+"Puppets/xiaoer/back/head.png"
+],
+"Puppets/xiaoer/front/body.png": [
+"5e7ebcdeb9c76c1ce4df374e0e671f8c",
+"Puppets/xiaoer/front/body.png"
+],
+"Puppets/xiaoer/front/head.png": [
+"33e73e43943b97f6306a98619e765b6f",
+"Puppets/xiaoer/front/head.png"
+],
+"Puppets/xiaoer/side/body.png": [
+"67f059f8d22ff693aa21774cda920a93",
+"Puppets/xiaoer/side/body.png"
+],
+"Puppets/xiaoer/side/head.png": [
+"8ee7685e8365d7845d4b1b190a6c1325",
+"Puppets/xiaoer/side/head.png"
+],
+"Puppets/xiaohai/back/body.png": [
+"af408f782429ae6cebb77e3465a3e186",
+"Puppets/xiaohai/back/body.png"
+],
+"Puppets/xiaohai/back/head.png": [
+"9fb7065075ebc85aeab73a6f8174d649",
+"Puppets/xiaohai/back/head.png"
+],
+"Puppets/xiaohai/front/body.png": [
+"ae65c5559250aec07c42edfc53da6b19",
+"Puppets/xiaohai/front/body.png"
+],
+"Puppets/xiaohai/front/head.png": [
+"2d72b40536a1e6c55eaadba015c2da56",
+"Puppets/xiaohai/front/head.png"
+],
+"Puppets/xiaohai/side/body.png": [
+"8874939191563646c9e6d362dc78fe3b",
+"Puppets/xiaohai/side/body.png"
+],
+"Puppets/xiaohai/side/head.png": [
+"0df8b9797fc000c95a267ebb4df4e571",
+"Puppets/xiaohai/side/head.png"
+],
+"Puppets/xiliangbing/back/body.png": [
+"b811e73a7f13bba17d2424b98a30b0ac",
+"Puppets/xiliangbing/back/body.png"
+],
+"Puppets/xiliangbing/back/head.png": [
+"8c2ab831d47733df79130a7c307d4f03",
+"Puppets/xiliangbing/back/head.png"
+],
+"Puppets/xiliangbing/front/body.png": [
+"a124bf11891ca1bcd97ddafe5378da8c",
+"Puppets/xiliangbing/front/body.png"
+],
+"Puppets/xiliangbing/front/head.png": [
+"d31071d44340422e422aac40b7e0c3c1",
+"Puppets/xiliangbing/front/head.png"
+],
+"Puppets/xiliangbing/side/body.png": [
+"2bb62000903f8f8c699082c8fb454e44",
+"Puppets/xiliangbing/side/body.png"
+],
+"Puppets/xiliangbing/side/head.png": [
+"b48ffc3b096d22246e04b7a09ad23ec5",
+"Puppets/xiliangbing/side/head.png"
+],
+"Puppets/xiliangtieqi/back/body.png": [
+"7ebbf079460529005ce2430f3e9c1bf3",
+"Puppets/xiliangtieqi/back/body.png"
+],
+"Puppets/xiliangtieqi/back/head.png": [
+"cbb5a3afee29a2b86bd8616bb24b9bac",
+"Puppets/xiliangtieqi/back/head.png"
+],
+"Puppets/xiliangtieqi/front/body.png": [
+"165e4b60d6771f9c8347c3b288fa008a",
+"Puppets/xiliangtieqi/front/body.png"
+],
+"Puppets/xiliangtieqi/front/head.png": [
+"e5ce78e798a5d304b9e419b1b2a31c83",
+"Puppets/xiliangtieqi/front/head.png"
+],
+"Puppets/xiliangtieqi/side/body.png": [
+"da48d0b325bb8c2af34ea2eb9c680890",
+"Puppets/xiliangtieqi/side/body.png"
+],
+"Puppets/xiliangtieqi/side/head.png": [
+"82bf0b4a1f36a567f11c96c5dc2d29ae",
+"Puppets/xiliangtieqi/side/head.png"
+],
+"Puppets/xuchu/back/body.png": [
+"db4b1534015fa8384bc84e825828242c",
+"Puppets/xuchu/back/body.png"
+],
+"Puppets/xuchu/back/head.png": [
+"623923215d26b6bfe797d9f4d46e419d",
+"Puppets/xuchu/back/head.png"
+],
+"Puppets/xuchu/front/body.png": [
+"829df7aba94c34595d0d88fb2654ae1d",
+"Puppets/xuchu/front/body.png"
+],
+"Puppets/xuchu/front/head.png": [
+"eef4ec7a8de9b058eba0fffbbfeb4598",
+"Puppets/xuchu/front/head.png"
+],
+"Puppets/xuchu/side/body.png": [
+"e35797a4d1206d1ce65610b58d169c2d",
+"Puppets/xuchu/side/body.png"
+],
+"Puppets/xuchu/side/head.png": [
+"159b68ccaf0b584f14502a7e19e72b7d",
+"Puppets/xuchu/side/head.png"
+],
+"Puppets/xushu/back/body.png": [
+"3e4329ba75872c3d33c657c9d025efd5",
+"Puppets/xushu/back/body.png"
+],
+"Puppets/xushu/back/head.png": [
+"e71f1a048f661954b4ab148d833d5246",
+"Puppets/xushu/back/head.png"
+],
+"Puppets/xushu/front/body.png": [
+"79b40bdb1d07c46b11d161bae3033522",
+"Puppets/xushu/front/body.png"
+],
+"Puppets/xushu/front/head.png": [
+"5da1c6f9e7da970b6af1262aac84f911",
+"Puppets/xushu/front/head.png"
+],
+"Puppets/xushu/side/body.png": [
+"5140bc134824277e8f61f3e4ef6127f3",
+"Puppets/xushu/side/body.png"
+],
+"Puppets/xushu/side/head.png": [
+"f9e152f0b6c5ff0bdbdd6966611b3886",
+"Puppets/xushu/side/head.png"
+],
+"Puppets/yuanshao/back/body.png": [
+"ed4629e6593a8633dde6e49b1fa3ea8a",
+"Puppets/yuanshao/back/body.png"
+],
+"Puppets/yuanshao/back/head.png": [
+"448c0b61d24c64c63d2c05dd05420507",
+"Puppets/yuanshao/back/head.png"
+],
+"Puppets/yuanshao/front/body.png": [
+"a1cfca78f4cef61da4cf0fc9ea6bbb48",
+"Puppets/yuanshao/front/body.png"
+],
+"Puppets/yuanshao/front/head.png": [
+"2343e0eba8da6a76f0701194c43919f5",
+"Puppets/yuanshao/front/head.png"
+],
+"Puppets/yuanshao/side/body.png": [
+"d8f1d0a0f7c24d85f0cb4784ab021fcd",
+"Puppets/yuanshao/side/body.png"
+],
+"Puppets/yuanshao/side/head.png": [
+"94e3165bfe5b9333e55e08ba7a8d8fef",
+"Puppets/yuanshao/side/head.png"
+],
+"Puppets/zhangbao/back/body.png": [
+"ea33809611aeb3dd7d68d32c55f029df",
+"Puppets/zhangbao/back/body.png"
+],
+"Puppets/zhangbao/back/head.png": [
+"1f9bf6f233cdb32d7ad69a86daa0fa27",
+"Puppets/zhangbao/back/head.png"
+],
+"Puppets/zhangbao/front/body.png": [
+"51955acf4137e7719e71dc97eb1ef179",
+"Puppets/zhangbao/front/body.png"
+],
+"Puppets/zhangbao/front/head.png": [
+"76ff2854d1978a27438b6313c8ef33af",
+"Puppets/zhangbao/front/head.png"
+],
+"Puppets/zhangbao/side/body.png": [
+"f2ac7b0c6609be8a16d57bda18cc7e02",
+"Puppets/zhangbao/side/body.png"
+],
+"Puppets/zhangbao/side/head.png": [
+"7ae2997f8128c165d150c936e7cc51cb",
+"Puppets/zhangbao/side/head.png"
+],
+"Puppets/zhangfei/back/body.png": [
+"6c517d802a7f051e6fc2d93da2e743dd",
+"Puppets/zhangfei/back/body.png"
+],
+"Puppets/zhangfei/back/head.png": [
+"3f0c7e27693348b533e4f0232dcc91ec",
+"Puppets/zhangfei/back/head.png"
+],
+"Puppets/zhangfei/front/body.png": [
+"2b2b40a57109412eb2f44ddc7048905d",
+"Puppets/zhangfei/front/body.png"
+],
+"Puppets/zhangfei/front/head.png": [
+"8b5c8ee6a27ccd38d86d17d503d8a870",
+"Puppets/zhangfei/front/head.png"
+],
+"Puppets/zhangfei/side/body.png": [
+"d212ffe7aa5e837d14d159b232a7b6fc",
+"Puppets/zhangfei/side/body.png"
+],
+"Puppets/zhangfei/side/head.png": [
+"9999ffd557f86477af525d9c1535ed5c",
+"Puppets/zhangfei/side/head.png"
+],
+"Puppets/zhangjiao/back/body.png": [
+"45e9d1942e3fab7ebf646c351d9b2153",
+"Puppets/zhangjiao/back/body.png"
+],
+"Puppets/zhangjiao/back/head.png": [
+"def4425a57eacc78a7eb230e56d9e9d1",
+"Puppets/zhangjiao/back/head.png"
+],
+"Puppets/zhangjiao/front/body.png": [
+"5a753dac0c484246f95980e8c5a3432f",
+"Puppets/zhangjiao/front/body.png"
+],
+"Puppets/zhangjiao/front/head.png": [
+"1f365f7d2186aaad8506278681ae3cfa",
+"Puppets/zhangjiao/front/head.png"
+],
+"Puppets/zhangjiao/side/body.png": [
+"dd326d979b82a2cf449f833c5881b478",
+"Puppets/zhangjiao/side/body.png"
+],
+"Puppets/zhangjiao/side/head.png": [
+"90e0f4cc4bba67647517d24f7bf4e916",
+"Puppets/zhangjiao/side/head.png"
+],
+"Puppets/zhangliang/back/body.png": [
+"740ffcbea19742c766903e4e6db26169",
+"Puppets/zhangliang/back/body.png"
+],
+"Puppets/zhangliang/back/head.png": [
+"7d4c35fdbfb085c0e61d314c1b70389f",
+"Puppets/zhangliang/back/head.png"
+],
+"Puppets/zhangliang/front/body.png": [
+"8fcf81944798410875db687af9306c85",
+"Puppets/zhangliang/front/body.png"
+],
+"Puppets/zhangliang/front/head.png": [
+"a64dce4630e2c8c322cd30a75368fb28",
+"Puppets/zhangliang/front/head.png"
+],
+"Puppets/zhangliang/side/body.png": [
+"17c8de1a0f9985c6217c577c926d659f",
+"Puppets/zhangliang/side/body.png"
+],
+"Puppets/zhangliang/side/head.png": [
+"30c0cf30abb43dc0f2d4bbfe272192a7",
+"Puppets/zhangliang/side/head.png"
+],
+"Puppets/zhaoyun/back/body.png": [
+"d183c10a15bf51616f05b757ac438b60",
+"Puppets/zhaoyun/back/body.png"
+],
+"Puppets/zhaoyun/back/head.png": [
+"814ee322e4ff45b8e3f56915abbbcae6",
+"Puppets/zhaoyun/back/head.png"
+],
+"Puppets/zhaoyun/front/body.png": [
+"a878b53e7ea2d78038a93e31604d0e56",
+"Puppets/zhaoyun/front/body.png"
+],
+"Puppets/zhaoyun/front/head.png": [
+"30ad86af6d97d04eb04417138da01416",
+"Puppets/zhaoyun/front/head.png"
+],
+"Puppets/zhaoyun/side/body.png": [
+"6eb64605bcd6762b18f8d16a66dc7ad0",
+"Puppets/zhaoyun/side/body.png"
+],
+"Puppets/zhaoyun/side/head.png": [
+"227c323476d8f067124e84f64687f14f",
+"Puppets/zhaoyun/side/head.png"
+],
+"Puppets/zhoucang/back/body.png": [
+"f8adbe6b344091ab7a2084bcba9b646e",
+"Puppets/zhoucang/back/body.png"
+],
+"Puppets/zhoucang/back/head.png": [
+"16053c7239757d71eeb30a13b8636e53",
+"Puppets/zhoucang/back/head.png"
+],
+"Puppets/zhoucang/front/body.png": [
+"620f893c1c3412cf035c707c6cf8fa68",
+"Puppets/zhoucang/front/body.png"
+],
+"Puppets/zhoucang/front/head.png": [
+"0769cf2676e180cab0543d6bc7c570d2",
+"Puppets/zhoucang/front/head.png"
+],
+"Puppets/zhoucang/side/body.png": [
+"2bf8827fb56cfcf3fb9960abb24e5227",
+"Puppets/zhoucang/side/body.png"
+],
+"Puppets/zhoucang/side/head.png": [
+"2ce7da8988113d89b0a52d80f70401f9",
+"Puppets/zhoucang/side/head.png"
+],
+"Puppets/zhugejun/back/body.png": [
+"b555ea5a3eb64bf7bc60c634d53a6e1c",
+"Puppets/zhugejun/back/body.png"
+],
+"Puppets/zhugejun/back/head.png": [
+"c57cfe1f27ff98a730639e06e84fa3c7",
+"Puppets/zhugejun/back/head.png"
+],
+"Puppets/zhugejun/front/body.png": [
+"4443355c1e810d118778e8a4ad74e4ba",
+"Puppets/zhugejun/front/body.png"
+],
+"Puppets/zhugejun/front/head.png": [
+"e639ad7643bca2736d7b4c03466124b7",
+"Puppets/zhugejun/front/head.png"
+],
+"Puppets/zhugejun/side/body.png": [
+"d8d71f4feb3d057107357297dbdaa1de",
+"Puppets/zhugejun/side/body.png"
+],
+"Puppets/zhugejun/side/head.png": [
+"27ec06d16e8f79beff076ff0a6556a40",
+"Puppets/zhugejun/side/head.png"
+],
+"Puppets/zhugeliang/back/body.png": [
+"43a26db553ec20c9778eb4f92a0dc535",
+"Puppets/zhugeliang/back/body.png"
+],
+"Puppets/zhugeliang/back/head.png": [
+"3a4590fcb6e54c9c22b7d0d76d61882e",
+"Puppets/zhugeliang/back/head.png"
+],
+"Puppets/zhugeliang/front/body.png": [
+"1c2a79576dfca9831174ce7b172d8b33",
+"Puppets/zhugeliang/front/body.png"
+],
+"Puppets/zhugeliang/front/head.png": [
+"72b3c47686c1725764afc601121a7cc2",
+"Puppets/zhugeliang/front/head.png"
+],
+"Puppets/zhugeliang/side/body.png": [
+"0017fdddd7c3cb0f9829ebc8e47d1f37",
+"Puppets/zhugeliang/side/body.png"
+],
+"Puppets/zhugeliang/side/head.png": [
+"984bdc8485c2fb14bdb0f3127c0ba98f",
+"Puppets/zhugeliang/side/head.png"
+]
+}

@@ -156,7 +156,7 @@ namespace LiuBeiRPG.Game
                     if (n.Weapon != null) need.Add("Puppets/weapons/" + n.Weapon);
                 }
             }
-            if (release) Remote.ReleaseExcept(need);
+            if (release) Remote.ReleaseExcept(need, true);   // 换章节：上一章的贴图和压缩数据都放掉
             foreach (var p in need) Remote.Prefetch(p);
         }
 
@@ -187,6 +187,8 @@ namespace LiuBeiRPG.Game
         void Update()
         {
             Remote.Tick();   // 云上下好的图分帧解码
+            UpdateSceneLoad();
+            if (SceneLoading) return;   // 加载页期间游戏停着
             UpdateTouch();
             UpdateChest();
             if (mode == Mode.Map) UpdateMap();
@@ -255,6 +257,7 @@ namespace LiuBeiRPG.Game
             if (ChestPlaying) return;   // 开箱演出时不吃按键
             KeySfx(key);
             if (comicPages != null) { ComicKey(key); return; }   // 开场漫画盖在最上面
+            if (SceneLoading) return;
             if (loadOpen) { LoadPageKey(key); return; }
             // 对话 / 选项优先
             if (choice != null) { ChoiceKey(key); return; }
@@ -335,7 +338,7 @@ namespace LiuBeiRPG.Game
             if (b.OnDone != null) b.OnDone();
         }
 
-        bool UiBusy { get { return currentDialogue != null || choice != null || menuPage != 0 || ChestPlaying || comicPages != null || loadOpen; } }
+        bool UiBusy { get { return currentDialogue != null || choice != null || menuPage != 0 || ChestPlaying || comicPages != null || loadOpen || SceneLoading; } }
 
         /// <summary>对话框贴在安全区域底部居中（最宽 900），横竖屏使用不同高度。</summary>
         static Rect DialogRect
@@ -515,6 +518,7 @@ namespace LiuBeiRPG.Game
             Gfx.Paper = false;
             if (mode != Mode.Map && mode != Mode.Battle) Gfx.Rect(new Rect(0, 0, Screen.width, Screen.height), Color.black);   // 大地图由相机画在底下
             Gfx.BeginScaled();
+            if (SceneLoading) { DrawSceneLoad(); return; }   // 场景加载页盖满全屏
             if (loadOpen) { DrawLoadPage(); DrawNote(); return; }   // 读档页盖满全屏，下面的都不画、不吃点击
 
             switch (mode)
@@ -583,14 +587,12 @@ namespace LiuBeiRPG.Game
             }
 
             // 菜单：新游戏 / 读档 / 关于我们，竖排，晚一点淡入
-            // 首页预载没走完（微信包首次打开）：新游戏 / 读档先灰着，按钮上写进度，下完再进，进去就不会闪
-            bool loading = Remote.PrefetchTotal > 0;
-            string[] items = { loading ? "下载中 " + (Remote.PrefetchDone * 100 / Remote.PrefetchTotal) + "%" : "新游戏", "读档", "关于我们" };
+            string[] items = { "新游戏", "读档", "关于我们" };
             for (int i = 0; i < items.Length; i++)
             {
                 float a = Mathf.Clamp01((t - 0.5f - i * 0.12f) / 0.4f);
                 if (a <= 0) continue;
-                bool enabled = i == 2 || (!loading && (i == 0 || hasSave)), sel = i == titleSel;
+                bool enabled = i != 1 || hasSave, sel = i == titleSel;
                 // Q 版扁平胶囊：深色粗描边 + 实心投影 + 底下一道深色“唇边”，和标题字一个画风
                 float bw = 230, bh = 56, slide = (1 - a) * 30;
                 float lift = sel ? 3 + Mathf.Abs(Mathf.Sin(Time.time * 4)) * 3 : 0;   // 选中的一蹦一蹦
@@ -621,7 +623,6 @@ namespace LiuBeiRPG.Game
         void TitlePick(int i)
         {
             if (i == 2) { aboutOpen = true; aboutCopiedAt = -10; return; }
-            if (Remote.PrefetchTotal > 0) return;   // 资源还在下（键盘回车也挡住）
             if (i == 1) { if (HasSave) OpenLoadPage(true); return; }
             NewGame();
         }
